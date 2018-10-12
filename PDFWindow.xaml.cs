@@ -26,8 +26,20 @@ namespace SuperMemoAssistant.Plugins.PDF
       InitializeComponent();
 
       PdfCommon.Initialize();
+    }
 
-      PdfViewer.LoadDocument("D:\\Temp\\Neuroscience.pdf");
+    public void Open(string filePath)
+    {
+      IPDFDocument doc = new IPDFDocument
+      {
+        FilePath   = filePath,
+        StartPage  = -1,
+        EndPage    = -1,
+        StartIndex = -1,
+        EndIndex   = -1
+      };
+
+      IPDFViewer.LoadDocument(doc);
     }
   }
 }

@@ -25,7 +25,12 @@
 // Modified By:  Alexis
 #endregion
 
+
+
+
+using System.Collections.Generic;
 using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Extensions;
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
@@ -45,24 +50,32 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                 int startIdx,
                                 int count)
     {
-      ExtractHighlights[pageIdx] = new HighlightInfo
-      {
-        CharIndex  = startIdx,
-        CharsCount = count,
-        Color      = SMExtractColor
-      };
+      ExtractHighlights
+        .SafeGet(pageIdx,
+                 new List<HighlightInfo>())
+        .Add(new HighlightInfo
+          {
+            CharIndex  = startIdx,
+            CharsCount = count,
+            Color      = SMExtractColor
+          }
+        );
     }
     
     protected void AddIPDFExtractHighlight(int pageIdx,
                                   int startIdx,
                                   int count)
     {
-      ExtractHighlights[pageIdx] = new HighlightInfo
-      {
-        CharIndex  = startIdx,
-        CharsCount = count,
-        Color      = IPDFExtractColor
-      };
+      ExtractHighlights
+        .SafeGet(pageIdx,
+                 new List<HighlightInfo>())
+        .Add(new HighlightInfo
+          {
+            CharIndex  = startIdx,
+            CharsCount = count,
+            Color      = IPDFExtractColor
+          }
+        );
     }
   }
 }

@@ -33,8 +33,9 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
-//using mshtml;
+using Microsoft.Win32;
 using SuperMemoAssistant.Interop.Plugins;
+using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Sys;
@@ -45,6 +46,11 @@ namespace SuperMemoAssistant.Plugins.PDF
   // ReSharper disable once UnusedMember.Global
   public class PDFPlugin : SMAPluginBase
   {
+    private PDFWindow PdfWindow { get; set; }
+
+
+
+
     #region Constructors
 
     public PDFPlugin()
@@ -70,10 +76,53 @@ namespace SuperMemoAssistant.Plugins.PDF
     /// <inheritdoc />
     protected override void OnInit()
     {
-      //var pdfWdw = new PDFWindow();
-      //pdfWdw.Show();
+      Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMElementArgs>(OnElementChanged);
+
+      Svc.KeyboardHotKey.RegisterHotKey(new HotKey(true,
+                                                   false,
+                                                   false,
+                                                   true,
+                                                   Key.I,
+                                                   "IPDF: Open file"),
+                                        OpenFile);
     }
 
     #endregion
+
+
+    
+    public void OnElementChanged(SMElementArgs e)
+    {
+      if (!(Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl is IControlWeb ctrlWeb))
+        return;
+
+      
+    }
+
+    private void OpenFile()
+    {
+      OpenFileDialog dlg = new OpenFileDialog
+      {
+        DefaultExt = ".pdf",
+        Filter     = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*"
+      };
+
+      if (dlg.ShowDialog().GetValueOrDefault(false))
+      {
+        string filePath = dlg.FileName;
+        
+        EnsurePdfWindow();
+        PdfWindow.Open(filePath); //"D:\\Temp\\test2.pdf"); // "D:\\Temp\\Neuroscience.pdf"
+      }
+    }
+
+    private void EnsurePdfWindow()
+    {
+      if (PdfWindow == null || PdfWindow.IsLoaded == false)
+      {
+        PdfWindow = new PDFWindow();
+        PdfWindow.Show();
+      }
+    }
   }
 }

@@ -30,16 +30,24 @@
 
 
 
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
+using Patagames.Pdf.Net.Controls.Wpf;
+// ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
   public partial class IPDFViewer
   {
+    public static readonly float[] ZoomRatios =
+    {
+      .0833f, .125f, .25f, .3333f, .50f, .6667f, .75f, 1f, 1.25f, 1.50f, 2f, 3f, 4f, 6f, 8f, 12f, 16f, 32f, 64f
+    };
+
     #region Methods Impl
 
     //
@@ -90,7 +98,17 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       var keyMod = GetKeyboardModifiers();
 
       if ((keyMod & KeyboardModifiers.ControlKey) == KeyboardModifiers.ControlKey)
-        Zoom -= 0.25f;
+      {
+        if (SizeMode != SizeModes.Zoom)
+          SizeMode = SizeModes.Zoom;
+
+        int i = ZoomRatios.Length - 1;
+
+        while (i > 0 && Zoom >= ZoomRatios[i])
+          i--;
+
+        Zoom = ZoomRatios[i];
+      }
 
       else
         base.MouseWheelDown();
@@ -102,7 +120,17 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       var keyMod = GetKeyboardModifiers();
 
       if ((keyMod & KeyboardModifiers.ControlKey) == KeyboardModifiers.ControlKey)
-        Zoom += 0.25f;
+      {
+        if (SizeMode != SizeModes.Zoom)
+          SizeMode = SizeModes.Zoom;
+
+        int i = 0;
+
+        while (i < ZoomRatios.Length - 1 && Zoom >= ZoomRatios[i])
+          i++;
+
+        Zoom = ZoomRatios[i];
+      }
 
       else
         base.MouseWheelUp();

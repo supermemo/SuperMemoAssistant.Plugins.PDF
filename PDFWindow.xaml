@@ -3,15 +3,38 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:wpf1="clr-namespace:Patagames.Pdf.Net.Controls.Wpf;assembly=Patagames.Pdf.Wpf"
+        xmlns:pdf="clr-namespace:SuperMemoAssistant.Plugins.PDF.Viewer"
+        xmlns:toolBars="clr-namespace:Patagames.Pdf.Net.Controls.Wpf.ToolBars;assembly=Patagames.Pdf.Wpf"
         mc:Ignorable="d"
         Title="PDFWindow" Height="450" Width="800">
   <Grid>
+      <Grid.RowDefinitions>
+          <RowDefinition Height="auto" />
+          <RowDefinition />
+          <RowDefinition Height="auto" />
+      </Grid.RowDefinitions>
 
-    <ScrollViewer Grid.Row="0" CanContentScroll="True" VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Auto">
-      <wpf1:PdfViewer x:Name="PdfViewer" />
-    </ScrollViewer>
+      <ToolBarTray Grid.Row="0">
+          <!--<toolBars:PdfToolBarRotate PdfViewer="{Binding ElementName=IPDFViewer}"
+                                 Name="toolbarRotate" />
+      <toolBars:PdfToolBarSearch PdfViewer="{Binding ElementName=IPDFViewer}"
+                                    Name="toolbarSearch" />-->
+      </ToolBarTray>
 
+      <ScrollViewer Grid.Row="1"
+                    CanContentScroll="True"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Auto">
+          <pdf:IPDFViewer x:Name="IPDFViewer"
+                          Background="#828689"
+                          SizeMode="Zoom" />
+      </ScrollViewer>
+
+      <ToolBarTray Grid.Row="2">
+          <!--<toolBars:PdfToolBarZoomEx PdfViewer="{Binding ElementName=IPDFViewer}"
+                                 Name="toolbarZoom" />
+      <toolBars:PdfToolBarPages PdfViewer="{Binding ElementName=IPDFViewer}"
+                                 Name="toolbarPages" />-->
+      </ToolBarTray>
   </Grid>
 </Window>

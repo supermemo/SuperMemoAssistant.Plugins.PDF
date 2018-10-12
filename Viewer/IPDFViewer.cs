@@ -60,7 +60,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                                                    80);
 
     protected IPDFDocument IPDFDocument { get; set; }
-    protected Dictionary<int, HighlightInfo> ExtractHighlights { get; } = new Dictionary<int, HighlightInfo>();
+    protected Dictionary<int, List<HighlightInfo>> ExtractHighlights { get; } = new Dictionary<int, List<HighlightInfo>>();
     
 
 
@@ -74,7 +74,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     public void LoadDocument(IPDFDocument document)
     {
-      bool isNewPdf = IPDFDocument.FilePath.Equals(document.FilePath);
+      bool isNewPdf = IPDFDocument?.FilePath.Equals(document.FilePath) ?? false;
       IPDFDocument = document;
 
       if (isNewPdf == false)
@@ -84,12 +84,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         OnDocumentLoaded(null);
     }
 
-    protected override void OnDocumentLoaded(EventArgs _)
+    protected override void OnDocumentLoaded(EventArgs ev)
     {
-      base.OnDocumentLoaded(_);
+      base.OnDocumentLoaded(ev);
 
       ExtractHighlights.Clear();
-      IPDFDocument.IPDFExtracts.ForEach(e => AddSMExtractHighlight(e.pageIdx, e.startIdx, e.count));
+      IPDFDocument.SMExtracts.ForEach(e => AddSMExtractHighlight(e.pageIdx, e.startIdx, e.count));
       IPDFDocument.IPDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.pageIdx, e.startIdx, e.count));
     }
 

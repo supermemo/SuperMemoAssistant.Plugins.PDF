@@ -1,4 +1,5 @@
 ﻿#region License & Metadata
+
 // The MIT License (MIT)
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,25 +22,26 @@
 // 
 // 
 // Created On:   2018/06/11 14:55
-// Modified On:  2018/06/11 14:55
+// Modified On:  2018/09/05 21:48
 // Modified By:  Alexis
+
 #endregion
 
 
 
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Extensions;
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
   public partial class IPDFViewer
   {
-
-
-
-
     #region Methods Impl
 
     protected override void DrawCustom(DrawingContext drawingContext,
@@ -48,6 +50,26 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       DrawImageSelection(drawingContext,
                          pageIndex);
     }
+
+    protected override void DrawTextHighlight(PdfBitmap           bitmap,
+                                              List<HighlightInfo> entries,
+                                              int                 pageIndex)
+    {
+      base.DrawTextHighlight(bitmap,
+                             entries,
+                             pageIndex);
+
+      base.DrawTextHighlight(bitmap,
+                             ExtractHighlights.SafeGet(pageIndex),
+                             pageIndex);
+    }
+
+    #endregion
+
+
+
+
+    #region Methods
 
     protected void DrawImageSelection(DrawingContext drawingContext,
                                       int            pageIndex)
@@ -63,13 +85,6 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       }
     }
 
-    #endregion
-
-
-
-
-    #region Methods
-
     protected Rect PageToDeviceRect(System.Drawing.Rectangle rc,
                                     int                      pageIndex)
     {
@@ -83,10 +98,52 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       int y = (pt1.Y < pt2.Y ? pt1.Y : pt2.Y) * Helpers.Dpi / 72;
       int w = (pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X) * Helpers.Dpi / 72;
       int h = (pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y) * Helpers.Dpi / 72;
-      return new Rect(Helpers.PixelsToPoints(x),
-                      Helpers.PixelsToPoints(y),
-                      Helpers.PixelsToPoints(w),
-                      Helpers.PixelsToPoints(h));
+      return new Rect(Helpers.PixelsToUnits(x),
+                      Helpers.PixelsToUnits(y),
+                      Helpers.PixelsToUnits(w),
+                      Helpers.PixelsToUnits(h));
+    }
+
+    protected static DrawingBrush CreateHatchedBrush()
+    {
+      var brush = new DrawingBrush();
+
+      var background =
+        new GeometryDrawing(
+          ImageHighlightFillBrush,
+          null,
+          new RectangleGeometry(new Rect(0,
+                                         0,
+                                         8,
+                                         4)));
+
+      var dotsGeomGroup = new GeometryGroup();
+      dotsGeomGroup.Children.Add(new RectangleGeometry(new Rect(0,
+                                                                0,
+                                                                1,
+                                                                1)));
+      dotsGeomGroup.Children.Add(new RectangleGeometry(new Rect(4,
+                                                                2,
+                                                                1,
+                                                                1)));
+
+      GeometryDrawing dots = new GeometryDrawing(Brushes.WhiteSmoke,
+                                                 null,
+                                                 dotsGeomGroup);
+
+      DrawingGroup drawingGroup = new DrawingGroup();
+      drawingGroup.Children.Add(background);
+      drawingGroup.Children.Add(dots);
+
+      brush.Drawing       = drawingGroup;
+      brush.ViewportUnits = BrushMappingMode.Absolute;
+      brush.Viewport = new Rect(0,
+                                0,
+                                8,
+                                4);
+      brush.TileMode = TileMode.Tile;
+
+      return brush;
     }
 
     #endregion

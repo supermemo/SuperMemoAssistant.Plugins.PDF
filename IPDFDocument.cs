@@ -42,5 +42,13 @@ namespace SuperMemoAssistant.Plugins.PDF
     public List<(int pageIdx, int startIdx, int count)> SMExtracts { get; set; }
     public List<(int pageIdx, int startIdx, int count)> IPDFExtracts { get; set; }
 
+    public IPDFDocument()
+    {
+      StartPage  = -1;
+      EndPage    = -1;
+      StartIndex = -1;
+      EndIndex   = -1;
+      SMExtracts = IPDFExtracts = new List<(int pageIdx, int startIdx, int count)>();
+    }
   }
 }
