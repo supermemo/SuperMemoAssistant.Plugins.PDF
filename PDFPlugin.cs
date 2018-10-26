@@ -32,8 +32,11 @@
 
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Microsoft.Win32;
+using Newtonsoft.Json;
+using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.Plugins;
 using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
 using SuperMemoAssistant.Services;
@@ -44,7 +47,7 @@ using SuperMemoAssistant.Sys.IO.Devices;
 namespace SuperMemoAssistant.Plugins.PDF
 {
   // ReSharper disable once UnusedMember.Global
-  public class PDFPlugin : SMAPluginBase
+  public class PDFPlugin : SMAPluginBase<PDFPlugin>
   {
     private PDFWindow PdfWindow { get; set; }
 
@@ -96,33 +99,30 @@ namespace SuperMemoAssistant.Plugins.PDF
       if (!(Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl is IControlWeb ctrlWeb))
         return;
 
-      
+      PDFElement pdfEl = PDFElement.TryReadElement(ctrlWeb);
+
+      if (pdfEl == null)
+        return;
+
+      EnsurePdfWindow();
+
+      PdfWindow.Open(pdfEl);
     }
 
     private void OpenFile()
     {
-      OpenFileDialog dlg = new OpenFileDialog
-      {
-        DefaultExt = ".pdf",
-        Filter     = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*"
-      };
+      EnsurePdfWindow();
 
-      if (dlg.ShowDialog().GetValueOrDefault(false))
-      {
-        string filePath = dlg.FileName;
-        
-        EnsurePdfWindow();
-        PdfWindow.Open(filePath); //"D:\\Temp\\test2.pdf"); // "D:\\Temp\\Neuroscience.pdf"
-      }
+      string filePath = PdfWindow.OpenFileDialog();
+
+      if (filePath != null)
+        PDFElement.Create(filePath);
     }
 
     private void EnsurePdfWindow()
     {
       if (PdfWindow == null || PdfWindow.IsLoaded == false)
-      {
         PdfWindow = new PDFWindow();
-        PdfWindow.Show();
-      }
     }
   }
 }

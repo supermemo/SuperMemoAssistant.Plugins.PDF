@@ -36,6 +36,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using JetBrains.Annotations;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
@@ -59,7 +60,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                                                    100,
                                                                    80);
 
-    protected IPDFDocument IPDFDocument { get; set; }
+    protected PDFElement PDFElement { get; set; }
     protected Dictionary<int, List<HighlightInfo>> ExtractHighlights { get; } = new Dictionary<int, List<HighlightInfo>>();
     
 
@@ -72,13 +73,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       _smoothSelection = false;
     }
 
-    public void LoadDocument(IPDFDocument document)
+    public void LoadDocument([NotNull] PDFElement pdfElement)
     {
-      bool isNewPdf = IPDFDocument?.FilePath.Equals(document.FilePath) ?? false;
-      IPDFDocument = document;
+      bool isNewPdf = !PDFElement?.FilePath.Equals(pdfElement.FilePath) ?? true;
 
-      if (isNewPdf == false)
-        LoadDocument(document.FilePath);
+      PDFElement = pdfElement;
+
+      if (isNewPdf)
+        LoadDocument(PDFElement.FilePath);
 
       else
         OnDocumentLoaded(null);
@@ -89,8 +91,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       base.OnDocumentLoaded(ev);
 
       ExtractHighlights.Clear();
-      IPDFDocument.SMExtracts.ForEach(e => AddSMExtractHighlight(e.pageIdx, e.startIdx, e.count));
-      IPDFDocument.IPDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.pageIdx, e.startIdx, e.count));
+      PDFElement.SMExtracts.ForEach(e => AddSMExtractHighlight(e.pageIdx, e.startIdx, e.count));
+      PDFElement.IPDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.pageIdx, e.startIdx, e.count));
     }
 
     public void ToImg()

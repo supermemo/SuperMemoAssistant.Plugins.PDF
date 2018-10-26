@@ -52,6 +52,9 @@
     <Reference Include="JetBrains.Annotations, Version=2018.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\JetBrains.Annotations.2018.2.1\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Patagames.Pdf, Version=3.33.12.47, Culture=neutral, PublicKeyToken=60fd6cf9b15941cf, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Pdfium.Net.SDK.3.34.2704\lib\net47\Patagames.Pdf.dll</HintPath>
     </Reference>
@@ -75,7 +78,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\FS_RECTFEx.cs" />
-    <Compile Include="IPDFDocument.cs" />
+    <Compile Include="PDFCfg.cs" />
+    <Compile Include="PDFElement.cs" />
+    <Compile Include="Utils\WPFEx.cs" />
     <Compile Include="Viewer\IPDFViewer.cs" />
     <Compile Include="PDFWindow.xaml.cs">
       <DependentUpon>PDFWindow.xaml</DependentUpon>

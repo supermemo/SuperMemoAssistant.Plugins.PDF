@@ -1,4 +1,5 @@
 ﻿#region License & Metadata
+
 // The MIT License (MIT)
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20,35 +21,31 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/06/12 19:53
-// Modified On:  2018/06/12 19:53
+// Created On:   2018/10/26 19:53
+// Modified On:  2018/10/26 19:54
 // Modified By:  Alexis
+
 #endregion
 
 
 
 
-using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 
-namespace SuperMemoAssistant.Plugins.PDF
+namespace SuperMemoAssistant.Plugins.PDF.Utils
 {
-  public class IPDFDocument
+  internal static class WPFEx
   {
-    public string FilePath { get; set; }
-    public int StartPage { get; set; }
-    public int EndPage   { get; set; }
-    public int StartIndex { get; set; }
-    public int EndIndex   { get; set; }
-    public List<(int pageIdx, int startIdx, int count)> SMExtracts { get; set; }
-    public List<(int pageIdx, int startIdx, int count)> IPDFExtracts { get; set; }
+    #region Methods
 
-    public IPDFDocument()
+    public static bool IsWindowOpen<T>(string name = "") where T : Window
     {
-      StartPage  = -1;
-      EndPage    = -1;
-      StartIndex = -1;
-      EndIndex   = -1;
-      SMExtracts = IPDFExtracts = new List<(int pageIdx, int startIdx, int count)>();
+      return string.IsNullOrEmpty(name)
+        ? Application.Current.Windows.OfType<T>().Any()
+        : Application.Current.Windows.OfType<T>().Any(w => w.Name.Equals(name));
     }
+
+    #endregion
   }
 }
