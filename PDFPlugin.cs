@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/05/30 17:20
-// Modified On:  2018/06/06 15:41
+// Created On:   2018/06/08 19:02
+// Modified On:  2018/11/16 21:55
 // Modified By:  Alexis
 
 #endregion
@@ -30,17 +30,14 @@
 
 
 
-using System;
-using System.Linq;
-using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Input;
-using Microsoft.Win32;
-using Newtonsoft.Json;
-using SuperMemoAssistant.Extensions;
+using System.Windows.Threading;
+using Patagames.Pdf.Net;
 using SuperMemoAssistant.Interop.Plugins;
 using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
-using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
+using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Sys;
 using SuperMemoAssistant.Sys.IO.Devices;
 
@@ -49,18 +46,23 @@ namespace SuperMemoAssistant.Plugins.PDF
   // ReSharper disable once UnusedMember.Global
   public class PDFPlugin : SMAPluginBase<PDFPlugin>
   {
+    #region Properties & Fields - Non-Public
+
     private PDFWindow PdfWindow { get; set; }
+
+    private SynchronizationContext SyncContext { get; set; }
+
+    #endregion
 
 
 
 
     #region Constructors
 
-    public PDFPlugin()
-    {
-    }
+    public PDFPlugin() { }
 
     #endregion
+
 
 
 
@@ -79,34 +81,47 @@ namespace SuperMemoAssistant.Plugins.PDF
     /// <inheritdoc />
     protected override void OnInit()
     {
-      Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMElementArgs>(OnElementChanged);
+      SyncContext = new DispatcherSynchronizationContext();
+      SynchronizationContext.SetSynchronizationContext(SyncContext);
 
-      Svc.KeyboardHotKey.RegisterHotKey(new HotKey(true,
-                                                   false,
-                                                   false,
-                                                   true,
-                                                   Key.I,
-                                                   "IPDF: Open file"),
-                                        OpenFile);
+      if (!PdfCommon.IsInitialize)
+        PdfCommon.Initialize();
+
+      Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
+
+      Svc<PDFPlugin>.KeyboardHotKey.RegisterHotKey(new HotKey(true,
+                                                              false,
+                                                              false,
+                                                              true,
+                                                              Key.I,
+                                                              "IPDF: Open file"),
+                                                   OpenFile);
     }
 
     #endregion
 
 
-    
-    public void OnElementChanged(SMElementArgs e)
+
+
+    #region Methods
+
+    public void OnElementChanged(SMDisplayedElementChangedArgs e)
     {
-      if (!(Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl is IControlWeb ctrlWeb))
+      IControl ctrlBase = Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl;
+
+      if (!(ctrlBase is IControlWeb ctrlWeb))
         return;
 
-      PDFElement pdfEl = PDFElement.TryReadElement(ctrlWeb);
+      string     html  = ctrlWeb.Text;
+      PDFElement pdfEl = PDFElement.TryReadElement(html, e.NewElement.Id);
 
       if (pdfEl == null)
         return;
 
       EnsurePdfWindow();
 
-      PdfWindow.Open(pdfEl);
+      SyncContext.Send(o => { PdfWindow.Open((PDFElement)o); },
+                       pdfEl);
     }
 
     private void OpenFile()
@@ -121,8 +136,17 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     private void EnsurePdfWindow()
     {
-      if (PdfWindow == null || PdfWindow.IsLoaded == false)
-        PdfWindow = new PDFWindow();
+      if (PdfWindow == null)
+        SyncContext.Send(CreatePdfWindow,
+                         null);
     }
+
+    private void CreatePdfWindow(object _)
+    {
+      //|| PdfWindow.IsLoaded == false)
+      PdfWindow = new PDFWindow();
+    }
+
+    #endregion
   }
 }

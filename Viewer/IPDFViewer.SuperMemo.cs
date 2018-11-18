@@ -29,8 +29,10 @@
 
 
 using System.Collections.Generic;
+using System.Linq;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
+using SuperMemoAssistant.Interop.SuperMemo.Components.Types;
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
@@ -43,7 +45,20 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     
     protected void CreateIPDFExtract()
     {
+      if (string.IsNullOrWhiteSpace(SelectedText))
+        return;
 
+      AddIPDFExtractHighlight(SelectInfo.StartPage,
+                              SelectInfo.StartIndex,
+                              SelectInfo.EndIndex - SelectInfo.StartIndex + 1); // Todo: Compute across all pages
+
+      PDFElement.Create(PDFElement.FilePath,
+                        SelectInfo.StartPage,
+                        SelectInfo.EndPage,
+                        SelectInfo.StartIndex,
+                        SelectInfo.EndIndex,
+                        PDFElement.ElementId,
+                        false);
     }
 
     protected void AddSMExtractHighlight(int pageIdx,
@@ -66,16 +81,18 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                   int startIdx,
                                   int count)
     {
-      ExtractHighlights
+      var pageHighlights = ExtractHighlights
         .SafeGet(pageIdx,
-                 new List<HighlightInfo>())
-        .Add(new HighlightInfo
+                 new List<HighlightInfo>());
+        
+      pageHighlights.Add(new HighlightInfo
           {
             CharIndex  = startIdx,
             CharsCount = count,
             Color      = IPDFExtractColor
           }
         );
+      ExtractHighlights[pageIdx] = pageHighlights;
     }
   }
 }

@@ -58,11 +58,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     {
       var kbMod = GetKeyboardModifiers();
       
-      if (e.Key == Key.X && (kbMod & KeyboardModifiers.AltKey) == KeyboardModifiers.AltKey)
-        CreateSMExtract();
-      
-      else if (e.Key == Key.S && (kbMod & KeyboardModifiers.AltKey) == KeyboardModifiers.AltKey)
+      if (e.Key == Key.X
+        && (kbMod & KeyboardModifiers.AltKey) == KeyboardModifiers.AltKey
+        && (kbMod & KeyboardModifiers.ControlKey) == KeyboardModifiers.ControlKey)
         CreateIPDFExtract();
+      
+      else if (e.Key == Key.X
+        && (kbMod & KeyboardModifiers.AltKey) == KeyboardModifiers.AltKey)
+        CreateSMExtract();
 
       base.OnPreviewKeyDown(e);
     }

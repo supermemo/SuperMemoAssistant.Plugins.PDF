@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/09 02:33
-// Modified On:  2018/10/26 23:55
+// Modified On:  2018/11/15 18:32
 // Modified By:  Alexis
 
 #endregion
@@ -30,10 +30,13 @@
 
 
 
+using System;
+using System.Threading;
 using System.Windows;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Patagames.Pdf.Net;
+using SuperMemoAssistant.Plugins.PDF.Utils;
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
@@ -46,6 +49,21 @@ namespace SuperMemoAssistant.Plugins.PDF
     {
       InitializeComponent();
     }
+
+    #endregion
+
+    protected override void OnInitialized(EventArgs e)
+    {
+      base.OnInitialized(e);
+      
+      SyncContext = SynchronizationContext.Current;
+    }
+
+
+
+    #region Properties & Fields - Public
+
+    public SynchronizationContext SyncContext { get; private set; }
 
     #endregion
 
@@ -69,11 +87,9 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public void Open([NotNull] PDFElement pdfElement)
     {
-      if (!PdfCommon.IsInitialize)
-        PdfCommon.Initialize();
-
       //if (WPFEx.IsWindowOpen<PDFWindow>() == false)
-      Show();
+      if (IsLoaded == false)
+        Show();
 
       IPDFViewer.LoadDocument(pdfElement);
     }

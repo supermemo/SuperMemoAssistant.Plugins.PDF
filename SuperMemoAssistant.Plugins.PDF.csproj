@@ -77,6 +77,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Const.cs" />
     <Compile Include="Extensions\FS_RECTFEx.cs" />
     <Compile Include="PDFCfg.cs" />
     <Compile Include="PDFElement.cs" />

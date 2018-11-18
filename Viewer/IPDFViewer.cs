@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -62,7 +63,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     protected PDFElement PDFElement { get; set; }
     protected Dictionary<int, List<HighlightInfo>> ExtractHighlights { get; } = new Dictionary<int, List<HighlightInfo>>();
-    
+
 
 
 

@@ -51,6 +51,19 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                          pageIndex);
     }
 
+    protected override void DrawTextSelection(PdfBitmap  bitmap,
+                                              SelectInfo selInfo,
+                                              int        pageIndex)
+    {
+      base.DrawTextSelection(bitmap,
+                             selInfo,
+                             pageIndex);
+      
+      base.DrawTextHighlight(bitmap,
+                             ExtractHighlights.SafeGet(pageIndex),
+                             pageIndex);
+    }
+
     protected override void DrawTextHighlight(PdfBitmap           bitmap,
                                               List<HighlightInfo> entries,
                                               int                 pageIndex)
@@ -58,10 +71,26 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       base.DrawTextHighlight(bitmap,
                              entries,
                              pageIndex);
+    }
+    
+    protected override void DrawPageBackColor(PdfBitmap bitmap, int x, int y, int width, int height)
+    {
+      double ux = Helpers.PixelsToUnits(x);
+      double uy = Helpers.PixelsToUnits(y);
 
-      base.DrawTextHighlight(bitmap,
-                             ExtractHighlights.SafeGet(pageIndex),
-                             pageIndex);
+      int pageNo = PointInPage(new Point(ux,
+                                         uy));
+      bool inBound = PDFElement.IsPageInBound(pageNo);
+
+      bitmap.FillRectEx(x,
+                        y,
+                        width,
+                        height,
+                        inBound
+                          ? Helpers.ToArgb(PageBackColor)
+                          : Helpers.ToArgb(Color.FromRgb(225,
+                                                         225,
+                                                         225)));
     }
 
     #endregion
