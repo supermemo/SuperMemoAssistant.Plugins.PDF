@@ -158,7 +158,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
           if (close)
           {
-            PdfWindow.Close();
+            PdfWindow?.Close();
             PdfWindow = null;
           }
         },
