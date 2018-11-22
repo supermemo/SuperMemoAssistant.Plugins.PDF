@@ -79,8 +79,10 @@
   <ItemGroup>
     <Compile Include="Const.cs" />
     <Compile Include="Extensions\FS_RECTFEx.cs" />
+    <Compile Include="Extensions\SelectInfoEx.cs" />
     <Compile Include="PDFCfg.cs" />
     <Compile Include="PDFElement.cs" />
+    <Compile Include="PDFState.cs" />
     <Compile Include="Utils\WPFEx.cs" />
     <Compile Include="Viewer\IPDFViewer.cs" />
     <Compile Include="PDFWindow.xaml.cs">
@@ -88,6 +90,7 @@
     </Compile>
     <Compile Include="PDFPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Viewer\IPDFViewer.Utils.cs" />
     <Compile Include="Viewer\IPDFViewer.Inputs.cs" />
     <Compile Include="Viewer\IPDFViewer.Rendering.cs" />
     <Compile Include="Viewer\IPDFViewer.Selection.cs" />

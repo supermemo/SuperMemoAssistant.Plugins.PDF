@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:29
-// Modified On:  2018/06/11 14:37
+// Modified On:  2018/11/20 22:40
 // Modified By:  Alexis
 
 #endregion
@@ -32,37 +32,43 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 using JetBrains.Annotations;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
-//using System.Drawing;
-
-// ReSharper disable PossibleMultipleEnumeration
-
-// ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
   /// <inheritdoc />
   public partial class IPDFViewer : PdfViewer
   {
-    public static readonly Color SMExtractColor = Color.FromArgb(30,
-                                                                 80,
-                                                                 100,
-                                                                 120);
-    public static readonly Color IPDFExtractColor = Color.FromArgb(30,
-                                                                   120,
-                                                                   100,
-                                                                   80);
+    #region Constants & Statics
 
-    protected PDFElement PDFElement { get; set; }
+    protected static readonly Color OutOfExtractExtractColor = Color.FromArgb(127,
+                                                                              180,
+                                                                              30,
+                                                                              30);
+    protected static readonly Color SMExtractColor = Color.FromArgb(30,
+                                                                    68,
+                                                                    194,
+                                                                    255);
+    protected static readonly Color IPDFExtractColor = Color.FromArgb(30,
+                                                                      255,
+                                                                      106,
+                                                                      0);
+
+    #endregion
+
+
+
+
+    #region Properties & Fields - Non-Public
+
+    protected PDFElement                           PDFElement        { get; set; }
     protected Dictionary<int, List<HighlightInfo>> ExtractHighlights { get; } = new Dictionary<int, List<HighlightInfo>>();
+
+    #endregion
 
 
 
@@ -73,6 +79,48 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     {
       _smoothSelection = false;
     }
+
+    #endregion
+
+
+
+
+    #region Methods Impl
+
+    protected override void OnDocumentLoaded(EventArgs ev)
+    {
+      base.OnDocumentLoaded(ev);
+
+      ExtractHighlights.Clear();
+      RemoveHighlightFromText();
+
+      PDFElement.SMExtracts.ForEach(e => AddSMExtractHighlight(e.StartPage,
+                                                               e.EndPage,
+                                                               e.StartIndex,
+                                                               e.EndIndex));
+      PDFElement.IPDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.StartPage,
+                                                                   e.EndPage,
+                                                                   e.StartIndex,
+                                                                   e.EndIndex));
+
+      GenerateOutOfExtractHighlights();
+
+      SetVerticalOffset(PDFElement.ReadVerticalOffset);
+    }
+
+    public override void SetVerticalOffset(double offset)
+    {
+      base.SetVerticalOffset(offset);
+
+      PDFElement.ReadVerticalOffset = VerticalOffset;
+    }
+
+    #endregion
+
+
+
+
+    #region Methods
 
     public void LoadDocument([NotNull] PDFElement pdfElement)
     {
@@ -87,31 +135,29 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         OnDocumentLoaded(null);
     }
 
-    protected override void OnDocumentLoaded(EventArgs ev)
-    {
-      base.OnDocumentLoaded(ev);
-
-      ExtractHighlights.Clear();
-      PDFElement.SMExtracts.ForEach(e => AddSMExtractHighlight(e.pageIdx, e.startIdx, e.count));
-      PDFElement.IPDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.pageIdx, e.startIdx, e.count));
-    }
-
     public void ToImg()
     {
-      
       //The current page of loaded document.
       var page = CurrentPage;
 
       var rect = CalcActualRect(0);
 
-      double ratio = rect.Width / page.Width;
-      int Width = (int)(page.Width * ratio);
-      int Height = (int)(page.Height * ratio);
+      double ratio  = rect.Width / page.Width;
+      int    Width  = (int)(page.Width * ratio);
+      int    Height = (int)(page.Height * ratio);
 
-      using (var bmp = new PdfBitmap((int)Width, (int)Height, true))
+      using (var bmp = new PdfBitmap((int)Width,
+                                     (int)Height,
+                                     true))
       {
         //Render part of page into bitmap;
-        CurrentPage.Render(bmp, 0, 0, (int)(Width), (int)(Height), PageRotate.Normal, RenderFlags.FPDF_LCD_TEXT);
+        CurrentPage.Render(bmp,
+                           0,
+                           0,
+                           (int)Width,
+                           (int)Height,
+                           PageRotate.Normal,
+                           RenderFlags.FPDF_LCD_TEXT);
 
         var rbmp = new System.Drawing.Bitmap(bmp.Image);
         rbmp.Save("D:\\Temp\\pdfium_out.png");

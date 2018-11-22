@@ -40,11 +40,14 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     // HTML snippets here are formatted in the final form they should assume in SM.
 
-    public const string ElementFormat = @"
-<BODY id=pdf-element-body>
+    public const string ElementFormat = @"<BODY id=pdf-element-body>
 <DIV id=pdf-element-title>{0}</DIV>
 <DIV id=pdf-element-filename>{1}</DIV>
 <DIV id=pdf-element-data>{2}</DIV>
+<SPAN><BR><BR>
+<HR SuperMemo>
+<SUPERMEMOREFERENCE><H5 dir=ltr align=left><FONT style=""COLOR: transparent"" size=1>#SuperMemo Reference:</FONT><BR><FONT class=reference>#Title: {3}<BR>#Date: Imported on {4}<BR>#Source: PDF<BR>#Link: {5}<BR></FONT></SUPERMEMOREFERENCE></H5>
+</SPAN>
 </BODY>";
     public const string ElementDataFormat = "<DIV id=pdf-element-data>{0}</DIV>";
 

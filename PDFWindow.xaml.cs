@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/09 02:33
-// Modified On:  2018/11/15 18:32
+// Modified On:  2018/11/21 00:57
 // Modified By:  Alexis
 
 #endregion
@@ -31,12 +31,11 @@
 
 
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using JetBrains.Annotations;
 using Microsoft.Win32;
-using Patagames.Pdf.Net;
-using SuperMemoAssistant.Plugins.PDF.Utils;
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
@@ -48,22 +47,58 @@ namespace SuperMemoAssistant.Plugins.PDF
     public PDFWindow()
     {
       InitializeComponent();
+
+      Top = PDFState.Instance.Config.WindowTop;
+      Height = PDFState.Instance.Config.WindowHeight;
+      Left = PDFState.Instance.Config.WindowLeft;
+      Width = PDFState.Instance.Config.WindowWidth;
+      WindowState = PDFState.Instance.Config.WindowState == WindowState.Maximized
+        ? WindowState.Maximized
+        : WindowState.Normal;
     }
 
     #endregion
 
-    protected override void OnInitialized(EventArgs e)
-    {
-      base.OnInitialized(e);
-      
-      SyncContext = SynchronizationContext.Current;
-    }
 
 
 
     #region Properties & Fields - Public
 
     public SynchronizationContext SyncContext { get; private set; }
+
+    #endregion
+
+
+
+
+    #region Methods Impl
+
+    protected override void OnInitialized(EventArgs e)
+    {
+      base.OnInitialized(e);
+
+      SyncContext = SynchronizationContext.Current;
+    }
+
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+      if (WindowState == WindowState.Maximized)
+        PDFState.Instance.UpdateWindowPosition(RestoreBounds.Top,
+                                               RestoreBounds.Height,
+                                               RestoreBounds.Left,
+                                               RestoreBounds.Width,
+                                               WindowState);
+
+      else
+        PDFState.Instance.UpdateWindowPosition(Top,
+                                               Height,
+                                               Left,
+                                               Width,
+                                               WindowState);
+      
+      base.OnClosing(e);
+    }
 
     #endregion
 

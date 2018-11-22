@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:55
-// Modified On:  2018/09/05 21:48
+// Modified On:  2018/11/20 21:40
 // Modified By:  Alexis
 
 #endregion
@@ -31,7 +31,6 @@
 
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using Patagames.Pdf.Net;
@@ -42,13 +41,36 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
   public partial class IPDFViewer
   {
+    #region Constants & Statics
+
+    protected static Pen ImageHighlightPen { get; } = new Pen(new SolidColorBrush(Color.FromRgb(77,
+                                                                                                97,
+                                                                                                117)),
+                                                              3.0f);
+    protected static Brush ImageHighlightFillBrush { get; } = new SolidColorBrush(Color.FromArgb(77,
+                                                                                                 63,
+                                                                                                 100,
+                                                                                                 40));
+    protected static Brush OutOfExtractFillBrush { get; } = new SolidColorBrush(OutOfExtractExtractColor);
+
+    #endregion
+
+
+
+
     #region Methods Impl
 
     protected override void DrawCustom(DrawingContext drawingContext,
+                                       Rect           actualRect,
                                        int            pageIndex)
     {
       DrawImageSelection(drawingContext,
                          pageIndex);
+
+      if (PDFElement.IsPageInBound(pageIndex) == false)
+        drawingContext.DrawRectangle(OutOfExtractFillBrush,
+                                     ImageHighlightPen,
+                                     actualRect);
     }
 
     protected override void DrawTextSelection(PdfBitmap  bitmap,
@@ -58,7 +80,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       base.DrawTextSelection(bitmap,
                              selInfo,
                              pageIndex);
-      
+
       base.DrawTextHighlight(bitmap,
                              ExtractHighlights.SafeGet(pageIndex),
                              pageIndex);
@@ -72,9 +94,20 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                              entries,
                              pageIndex);
     }
-    
-    protected override void DrawPageBackColor(PdfBitmap bitmap, int x, int y, int width, int height)
+
+    protected override void DrawPageBackColor(PdfBitmap bitmap,
+                                              int       x,
+                                              int       y,
+                                              int       width,
+                                              int       height)
     {
+      base.DrawPageBackColor(bitmap,
+                             x,
+                             y,
+                             width,
+                             height);
+
+      /*
       double ux = Helpers.PixelsToUnits(x);
       double uy = Helpers.PixelsToUnits(y);
 
@@ -91,6 +124,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                           : Helpers.ToArgb(Color.FromRgb(225,
                                                          225,
                                                          225)));
+                                                         */
     }
 
     #endregion
@@ -123,14 +157,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       var pt2 = PageToDevice(rc.Right,
                              rc.Bottom,
                              pageIndex);
-      int x = (pt1.X < pt2.X ? pt1.X : pt2.X) * Helpers.Dpi / 72;
-      int y = (pt1.Y < pt2.Y ? pt1.Y : pt2.Y) * Helpers.Dpi / 72;
-      int w = (pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X) * Helpers.Dpi / 72;
-      int h = (pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y) * Helpers.Dpi / 72;
-      return new Rect(Helpers.PixelsToUnits(x),
-                      Helpers.PixelsToUnits(y),
-                      Helpers.PixelsToUnits(w),
-                      Helpers.PixelsToUnits(h));
+      int x = (pt1.X < pt2.X ? pt1.X : pt2.X);// * Helpers.Dpi / 72;
+      int y = (pt1.Y < pt2.Y ? pt1.Y : pt2.Y);// * Helpers.Dpi / 72;
+      int w = (pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X);// * Helpers.Dpi / 72;
+      int h = (pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y);// * Helpers.Dpi / 72;
+      return new Rect(/*Helpers.PixelsToUnits(*/x/*)*/,
+                      /*Helpers.PixelsToUnits(*/y/*)*/,
+                      /*Helpers.PixelsToUnits(*/w/*)*/,
+                      /*Helpers.PixelsToUnits(*/h/*)*/);
     }
 
     protected static DrawingBrush CreateHatchedBrush()
@@ -144,7 +178,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           new RectangleGeometry(new Rect(0,
                                          0,
                                          8,
-                                         4)));
+                                         4))
+        );
 
       var dotsGeomGroup = new GeometryGroup();
       dotsGeomGroup.Children.Add(new RectangleGeometry(new Rect(0,

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:33
-// Modified On:  2018/06/11 14:35
+// Modified On:  2018/11/20 20:05
 // Modified By:  Alexis
 
 #endregion
@@ -49,14 +49,6 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     #region Constants & Statics
 
     protected const float TextSelectionSmoothTolerence = 6.0f;
-    protected static Pen ImageHighlightPen { get; } = new Pen(new SolidColorBrush(Color.FromRgb(77,
-                                                                                                97,
-                                                                                                117)),
-                                                              3.0f);
-    protected static Brush ImageHighlightFillBrush { get; } = new SolidColorBrush(Color.FromArgb(77,
-                                                                                                 63,
-                                                                                                 100,
-                                                                                                 40));
 
     #endregion
 
@@ -111,20 +103,27 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     #region Methods
 
     protected bool OnMouseDownProcessSelection(MouseButtonEventArgs e,
-                                               int   pageIndex,
-                                               Point pagePoint)
+                                               int                  pageIndex,
+                                               Point                pagePoint)
     {
-      bool handled = false;
+      bool handled    = false;
       bool invalidate = false;
+
+      if (SelectInfo.StartPage >= 0)
+      {
+        DeselectText();
+        invalidate = true;
+      }
 
       if (SelectedImage.obj?.BoundingBox.Contains((int)pagePoint.X,
                                                   (int)pagePoint.Y) == false)
       {
         SelectedImage = (null, -1);
-        invalidate = true;
+        invalidate    = true;
       }
 
-      else if (e.LeftButton == MouseButtonState.Pressed)
+      if (e.LeftButton == MouseButtonState.Pressed)
+      {
         if (pageIndex >= 0)
         {
           var imgObj = Document.Pages[pageIndex].PageObjects
@@ -136,10 +135,11 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           if (imgObj != null)
           {
             SelectedImage = (imgObj as PdfImageObject, pageIndex);
-            invalidate = true;
-            handled = true;
+            invalidate    = true;
+            handled       = true;
           }
         }
+      }
 
       if (invalidate)
         InvalidateVisual();
@@ -223,6 +223,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           InvalidateVisual();
         }
       }
+    }
+
+    protected void CopySelectionToClipboard()
+    {
+      if (string.IsNullOrWhiteSpace(SelectedText) == false)
+        Clipboard.SetText(SelectedText);
     }
 
     #endregion

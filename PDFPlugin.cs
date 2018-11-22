@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/08 19:02
-// Modified On:  2018/11/16 21:55
+// Modified On:  2018/11/22 14:07
 // Modified By:  Alexis
 
 #endregion
@@ -30,10 +30,9 @@
 
 
 
-using System.Threading;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Patagames.Pdf.Net;
+using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.Plugins;
 using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
@@ -46,17 +45,6 @@ namespace SuperMemoAssistant.Plugins.PDF
   // ReSharper disable once UnusedMember.Global
   public class PDFPlugin : SMAPluginBase<PDFPlugin>
   {
-    #region Properties & Fields - Non-Public
-
-    private PDFWindow PdfWindow { get; set; }
-
-    private SynchronizationContext SyncContext { get; set; }
-
-    #endregion
-
-
-
-
     #region Constructors
 
     public PDFPlugin() { }
@@ -81,8 +69,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     /// <inheritdoc />
     protected override void OnInit()
     {
-      SyncContext = new DispatcherSynchronizationContext();
-      SynchronizationContext.SetSynchronizationContext(SyncContext);
+      PDFState.Instance.CaptureContext();
 
       if (!PdfCommon.IsInitialize)
         PdfCommon.Initialize();
@@ -95,7 +82,7 @@ namespace SuperMemoAssistant.Plugins.PDF
                                                               true,
                                                               Key.I,
                                                               "IPDF: Open file"),
-                                                   OpenFile);
+                                                   PDFState.Instance.OpenFile);
     }
 
     #endregion
@@ -107,44 +94,10 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public void OnElementChanged(SMDisplayedElementChangedArgs e)
     {
-      IControl ctrlBase = Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl;
+      IControlWeb ctrlWeb = Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl.AsWeb();
 
-      if (!(ctrlBase is IControlWeb ctrlWeb))
-        return;
-
-      string     html  = ctrlWeb.Text;
-      PDFElement pdfEl = PDFElement.TryReadElement(html, e.NewElement.Id);
-
-      if (pdfEl == null)
-        return;
-
-      EnsurePdfWindow();
-
-      SyncContext.Send(o => { PdfWindow.Open((PDFElement)o); },
-                       pdfEl);
-    }
-
-    private void OpenFile()
-    {
-      EnsurePdfWindow();
-
-      string filePath = PdfWindow.OpenFileDialog();
-
-      if (filePath != null)
-        PDFElement.Create(filePath);
-    }
-
-    private void EnsurePdfWindow()
-    {
-      if (PdfWindow == null)
-        SyncContext.Send(CreatePdfWindow,
-                         null);
-    }
-
-    private void CreatePdfWindow(object _)
-    {
-      //|| PdfWindow.IsLoaded == false)
-      PdfWindow = new PDFWindow();
+      PDFState.Instance.OnElementChanged(e.NewElement,
+                                         ctrlWeb);
     }
 
     #endregion
