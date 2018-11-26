@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:33
-// Modified On:  2018/11/20 20:05
+// Modified On:  2018/11/24 13:07
 // Modified By:  Alexis
 
 #endregion
@@ -35,12 +35,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using Patagames.Pdf;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
+using SuperMemoAssistant.Sys.Drawing;
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
@@ -57,8 +57,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     #region Properties & Fields - Non-Public
 
-    protected Brush                          ImageHighlightFillHatchedBrush { get; } = CreateHatchedBrush();
-    protected (PdfImageObject obj, int page) SelectedImage                  { get; set; }
+    protected PDFImageExtract SelectedImage { get; set; }
 
     #endregion
 
@@ -109,37 +108,45 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       bool handled    = false;
       bool invalidate = false;
 
-      if (SelectInfo.StartPage >= 0)
+      var kbMod = GetKeyboardModifiers();
+
+      if (kbMod == 0
+        && e.LeftButton == MouseButtonState.Pressed
+        && SelectInfo.StartPage >= 0)
       {
         DeselectText();
         invalidate = true;
       }
 
-      if (SelectedImage.obj?.BoundingBox.Contains((int)pagePoint.X,
-                                                  (int)pagePoint.Y) == false)
+      if (SelectedImage?.BoundingBox.Contains((int)pagePoint.X,
+                                              (int)pagePoint.Y) == false)
       {
-        SelectedImage = (null, -1);
+        SelectedImage = null;
         invalidate    = true;
       }
 
       if (e.LeftButton == MouseButtonState.Pressed)
-      {
         if (pageIndex >= 0)
         {
-          var imgObj = Document.Pages[pageIndex].PageObjects
-                               .FirstOrDefault(
-                                 o => o.ObjectType == PageObjectTypes.PDFPAGE_IMAGE
-                                   && o.BoundingBox.Contains((int)pagePoint.X,
-                                                             (int)pagePoint.Y));
+          var pageObj = Document.Pages[pageIndex].PageObjects
+                                .FirstOrDefault(
+                                  o => o.ObjectType == PageObjectTypes.PDFPAGE_IMAGE
+                                    && o.BoundingBox.Contains((int)pagePoint.X,
+                                                              (int)pagePoint.Y));
 
-          if (imgObj != null)
+          if (pageObj is PdfImageObject imgObj)
           {
-            SelectedImage = (imgObj as PdfImageObject, pageIndex);
-            invalidate    = true;
-            handled       = true;
+            int objIdx = Document.Pages[pageIndex].PageObjects.IndexOf(pageObj);
+            SelectedImage = new PDFImageExtract
+            {
+              BoundingBox = imgObj.BoundingBox,
+              ObjectIndex = objIdx,
+              PageIndex   = pageIndex,
+            };
+            invalidate = true;
+            handled    = true;
           }
         }
-      }
 
       if (invalidate)
         InvalidateVisual();
@@ -178,57 +185,206 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       return rects;
     }
 
-    private void ExtendSelection(Point pagePoint,
-                                 int   pageIdx,
-                                 bool  additive)
+    protected void ExtendSelection(ExtendSelectionType selType,
+                                   ExtendActionType    action)
     {
       var selInfo = SelectInfo;
 
-      if (selInfo.StartPage >= 0 && selInfo.EndPage >= 0)
+      switch (selType)
       {
-        int charIdx = Document.Pages[pageIdx].Text.GetCharIndexAtPos((float)pagePoint.X,
-                                                                     (float)pagePoint.Y,
-                                                                     10.0f,
-                                                                     10.0f);
+        case ExtendSelectionType.Character:
+          ExtendSelection(1,
+                          action);
+          break;
 
-        if (charIdx >= 0)
-        {
-          int startPage = additive
-            ? Math.Min(_selectInfo.StartPage,
-                       pageIdx)
-            : _selectInfo.StartPage;
-          int endPage = additive
-            ? Math.Max(_selectInfo.EndPage,
-                       pageIdx)
-            : pageIdx;
+        case ExtendSelectionType.Word:
+          // TODO: Calculate word length
+          return;
 
-          int startIdx = additive
-            ? Math.Min(_selectInfo.StartIndex,
-                       charIdx)
-            : _selectInfo.StartIndex;
-          int endIdx = additive
-            ? Math.Max(_selectInfo.EndIndex,
-                       charIdx)
-            : charIdx;
+        case ExtendSelectionType.Page:
+          int nbChar;
 
-          _selectInfo = new SelectInfo()
+          if (action == ExtendActionType.Add)
           {
-            StartPage  = startPage,
-            EndPage    = endPage,
-            StartIndex = startIdx,
-            EndIndex   = endIdx
-          };
-          _isShowSelection = true;
+            var pageCharCount = Document.Pages[selInfo.EndPage].Text.CountChars;
 
-          InvalidateVisual();
-        }
+            if (selInfo.EndIndex >= pageCharCount && selInfo.EndPage + 1 < Document.Pages.Count)
+            {
+              selInfo.EndIndex = _selectInfo.EndIndex = 0;
+              selInfo.EndPage = _selectInfo.EndPage++;
+              
+              pageCharCount = Document.Pages[selInfo.EndPage].Text.CountChars;
+            }
+
+            nbChar = pageCharCount - selInfo.EndIndex;
+          }
+          else
+          {
+            nbChar = selInfo.EndIndex;
+          }
+
+          ExtendSelection(nbChar,
+                          action);
+          break;
+
+        case ExtendSelectionType.Document:
+          // TODO: Calculate remaining characters in doc
+          return;
       }
+
+      if (IsEndOfSelectionInScreen() == false)
+        ScrollToEndOfSelection();
+    }
+
+    protected void ExtendSelection(int              nbChar,
+                                   ExtendActionType action)
+    {
+      var selInfo = SelectInfo;
+
+      if (selInfo.StartPage < 0 || selInfo.EndPage < 0 || nbChar <= 0)
+        return;
+
+      while (nbChar > 0)
+        if (action == ExtendActionType.Add)
+        {
+          var pageCharCount = Document.Pages[selInfo.EndPage].Text.CountChars;
+
+          int remainingChar = Math.Max(0,
+                                       pageCharCount - selInfo.EndIndex);
+          int addedChar = Math.Min(remainingChar,
+                                   nbChar);
+
+          selInfo.EndIndex += addedChar;
+          nbChar           -= addedChar;
+
+          if (nbChar > 0)
+          {
+            if (selInfo.EndPage + 1 >= Document.Pages.Count)
+              break;
+
+            selInfo.EndIndex = 0;
+            selInfo.EndPage++;
+          }
+        }
+
+        else if (action == ExtendActionType.Remove)
+        {
+          int remainingChar = selInfo.EndPage == selInfo.StartPage
+            ? selInfo.EndIndex - selInfo.StartIndex
+            : selInfo.EndIndex;
+          int removedChar = Math.Min(remainingChar,
+                                     nbChar);
+
+          selInfo.EndIndex -= removedChar;
+          nbChar           -= removedChar;
+
+          if (selInfo.EndPage == selInfo.StartPage)
+            break;
+
+          if (nbChar > 0)
+          {
+            if (selInfo.EndPage - 1 < 0)
+              break;
+
+            selInfo.EndPage--;
+            selInfo.EndIndex = Document.Pages[selInfo.EndPage].Text.CountChars;
+          }
+        }
+
+      _selectInfo = selInfo;
+
+      InvalidateVisual();
+    }
+
+    protected void ExtendSelection(Point pagePoint,
+                                   int   pageIdx,
+                                   bool  additive)
+    {
+      var selInfo = SelectInfo;
+
+      if (selInfo.StartPage < 0 || selInfo.EndPage < 0)
+        return;
+
+      int charIdx = Document.Pages[pageIdx].Text.GetCharIndexAtPos(
+        (float)pagePoint.X,
+        (float)pagePoint.Y,
+        10.0f,
+        10.0f);
+
+      if (charIdx < 0)
+        return;
+
+      int startPage = additive
+        ? Math.Min(_selectInfo.StartPage,
+                   pageIdx)
+        : _selectInfo.StartPage;
+      int endPage = additive
+        ? Math.Max(_selectInfo.EndPage,
+                   pageIdx)
+        : pageIdx;
+
+      int startIdx = additive
+        ? Math.Min(_selectInfo.StartIndex,
+                   charIdx)
+        : _selectInfo.StartIndex;
+      int endIdx = additive
+        ? Math.Max(_selectInfo.EndIndex,
+                   charIdx)
+        : charIdx;
+
+      _selectInfo = new SelectInfo()
+      {
+        StartPage  = startPage,
+        EndPage    = endPage,
+        StartIndex = startIdx,
+        EndIndex   = endIdx
+      };
+      _isShowSelection = true;
+
+      InvalidateVisual();
     }
 
     protected void CopySelectionToClipboard()
     {
-      if (string.IsNullOrWhiteSpace(SelectedText) == false)
+      if (SelectedImage != null)
+      {
+        PdfImageObject imgObject = (PdfImageObject)Document
+                                                   .Pages[SelectedImage.PageIndex]
+                                                   .PageObjects[SelectedImage.ObjectIndex];
+
+        if (imgObject == null)
+          return;
+
+        ImageWrapper imageWrapper = new ImageWrapper(imgObject.Bitmap.Image);
+
+        Clipboard.SetImage(imageWrapper.ToBitmapImage());
+      }
+
+      else if (string.IsNullOrWhiteSpace(SelectedText) == false)
+      {
         Clipboard.SetText(SelectedText);
+      }
+    }
+
+    #endregion
+
+
+
+
+    #region Enums
+
+    protected enum ExtendActionType
+    {
+      Add,
+      Remove
+    }
+
+    protected enum ExtendSelectionType
+    {
+      Character,
+      Word,
+      Page,
+      Document
     }
 
     #endregion

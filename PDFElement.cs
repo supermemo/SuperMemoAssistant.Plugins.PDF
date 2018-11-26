@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/10/26 20:56
-// Modified On:  2018/11/22 14:07
+// Modified On:  2018/11/24 02:16
 // Modified By:  Alexis
 
 #endregion
@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
@@ -68,6 +69,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       EndIndex           = -1;
       ReadVerticalOffset = 0;
       SMExtracts         = IPDFExtracts = new List<SelectInfo>();
+      SMImgExtracts        = new List<PDFImageExtract>();
     }
 
     #endregion
@@ -77,14 +79,15 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Properties & Fields - Public
 
-    public int              ElementId          { get; set; }
-    public string           FilePath           { get; set; }
-    public int              StartPage          { get; set; }
-    public int              EndPage            { get; set; }
-    public int              StartIndex         { get; set; }
-    public int              EndIndex           { get; set; }
-    public double           ReadVerticalOffset { get; set; }
-    public List<SelectInfo> SMExtracts         { get; set; }
+    public int                   ElementId          { get; set; }
+    public string                FilePath           { get; set; }
+    public int                   StartPage          { get; set; }
+    public int                   EndPage            { get; set; }
+    public int                   StartIndex         { get; set; }
+    public int                   EndIndex           { get; set; }
+    public double                ReadVerticalOffset { get; set; }
+    public List<SelectInfo>      SMExtracts         { get; set; }
+    public List<PDFImageExtract> SMImgExtracts        { get; set; }
 
     [JsonIgnore]
     public List<SelectInfo> IPDFExtracts { get; set; }
@@ -100,14 +103,15 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Methods
 
-    public static bool Create(string filePath,
-                              int    startPage       = -1,
-                              int    endPage         = -1,
-                              int    startIdx        = -1,
-                              int    endIdx          = -1,
-                              int    parentElementId = -1,
-                              double verticalOffset  = 0,
-                              bool   shouldDisplay   = true)
+    public static CreationResult Create(
+      [NotNull] string filePath,
+      int              startPage       = -1,
+      int              endPage         = -1,
+      int              startIdx        = -1,
+      int              endIdx          = -1,
+      int              parentElementId = -1,
+      double           verticalOffset  = 0,
+      bool             shouldDisplay   = true)
     {
       PDFElement pdfEl = new PDFElement
       {
@@ -127,10 +131,36 @@ namespace SuperMemoAssistant.Plugins.PDF
       {
         using (var pdfDoc = PdfDocument.Load(filePath))
           title = pdfDoc.Title;
+
+        var pdfPluginFolderPath = Svc<PDFPlugin>.CollectionFS.GetPluginResourcePath(Svc<PDFPlugin>.PluginContext);
+        var pdfPluginFilePath = Path.Combine(pdfPluginFolderPath,
+                                             fileName);
+
+        if (filePath != pdfPluginFilePath)
+        {
+          if (File.Exists(pdfPluginFilePath))
+          {
+            var fileInfo          = new FileInfo(filePath);
+            var pdfPluginFileInfo = new FileInfo(pdfPluginFilePath);
+
+            if (fileInfo.Length != pdfPluginFileInfo.Length)
+              return CreationResult.FailFileSameNameAlreadyExists;
+          }
+
+          else
+            File.Copy(filePath,
+                      pdfPluginFilePath);
+
+          filePath = pdfPluginFilePath;
+        }
+      }
+      catch (IOException ex)
+      {
+        return CreationResult.FailCannotCopyFile;
       }
       catch (Exception ex)
       {
-        return false;
+        return CreationResult.FailUnknown;
       }
 
       string elementHtml = string.Format(Const.ElementFormat,
@@ -154,12 +184,17 @@ namespace SuperMemoAssistant.Plugins.PDF
       if (shouldDisplay == false)
         PDFState.Instance.ReturnToLastElement = true;
 
-      return Svc.SMA.Registry.Element.Add(elemBuilder);
+      return Svc.SMA.Registry.Element.Add(elemBuilder)
+        ? CreationResult.Ok
+        : CreationResult.FailCannotCreateElement;
     }
 
     public static PDFElement TryReadElement(string elText,
                                             int    elementId = -1)
     {
+      if (string.IsNullOrWhiteSpace(elText))
+        return null;
+
       var reRes = Const.RE_Element.Match(elText);
 
       if (reRes.Success == false)
@@ -181,8 +216,13 @@ namespace SuperMemoAssistant.Plugins.PDF
               if (!(childEl.ComponentGroup.Components.FirstOrDefault() is IComponentHtml compHtml))
                 continue;
 
-              string     childText  = compHtml.Text.Value;
-              PDFElement childPdfEl = TryReadElement(childText);
+              var childTextMember = compHtml.Text;
+
+              if (childTextMember == null)
+                continue;
+
+              var childText  = childTextMember.Value;
+              var childPdfEl = TryReadElement(childText);
 
               if (childPdfEl == null)
                 continue;
@@ -232,7 +272,7 @@ namespace SuperMemoAssistant.Plugins.PDF
           textMember.Value = UpdateHtml(textMember.Value);
         }
 
-        return SaveResult.OK;
+        return SaveResult.Ok;
       }
       catch (Exception)
       {
@@ -274,9 +314,18 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Enums
 
+    public enum CreationResult
+    {
+      Ok                      = 0,
+      FailUnknown             = 1,
+      FailFileSameNameAlreadyExists   = 2,
+      FailCannotCreateElement = 3,
+      FailCannotCopyFile      = 4,
+    }
+
     public enum SaveResult
     {
-      OK             = 0,
+      Ok             = 0,
       FailWithBackup = 1,
       Fail           = 2,
     }

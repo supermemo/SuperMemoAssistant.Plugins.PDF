@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:29
-// Modified On:  2018/11/20 22:40
+// Modified On:  2018/11/24 11:07
 // Modified By:  Alexis
 
 #endregion
@@ -32,7 +32,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows.Media;
 using JetBrains.Annotations;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
@@ -43,30 +42,11 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
   /// <inheritdoc />
   public partial class IPDFViewer : PdfViewer
   {
-    #region Constants & Statics
-
-    protected static readonly Color OutOfExtractExtractColor = Color.FromArgb(127,
-                                                                              180,
-                                                                              30,
-                                                                              30);
-    protected static readonly Color SMExtractColor = Color.FromArgb(30,
-                                                                    68,
-                                                                    194,
-                                                                    255);
-    protected static readonly Color IPDFExtractColor = Color.FromArgb(30,
-                                                                      255,
-                                                                      106,
-                                                                      0);
-
-    #endregion
-
-
-
-
     #region Properties & Fields - Non-Public
 
-    protected PDFElement                           PDFElement        { get; set; }
-    protected Dictionary<int, List<HighlightInfo>> ExtractHighlights { get; } = new Dictionary<int, List<HighlightInfo>>();
+    protected PDFElement                             PDFElement             { get; set; }
+    protected Dictionary<int, List<HighlightInfo>>   ExtractHighlights      { get; } = new Dictionary<int, List<HighlightInfo>>();
+    protected Dictionary<int, List<PDFImageExtract>> ImageExtractHighlights { get; } = new Dictionary<int, List<PDFImageExtract>>();
 
     #endregion
 
@@ -94,14 +74,16 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       ExtractHighlights.Clear();
       RemoveHighlightFromText();
 
-      PDFElement.SMExtracts.ForEach(e => AddSMExtractHighlight(e.StartPage,
-                                                               e.EndPage,
-                                                               e.StartIndex,
-                                                               e.EndIndex));
       PDFElement.IPDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.StartPage,
                                                                    e.EndPage,
                                                                    e.StartIndex,
                                                                    e.EndIndex));
+      PDFElement.SMExtracts.ForEach(e => AddSMExtractHighlight(e.StartPage,
+                                                               e.EndPage,
+                                                               e.StartIndex,
+                                                               e.EndIndex));
+      PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex,
+                                                                   e.BoundingBox));
 
       GenerateOutOfExtractHighlights();
 
@@ -112,7 +94,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     {
       base.SetVerticalOffset(offset);
 
-      PDFElement.ReadVerticalOffset = VerticalOffset;
+      if (PDFElement != null)
+        PDFElement.ReadVerticalOffset = VerticalOffset;
     }
 
     #endregion

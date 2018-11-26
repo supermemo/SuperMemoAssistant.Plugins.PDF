@@ -34,6 +34,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows;
+using System.Windows.Input;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 
@@ -98,6 +99,12 @@ namespace SuperMemoAssistant.Plugins.PDF
                                                WindowState);
       
       base.OnClosing(e);
+    }
+    protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
+    {
+      base.OnGotKeyboardFocus(e);
+      
+      IPDFViewer.Focus();
     }
 
     #endregion

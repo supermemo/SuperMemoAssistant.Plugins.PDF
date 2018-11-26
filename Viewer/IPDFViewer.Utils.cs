@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/11/22 11:17
-// Modified On:  2018/11/22 11:18
+// Modified On:  2018/11/24 15:37
 // Modified By:  Alexis
 
 #endregion
@@ -30,6 +30,7 @@
 
 
 
+using System;
 using System.Windows;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
@@ -39,6 +40,48 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
   public partial class IPDFViewer
   {
     #region Methods
+
+    protected bool IsEndOfSelectionInScreen()
+    {
+      var selInfo = SelectInfo;
+
+      if (selInfo.StartPage < 0 || selInfo.EndPage < 0)
+        return true;
+
+      var ti = Document
+               .Pages[selInfo.EndPage].Text
+               .GetTextInfo(Math.Max(0,
+                                     selInfo.EndIndex - 1),
+                            1);
+
+      if (ti?.Rects == null || ti.Rects.Count == 0)
+        return true;
+
+      var topLeftPt = PageToClient(selInfo.EndPage,
+                                   new Point(ti.Rects[0].left,
+                                             ti.Rects[0].top));
+
+      return ClientRect.Contains(topLeftPt);
+    }
+
+    protected void ScrollToEndOfSelection()
+    {
+      ScrollToChar(SelectInfo.EndPage,
+                   SelectInfo.EndIndex);
+
+      var scrollY = - ClientRect.Size.Height / 2 - _autoScrollPosition.Y;
+
+      SetVerticalOffset(scrollY);
+    }
+
+    public void CenterChar(int pageIndex,
+                           int charIndex)
+    {
+      var offset = GetTextVerticalOffset(pageIndex,
+                                         charIndex);
+
+      SetVerticalOffset(offset);
+    }
 
     protected double GetPageVerticalOffset(int pageIndex)
     {

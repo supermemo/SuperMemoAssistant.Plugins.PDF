@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:55
-// Modified On:  2018/11/20 21:40
+// Modified On:  2018/11/24 11:07
 // Modified By:  Alexis
 
 #endregion
@@ -43,6 +43,18 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
   {
     #region Constants & Statics
 
+    protected static readonly Color OutOfExtractExtractColor = Color.FromArgb(127,
+                                                                              180,
+                                                                              30,
+                                                                              30);
+    protected static readonly Color SMExtractColor = Color.FromArgb(70,
+                                                                    68,
+                                                                    194,
+                                                                    255);
+    protected static readonly Color IPDFExtractColor = Color.FromArgb(30,
+                                                                      255,
+                                                                      106,
+                                                                      0);
     protected static Pen ImageHighlightPen { get; } = new Pen(new SolidColorBrush(Color.FromRgb(77,
                                                                                                 97,
                                                                                                 117)),
@@ -51,7 +63,17 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                                                                                  63,
                                                                                                  100,
                                                                                                  40));
+    protected static Brush ExtractFillBrush { get; } = new SolidColorBrush(SMExtractColor);
     protected static Brush OutOfExtractFillBrush { get; } = new SolidColorBrush(OutOfExtractExtractColor);
+
+    #endregion
+
+
+
+
+    #region Properties & Fields - Non-Public
+
+    protected Brush ImageHighlightFillHatchedBrush { get; } = CreateHatchedBrush();
 
     #endregion
 
@@ -66,6 +88,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     {
       DrawImageSelection(drawingContext,
                          pageIndex);
+
+      DrawImageExtracts(drawingContext,
+                        pageIndex);
 
       if (PDFElement.IsPageInBound(pageIndex) == false)
         drawingContext.DrawRectangle(OutOfExtractFillBrush,
@@ -95,38 +120,6 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                              pageIndex);
     }
 
-    protected override void DrawPageBackColor(PdfBitmap bitmap,
-                                              int       x,
-                                              int       y,
-                                              int       width,
-                                              int       height)
-    {
-      base.DrawPageBackColor(bitmap,
-                             x,
-                             y,
-                             width,
-                             height);
-
-      /*
-      double ux = Helpers.PixelsToUnits(x);
-      double uy = Helpers.PixelsToUnits(y);
-
-      int pageNo = PointInPage(new Point(ux,
-                                         uy));
-      bool inBound = PDFElement.IsPageInBound(pageNo);
-
-      bitmap.FillRectEx(x,
-                        y,
-                        width,
-                        height,
-                        inBound
-                          ? Helpers.ToArgb(PageBackColor)
-                          : Helpers.ToArgb(Color.FromRgb(225,
-                                                         225,
-                                                         225)));
-                                                         */
-    }
-
     #endregion
 
 
@@ -137,15 +130,36 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     protected void DrawImageSelection(DrawingContext drawingContext,
                                       int            pageIndex)
     {
-      if (SelectedImage.obj != null && SelectedImage.page == pageIndex)
-      {
-        var deviceRec = PageToDeviceRect(SelectedImage.obj.BoundingBox,
-                                         pageIndex);
+      if (SelectedImage?.PageIndex == pageIndex)
+        DrawImageHighlight(drawingContext,
+                           SelectedImage,
+                           ImageHighlightPen,
+                           ImageHighlightFillHatchedBrush);
+    }
 
-        drawingContext.DrawRectangle(ImageHighlightFillHatchedBrush,
-                                     ImageHighlightPen,
-                                     deviceRec);
-      }
+    protected void DrawImageExtracts(DrawingContext drawingContext,
+                                     int            pageIndex)
+    {
+      foreach (var imageExtract in ImageExtractHighlights.SafeGet(pageIndex,
+                                                                  new List<PDFImageExtract>()))
+        DrawImageHighlight(drawingContext,
+                           imageExtract,
+                           ImageHighlightPen,
+                           ExtractFillBrush
+        );
+    }
+
+    protected void DrawImageHighlight(DrawingContext  drawingContext,
+                                      PDFImageExtract extract,
+                                      Pen             pen,
+                                      Brush           brush)
+    {
+      var deviceRec = PageToDeviceRect(extract.BoundingBox,
+                                       extract.PageIndex);
+
+      drawingContext.DrawRectangle(brush,
+                                   pen,
+                                   deviceRec);
     }
 
     protected Rect PageToDeviceRect(System.Drawing.Rectangle rc,
@@ -157,14 +171,17 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       var pt2 = PageToDevice(rc.Right,
                              rc.Bottom,
                              pageIndex);
-      int x = (pt1.X < pt2.X ? pt1.X : pt2.X);// * Helpers.Dpi / 72;
-      int y = (pt1.Y < pt2.Y ? pt1.Y : pt2.Y);// * Helpers.Dpi / 72;
-      int w = (pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X);// * Helpers.Dpi / 72;
-      int h = (pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y);// * Helpers.Dpi / 72;
-      return new Rect(/*Helpers.PixelsToUnits(*/x/*)*/,
-                      /*Helpers.PixelsToUnits(*/y/*)*/,
-                      /*Helpers.PixelsToUnits(*/w/*)*/,
-                      /*Helpers.PixelsToUnits(*/h/*)*/);
+      int x = pt1.X < pt2.X ? pt1.X : pt2.X; // * Helpers.Dpi / 72;
+      int y = pt1.Y < pt2.Y ? pt1.Y : pt2.Y; // * Helpers.Dpi / 72;
+      int w = pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X; // * Helpers.Dpi / 72;
+      int h = pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y; // * Helpers.Dpi / 72;
+      return new Rect( /*Helpers.PixelsToUnits(*/x /*)*/,
+                                                 /*Helpers.PixelsToUnits(*/
+                                                 y /*)*/,
+                                                 /*Helpers.PixelsToUnits(*/
+                                                 w /*)*/,
+                                                 /*Helpers.PixelsToUnits(*/
+                                                 h /*)*/);
     }
 
     protected static DrawingBrush CreateHatchedBrush()

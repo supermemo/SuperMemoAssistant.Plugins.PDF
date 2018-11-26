@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/12 20:17
-// Modified On:  2018/11/22 11:27
+// Modified On:  2018/11/24 02:15
 // Modified By:  Alexis
 
 #endregion
@@ -31,11 +31,14 @@
 
 
 using System.Collections.Generic;
+using System.Drawing;
+using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Elements;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Sys.Drawing;
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
@@ -45,26 +48,71 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     protected void CreateSMExtract()
     {
-      // TODO: Handle images
-      if (string.IsNullOrWhiteSpace(SelectedText))
+      if (SelectedImage != null)
+      {
+        PDFElement.SMImgExtracts.Add(new PDFImageExtract
+        {
+          BoundingBox = SelectedImage.BoundingBox,
+          ObjectIndex = SelectedImage.ObjectIndex,
+          PageIndex   = SelectedImage.PageIndex,
+        });
+
+        var imgObj = (PdfImageObject)Document.Pages[SelectedImage.PageIndex].PageObjects[SelectedImage.ObjectIndex];
+        
+        Svc.SMA.Registry.Image.AddMember(new ImageWrapper(imgObj.Bitmap.Image),
+                                         "test pdf img");
+
         return;
 
-      AddSMExtractHighlight(SelectInfo.StartPage,
-                            SelectInfo.EndPage,
-                            SelectInfo.StartIndex,
-                            SelectInfo.EndIndex);
+        AddImgExtractHighlight(SelectedImage.PageIndex,
+                               SelectedImage.BoundingBox);
 
-      PDFState.Instance.ReturnToLastElement = true;
+        //PDFState.Instance.ReturnToLastElement = true;
 
-      Svc.SMA.Registry.Element.Add(
-        new ElementBuilder(ElementType.Topic,
-                           SelectedText,
-                           false)
-          .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
-        //.DoNotDisplay()
-      );
+        SelectedImage = null;
+        InvalidateVisual();
 
-      DeselectText();
+        PDFElement.Save();
+        
+        Svc.SMA.UI.ElementWindow.FocusWindow();
+        Svc.SMA.Registry.Element.Add(
+          new ElementBuilder(ElementType.Topic,
+                             imgObj.Bitmap.Image)
+            .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
+          //.DoNotDisplay()
+        );
+      }
+
+      else if (string.IsNullOrWhiteSpace(SelectedText) == false)
+      {
+        PDFElement.SMExtracts.Add(new SelectInfo
+        {
+          StartPage  = SelectInfo.StartPage,
+          EndPage    = SelectInfo.EndPage,
+          StartIndex = SelectInfo.StartIndex,
+          EndIndex   = SelectInfo.EndIndex,
+        });
+
+        AddSMExtractHighlight(SelectInfo.StartPage,
+                              SelectInfo.EndPage,
+                              SelectInfo.StartIndex,
+                              SelectInfo.EndIndex);
+
+        PDFState.Instance.ReturnToLastElement = true;
+
+        string text = SelectedText;
+        DeselectText();
+
+        PDFElement.Save();
+
+        Svc.SMA.Registry.Element.Add(
+          new ElementBuilder(ElementType.Topic,
+                             text,
+                             false)
+            .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
+          //.DoNotDisplay()
+        );
+      }
     }
 
     protected void CreateIPDFExtract()
@@ -117,6 +165,22 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
         ExtractHighlights[pageIdx] = pageHighlights;
       }
+    }
+
+    private void AddImgExtractHighlight(int       pageIndex,
+                                        Rectangle boundingBox)
+    {
+      var pageHighlights = ImageExtractHighlights
+        .SafeGet(pageIndex,
+                 new List<PDFImageExtract>());
+
+      pageHighlights.Add(new PDFImageExtract
+      {
+        BoundingBox = boundingBox,
+        PageIndex   = pageIndex,
+      });
+
+      ImageExtractHighlights[pageIndex] = pageHighlights;
     }
 
     protected void AddIPDFExtractHighlight(int startPage,

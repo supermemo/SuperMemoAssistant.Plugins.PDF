@@ -82,6 +82,7 @@
     <Compile Include="Extensions\SelectInfoEx.cs" />
     <Compile Include="PDFCfg.cs" />
     <Compile Include="PDFElement.cs" />
+    <Compile Include="PDFImageExtract.cs" />
     <Compile Include="PDFState.cs" />
     <Compile Include="Utils\WPFEx.cs" />
     <Compile Include="Viewer\IPDFViewer.cs" />
