@@ -31,6 +31,7 @@
 
 
 using System;
+using System.IO;
 using System.Windows;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
@@ -39,6 +40,10 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
   public partial class IPDFViewer
   {
+    public string TitleOrFileName => string.IsNullOrWhiteSpace(Document.Title)
+      ? Path.GetFileName(PDFElement.FilePath)
+      : Document.Title;
+
     #region Methods
 
     protected bool IsEndOfSelectionInScreen()

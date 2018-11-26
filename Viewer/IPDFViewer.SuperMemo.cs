@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/12 20:17
-// Modified On:  2018/11/24 02:15
+// Modified On:  2018/11/26 12:36
 // Modified By:  Alexis
 
 #endregion
@@ -46,7 +46,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
   {
     #region Methods
 
-    protected void CreateSMExtract()
+    protected bool CreateSMExtract()
     {
       if (SelectedImage != null)
       {
@@ -57,27 +57,30 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           PageIndex   = SelectedImage.PageIndex,
         });
 
-        var imgObj = (PdfImageObject)Document.Pages[SelectedImage.PageIndex].PageObjects[SelectedImage.ObjectIndex];
-        
-        Svc.SMA.Registry.Image.AddMember(new ImageWrapper(imgObj.Bitmap.Image),
-                                         "test pdf img");
+        var imgObj           = (PdfImageObject)Document.Pages[SelectedImage.PageIndex].PageObjects[SelectedImage.ObjectIndex];
+        var imgRegistryTitle = TitleOrFileName + $": image {SelectedImage.ObjectIndex} page {SelectedImage.PageIndex}";
 
-        return;
+        int imgRegistryId = Svc.SMA.Registry.Image.AddMember(
+          new ImageWrapper(imgObj.Bitmap.Image),
+          imgRegistryTitle
+        );
+
+        if (imgRegistryId <= 0)
+          return false;
 
         AddImgExtractHighlight(SelectedImage.PageIndex,
                                SelectedImage.BoundingBox);
 
-        //PDFState.Instance.ReturnToLastElement = true;
+        PDFState.Instance.ReturnToLastElement = true;
 
         SelectedImage = null;
         InvalidateVisual();
 
         PDFElement.Save();
         
-        Svc.SMA.UI.ElementWindow.FocusWindow();
-        Svc.SMA.Registry.Element.Add(
+        return Svc.SMA.Registry.Element.Add(
           new ElementBuilder(ElementType.Topic,
-                             imgObj.Bitmap.Image)
+                             new ElementBuilder.ImageContent(imgRegistryId))
             .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
           //.DoNotDisplay()
         );
@@ -105,7 +108,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
         PDFElement.Save();
 
-        Svc.SMA.Registry.Element.Add(
+        return Svc.SMA.Registry.Element.Add(
           new ElementBuilder(ElementType.Topic,
                              text,
                              false)
@@ -113,6 +116,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           //.DoNotDisplay()
         );
       }
+
+      return false;
     }
 
     protected void CreateIPDFExtract()

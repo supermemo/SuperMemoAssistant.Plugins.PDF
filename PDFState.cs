@@ -105,7 +105,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     #region Methods
 
     public void OnElementChanged(IElement    newElem,
-                                 IControlWeb ctrlWeb)
+                                 IControlHtml ctrlHtml)
     {
       if (ReturnToLastElement)
       {
@@ -135,7 +135,7 @@ namespace SuperMemoAssistant.Plugins.PDF
         return;
       }
 
-      string html = ctrlWeb?.Text ?? string.Empty;
+      string html = ctrlHtml?.Text ?? string.Empty;
       PDFElement pdfEl = PDFElement.TryReadElement(html,
                                                    newElem.Id);
 

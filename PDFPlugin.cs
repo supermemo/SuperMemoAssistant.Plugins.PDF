@@ -43,6 +43,7 @@ using SuperMemoAssistant.Sys.IO.Devices;
 namespace SuperMemoAssistant.Plugins.PDF
 {
   // ReSharper disable once UnusedMember.Global
+  // ReSharper disable once ClassNeverInstantiated.Global
   public class PDFPlugin : SMAPluginBase<PDFPlugin>
   {
     #region Constructors
@@ -94,10 +95,10 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public void OnElementChanged(SMDisplayedElementChangedArgs e)
     {
-      IControlWeb ctrlWeb = Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl.AsWeb();
+      IControlHtml ctrlHtml = Svc.SMA.UI.ElementWindow.ControlGroup.GetFirstHtmlControl();
 
       PDFState.Instance.OnElementChanged(e.NewElement,
-                                         ctrlWeb);
+                                         ctrlHtml);
     }
 
     #endregion

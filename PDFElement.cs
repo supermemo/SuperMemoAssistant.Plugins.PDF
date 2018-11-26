@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/10/26 20:56
-// Modified On:  2018/11/24 02:16
+// Modified On:  2018/11/26 10:32
 // Modified By:  Alexis
 
 #endregion
@@ -69,7 +69,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       EndIndex           = -1;
       ReadVerticalOffset = 0;
       SMExtracts         = IPDFExtracts = new List<SelectInfo>();
-      SMImgExtracts        = new List<PDFImageExtract>();
+      SMImgExtracts      = new List<PDFImageExtract>();
     }
 
     #endregion
@@ -87,7 +87,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     public int                   EndIndex           { get; set; }
     public double                ReadVerticalOffset { get; set; }
     public List<SelectInfo>      SMExtracts         { get; set; }
-    public List<PDFImageExtract> SMImgExtracts        { get; set; }
+    public List<PDFImageExtract> SMImgExtracts      { get; set; }
 
     [JsonIgnore]
     public List<SelectInfo> IPDFExtracts { get; set; }
@@ -148,8 +148,10 @@ namespace SuperMemoAssistant.Plugins.PDF
           }
 
           else
+          {
             File.Copy(filePath,
                       pdfPluginFilePath);
+          }
 
           filePath = pdfPluginFilePath;
         }
@@ -213,7 +215,9 @@ namespace SuperMemoAssistant.Plugins.PDF
           foreach (IElement childEl in Svc.SMA.Registry.Element[elementId].Children)
             try
             {
-              if (!(childEl.ComponentGroup.Components.FirstOrDefault() is IComponentHtml compHtml))
+              IComponentHtml compHtml;
+
+              if ((compHtml = childEl.ComponentGroup.GetFirstHtmlComponent()) == null)
                 continue;
 
               var childTextMember = compHtml.Text;
@@ -258,16 +262,32 @@ namespace SuperMemoAssistant.Plugins.PDF
 
         if (saveToControl)
         {
-          IControlWeb ctrlWeb = Svc.SMA.UI.ElementWindow.ControlGroup.FocusedControl.AsWeb();
+          IControlHtml ctrlHtml = Svc.SMA.UI.ElementWindow.ControlGroup.GetFirstHtmlControl();
 
-          ctrlWeb.Text = UpdateHtml(ctrlWeb.Text);
+          ctrlHtml.Text = UpdateHtml(ctrlHtml.Text);
         }
 
         else
         {
-          var elem       = Svc.SMA.Registry.Element[ElementId];
-          var webComp    = elem.ComponentGroup.Components.First().AsWeb();
-          var textMember = webComp.Text;
+          var elem = Svc.SMA.Registry.Element[ElementId];
+
+          if (elem == null || elem.Deleted)
+            return SaveResult.FailDeleted;
+
+          var compGroup = elem.ComponentGroup;
+
+          if (compGroup == null || compGroup.Count == 0)
+            return SaveResult.FailDeleted;
+
+          var htmlComp = compGroup.GetFirstHtmlComponent();
+
+          if (htmlComp == null)
+            return SaveResult.FailInvalidComponent;
+
+          var textMember = htmlComp.Text;
+
+          if (textMember == null || textMember.Empty)
+            return SaveResult.FailInvalidTextMember;
 
           textMember.Value = UpdateHtml(textMember.Value);
         }
@@ -316,11 +336,11 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public enum CreationResult
     {
-      Ok                      = 0,
-      FailUnknown             = 1,
-      FailFileSameNameAlreadyExists   = 2,
-      FailCannotCreateElement = 3,
-      FailCannotCopyFile      = 4,
+      Ok                            = 0,
+      FailUnknown                   = 1,
+      FailFileSameNameAlreadyExists = 2,
+      FailCannotCreateElement       = 3,
+      FailCannotCopyFile            = 4,
     }
 
     public enum SaveResult
@@ -328,6 +348,9 @@ namespace SuperMemoAssistant.Plugins.PDF
       Ok             = 0,
       FailWithBackup = 1,
       Fail           = 2,
+      FailDeleted,
+      FailInvalidComponent,
+      FailInvalidTextMember
     }
 
     #endregion
