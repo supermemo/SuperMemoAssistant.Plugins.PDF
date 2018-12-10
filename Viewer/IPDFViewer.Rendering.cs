@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:55
-// Modified On:  2018/11/24 11:07
+// Modified On:  2018/12/10 02:16
 // Modified By:  Alexis
 
 #endregion
@@ -30,12 +30,21 @@
 
 
 
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Media;
+using Patagames.Pdf;
+using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
+using SuperMemoAssistant.Plugins.PDF.Extensions;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
+using Color = System.Windows.Media.Color;
+using Pen = System.Windows.Media.Pen;
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
@@ -47,14 +56,24 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                                                               180,
                                                                               30,
                                                                               30);
-    protected static readonly Color SMExtractColor = Color.FromArgb(70,
+    protected static readonly Color SMExtractColor = Color.FromArgb(90,
                                                                     68,
                                                                     194,
                                                                     255);
-    protected static readonly Color IPDFExtractColor = Color.FromArgb(30,
+    protected static readonly Color IPDFExtractColor = Color.FromArgb(90,
                                                                       255,
                                                                       106,
                                                                       0);
+
+    protected static Pen AreaBorderPen { get; } = new Pen(new SolidColorBrush(Color.FromArgb(255,
+                                                                                             SMExtractColor.R,
+                                                                                             SMExtractColor.G,
+                                                                                             SMExtractColor.B)),
+                                                          1.0f);
+
+    protected static Brush ExtractFillBrush      { get; } = new SolidColorBrush(SMExtractColor);
+    protected static Brush OutOfExtractFillBrush { get; } = new SolidColorBrush(OutOfExtractExtractColor);
+
     protected static Pen ImageHighlightPen { get; } = new Pen(new SolidColorBrush(Color.FromRgb(77,
                                                                                                 97,
                                                                                                 117)),
@@ -63,8 +82,6 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                                                                                  63,
                                                                                                  100,
                                                                                                  40));
-    protected static Brush ExtractFillBrush { get; } = new SolidColorBrush(SMExtractColor);
-    protected static Brush OutOfExtractFillBrush { get; } = new SolidColorBrush(OutOfExtractExtractColor);
 
     #endregion
 
@@ -92,10 +109,16 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       DrawImageExtracts(drawingContext,
                         pageIndex);
 
-      if (PDFElement.IsPageInBound(pageIndex) == false)
-        drawingContext.DrawRectangle(OutOfExtractFillBrush,
-                                     ImageHighlightPen,
-                                     actualRect);
+      DrawAreaSelection(drawingContext,
+                        pageIndex);
+
+      DrawPageSelection(drawingContext,
+                        actualRect,
+                        pageIndex);
+
+      DrawOutOfExtractPageOverlay(drawingContext,
+                                  actualRect,
+                                  pageIndex);
     }
 
     protected override void DrawTextSelection(PdfBitmap  bitmap,
@@ -127,6 +150,32 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     #region Methods
 
+    public bool DrawPageSelection(DrawingContext drawingContext,
+                                  Rect           actualRect,
+                                  int            pageIndex)
+    {
+      if (SelectedPages != null && SelectedPages.Contains(pageIndex))
+      {
+        drawingContext.DrawRectangle(ExtractFillBrush,
+                                     AreaBorderPen,
+                                     actualRect);
+
+        return true;
+      }
+
+      return false;
+    }
+
+    protected void DrawOutOfExtractPageOverlay(DrawingContext drawingContext,
+                                               Rect           actualRect,
+                                               int            pageIndex)
+    {
+      if (PDFElement.IsPageInBound(pageIndex) == false)
+        drawingContext.DrawRectangle(OutOfExtractFillBrush,
+                                     ImageHighlightPen,
+                                     actualRect);
+    }
+
     protected void DrawImageSelection(DrawingContext drawingContext,
                                       int            pageIndex)
     {
@@ -135,6 +184,20 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                            SelectedImage,
                            ImageHighlightPen,
                            ImageHighlightFillHatchedBrush);
+    }
+
+    protected void DrawAreaSelection(DrawingContext drawingContext,
+                                     int            pageIndex)
+    {
+      if (SelectedArea?.PageIndex == pageIndex)
+      {
+        var deviceRec = PageToDeviceRect(SelectedArea.Normalized(),
+                                         pageIndex);
+
+        drawingContext.DrawRectangle(ImageHighlightFillBrush,
+                                     AreaBorderPen,
+                                     deviceRec);
+      }
     }
 
     protected void DrawImageExtracts(DrawingContext drawingContext,
@@ -162,8 +225,122 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                    deviceRec);
     }
 
-    protected Rect PageToDeviceRect(System.Drawing.Rectangle rc,
-                                    int                      pageIndex)
+    protected Bitmap RenderArea(int              pageIndex,
+                                System.Windows.Point lt,
+                                System.Windows.Point rb)
+    {
+      try
+      {
+        var page = Document.Pages[pageIndex];
+
+        var pageRenderRect = GetRenderRect(pageIndex);
+
+        int scaledPageWidth = (int)pageRenderRect.Width;
+        int scaledPageHeight = (int)pageRenderRect.Height;
+
+        float scale = scaledPageWidth / page.Width;
+        Bitmap fullRender;
+
+        using (var bmp = new PdfBitmap(scaledPageWidth,
+                                       scaledPageHeight,
+                                       true))
+        {
+          bmp.FillRect(0,
+                       0,
+                       scaledPageWidth,
+                       scaledPageHeight,
+                       System.Drawing.Color.FromArgb(PageBackColor.A,
+                                                     PageBackColor.R,
+                                                     PageBackColor.G,
+                                                     PageBackColor.B));
+
+          //Render part of page into bitmap;
+          page.Render(bmp,
+                      0,
+                      0,
+                      scaledPageWidth,
+                      scaledPageHeight,
+                      page.Rotation,
+                      RenderFlags.FPDF_LCD_TEXT);
+
+          fullRender = new Bitmap(bmp.Image);
+        }
+        
+        var pt1 = page.PageToDevice(0,
+                                    0,
+                                    scaledPageWidth,
+                                    scaledPageHeight,
+                                    page.Rotation,
+                                    (float)lt.X,
+                                    (float)lt.Y);
+        var pt2 = page.PageToDevice(0,
+                                    0,
+                                    scaledPageWidth,
+                                    scaledPageHeight,
+                                    page.Rotation,
+                                    (float)rb.X,
+                                    (float)rb.Y);
+
+        if (pt1.X > pt2.X)
+        {
+          int tmpX = pt1.X;
+          pt1.X = pt2.X;
+          pt2.X = tmpX;
+        }
+
+        if (pt1.Y > pt2.Y)
+        {
+          int tmpY = pt1.Y;
+          pt1.Y = pt2.Y;
+          pt2.Y = tmpY;
+        }
+
+        return fullRender.Clone(
+          new Rectangle(pt1.X,
+                        pt1.Y,
+                        (int)(pt2.X - pt1.X),
+                        (int)(pt2.Y - pt1.Y)),
+          fullRender.PixelFormat
+        );
+      }
+      catch (Exception ex)
+      {
+        return null;
+      }
+    }
+
+    protected IEnumerable<FS_RECTF> SmoothSelectionAlongY(List<FS_RECTF> rects)
+    {
+      rects.Sort(new FS_RECTFYComparer());
+
+      for (int i = 0; i < rects.Count; i++)
+      {
+        var curRect = rects[i];
+
+        for (int j = i + 1;
+             j < rects.Count && curRect.IsAdjacentAlongYWith(rects[j],
+                                                             TextSelectionSmoothTolerence);
+             j++)
+          if (curRect.IsAlongsideXWith(rects[j],
+                                       TextSelectionSmoothTolerence))
+          {
+            var itRect = rects[j];
+
+            curRect.top = Math.Max(itRect.bottom,
+                                   curRect.top);
+            itRect.bottom = curRect.top;
+
+            rects[j] = itRect;
+          }
+
+        rects[i] = curRect;
+      }
+
+      return rects;
+    }
+
+    protected Rect PageToDeviceRect(Rectangle rc,
+                                    int       pageIndex)
     {
       var pt1 = PageToDevice(rc.Left,
                              rc.Top,

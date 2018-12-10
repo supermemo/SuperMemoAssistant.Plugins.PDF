@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:29
-// Modified On:  2018/11/24 11:07
+// Modified On:  2018/12/09 01:37
 // Modified By:  Alexis
 
 #endregion
@@ -32,10 +32,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Windows;
 using JetBrains.Annotations;
-using Patagames.Pdf.Enums;
-using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Extensions;
 
 namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
@@ -44,9 +45,15 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
   {
     #region Properties & Fields - Non-Public
 
+    private int _ignoreChanges = 0;
+
     protected PDFElement                             PDFElement             { get; set; }
     protected Dictionary<int, List<HighlightInfo>>   ExtractHighlights      { get; } = new Dictionary<int, List<HighlightInfo>>();
     protected Dictionary<int, List<PDFImageExtract>> ImageExtractHighlights { get; } = new Dictionary<int, List<PDFImageExtract>>();
+
+    protected DateTime LastChange { get; set; } = DateTime.Now;
+    protected object   SaveLock   { get; set; } = new object();
+    protected Thread   SaveThread { get; set; }
 
     #endregion
 
@@ -57,7 +64,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     public IPDFViewer()
     {
-      _smoothSelection = false;
+      _smoothSelection    = true;
     }
 
     #endregion
@@ -69,12 +76,19 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     protected override void OnDocumentLoaded(EventArgs ev)
     {
+      _ignoreChanges++;
+
       base.OnDocumentLoaded(ev);
+
+      DeselectArea();
+      DeselectImage();
+      DeselectPages();
+      DeselectText();
 
       ExtractHighlights.Clear();
       RemoveHighlightFromText();
 
-      PDFElement.IPDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.StartPage,
+      PDFElement.PDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.StartPage,
                                                                    e.EndPage,
                                                                    e.StartIndex,
                                                                    e.EndIndex));
@@ -87,15 +101,97 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
       GenerateOutOfExtractHighlights();
 
-      SetVerticalOffset(PDFElement.ReadVerticalOffset);
+      ViewMode = PDFElement.ViewMode;
+      PageMargin = new Thickness(PDFElement.PageMargin);
+      Zoom = PDFElement.Zoom;
+
+      ScrollToPoint(PDFElement.ReadPage,
+                    PDFElement.ReadPoint);
+
+      _ignoreChanges--;
+    }
+
+    protected override void OnSizeModeChanged(EventArgs e)
+    {
+      base.OnSizeModeChanged(e);
+      
+      if (_ignoreChanges <= 0 && PDFElement != null)
+      {
+        if (SizeMode != SizeModes.Zoom)
+        {
+          _preventStackOverflowBugWorkaround = true;
+          Zoom = (float)(CalcActualRect(CurrentIndex).Width / (CurrentPage.Width / 72.0 * 96));
+          _preventStackOverflowBugWorkaround = false;
+          
+          PDFElement.Zoom = Zoom;
+
+          Save(true);
+        }
+      }
+    }
+
+    protected override void OnViewModeChanged(EventArgs e)
+    {
+      base.OnViewModeChanged(e);
+
+      if (_ignoreChanges <= 0 && PDFElement != null)
+      {
+        PDFElement.ViewMode = ViewMode;
+
+        Save(true);
+      }
+    }
+
+    protected override void OnPageMarginChanged(EventArgs e)
+    {
+      base.OnPageMarginChanged(e);
+
+      if (_ignoreChanges <= 0 && PDFElement != null)
+      {
+        PDFElement.PageMargin = (int)PageMargin.Bottom;
+
+        Save(true);
+      }
+    }
+
+    protected override void OnZoomChanged(EventArgs e)
+    {
+      base.OnZoomChanged(e);
+
+      if (_ignoreChanges <= 0 && PDFElement != null)
+      {
+        PDFElement.Zoom = Zoom;
+
+        Save(true);
+      }
     }
 
     public override void SetVerticalOffset(double offset)
     {
       base.SetVerticalOffset(offset);
 
-      if (PDFElement != null)
-        PDFElement.ReadVerticalOffset = VerticalOffset;
+      if (_ignoreChanges <= 0 && PDFElement != null)
+      {
+        PDFElement.ReadPage = CurrentIndex;
+        PDFElement.ReadPoint = ClientToPage(CurrentIndex,
+                                            new Point(0,
+                                                      0));
+        Save(true);
+      }
+    }
+
+    protected override void SaveScrollPoint()
+    {
+      _ignoreChanges++;
+
+      base.SaveScrollPoint();
+    }
+
+    protected override void RestoreScrollPoint()
+    {
+      base.RestoreScrollPoint();
+
+      _ignoreChanges--;
     }
 
     #endregion
@@ -118,33 +214,49 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         OnDocumentLoaded(null);
     }
 
-    public void ToImg()
+    protected void Save(bool delayed)
     {
-      //The current page of loaded document.
-      var page = CurrentPage;
+      LastChange = DateTime.Now;
 
-      var rect = CalcActualRect(0);
+      lock (SaveLock)
+        if (SaveThread != null)
+        {
+          if (delayed)
+            return;
 
-      double ratio  = rect.Width / page.Width;
-      int    Width  = (int)(page.Width * ratio);
-      int    Height = (int)(page.Height * ratio);
+          SaveThread = null;
+          PDFElement.Save();
+        }
 
-      using (var bmp = new PdfBitmap((int)Width,
-                                     (int)Height,
-                                     true))
-      {
-        //Render part of page into bitmap;
-        CurrentPage.Render(bmp,
-                           0,
-                           0,
-                           (int)Width,
-                           (int)Height,
-                           PageRotate.Normal,
-                           RenderFlags.FPDF_LCD_TEXT);
+        else if (delayed)
+        {
+          SaveThread = new Thread(SaveDelayed);
+          SaveThread.Start();
+        }
 
-        var rbmp = new System.Drawing.Bitmap(bmp.Image);
-        rbmp.Save("D:\\Temp\\pdfium_out.png");
-      }
+        else
+        {
+          PDFElement.Save();
+        }
+    }
+
+    public void CancelSave()
+    {
+      lock (SaveLock)
+        SaveThread = null;
+    }
+
+    protected void SaveDelayed()
+    {
+      while ((DateTime.Now - LastChange).TotalMilliseconds <= 400)
+        Thread.Sleep(50);
+
+      lock (SaveLock)
+        if (SaveThread != null)
+        {
+          PDFElement.Save();
+          SaveThread = null;
+        }
     }
 
     #endregion

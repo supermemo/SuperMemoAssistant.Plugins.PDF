@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/10/26 20:56
-// Modified On:  2018/11/26 10:32
+// Modified On:  2018/12/10 00:03
 // Modified By:  Alexis
 
 #endregion
@@ -31,24 +31,29 @@
 
 
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
+using PropertyChanged;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
-using SuperMemoAssistant.Interop.SuperMemo.Components.Types;
+using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Interop.SuperMemo.Elements;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
+using SuperMemoAssistant.Interop.SuperMemo.Registry.Members;
 using SuperMemoAssistant.Services;
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
-  public class PDFElement
+  public class PDFElement : INotifyPropertyChanged
   {
     #region Properties & Fields - Non-Public
 
@@ -63,13 +68,19 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public PDFElement()
     {
-      StartPage          = -1;
-      EndPage            = -1;
-      StartIndex         = -1;
-      EndIndex           = -1;
-      ReadVerticalOffset = 0;
-      SMExtracts         = IPDFExtracts = new List<SelectInfo>();
-      SMImgExtracts      = new List<PDFImageExtract>();
+      BinaryMemberId = -1;
+      StartPage      = -1;
+      EndPage        = -1;
+      StartIndex     = -1;
+      EndIndex       = -1;
+      ReadPage       = 0;
+      ReadPoint      = default(Point);
+      SMExtracts     = PDFExtracts = new ObservableCollection<SelectInfo>();
+      SMImgExtracts  = new ObservableCollection<PDFImageExtract>();
+
+      PDFExtracts.CollectionChanged   += OnCollectionChanged;
+      SMExtracts.CollectionChanged    += OnCollectionChanged;
+      SMImgExtracts.CollectionChanged += OnCollectionChanged;
     }
 
     #endregion
@@ -79,22 +90,51 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Properties & Fields - Public
 
-    public int                   ElementId          { get; set; }
-    public string                FilePath           { get; set; }
-    public int                   StartPage          { get; set; }
-    public int                   EndPage            { get; set; }
-    public int                   StartIndex         { get; set; }
-    public int                   EndIndex           { get; set; }
-    public double                ReadVerticalOffset { get; set; }
-    public List<SelectInfo>      SMExtracts         { get; set; }
-    public List<PDFImageExtract> SMImgExtracts      { get; set; }
+    [JsonProperty(PropertyName = "BM")]
+    public int BinaryMemberId { get; set; }
+
+    [JsonProperty(PropertyName = "SP")]
+    public int StartPage { get; set; }
+    [JsonProperty(PropertyName = "EP")]
+    public int EndPage { get; set; }
+    [JsonProperty(PropertyName = "SI")]
+    public int StartIndex { get; set; }
+    [JsonProperty(PropertyName = "EI")]
+    public int EndIndex { get; set; }
+
+    [JsonProperty(PropertyName = "PDFE")]
+    public ObservableCollection<SelectInfo> PDFExtracts { get; }
+    [JsonProperty(PropertyName = "SME")]
+    public ObservableCollection<SelectInfo> SMExtracts { get; }
+    [JsonProperty(PropertyName = "SMIE")]
+    public ObservableCollection<PDFImageExtract> SMImgExtracts { get; }
+
+    [JsonProperty(PropertyName = "RPg")]
+    public int ReadPage { get; set; }
+    [JsonProperty(PropertyName = "RPt")]
+    public Point ReadPoint { get; set; }
+
+    [JsonProperty(PropertyName = "VM")]
+    public ViewModes ViewMode { get; set; } = Const.DefaultViewMode;
+    [JsonProperty(PropertyName = "PM")]
+    public int PageMargin { get; set; } = Const.DefaultPageMargin;
+    [JsonProperty(PropertyName = "Z")]
+    public float Zoom { get; set; } = Const.DefaultZoom;
 
     [JsonIgnore]
-    public List<SelectInfo> IPDFExtracts { get; set; }
-
+    public int ElementId { get; set; }
 
     [JsonIgnore]
+    public string FilePath { get; set; }
+
+    [JsonIgnore]
+    public bool IsChanged { get; set; }
+
+    [JsonIgnore]
+    [DoNotNotify]
     public bool IsFullDocument => StartPage < 0;
+
+    public IBinary BinaryMember => Svc.SMA.Registry.Binary?[BinaryMemberId];
 
     #endregion
 
@@ -110,28 +150,57 @@ namespace SuperMemoAssistant.Plugins.PDF
       int              startIdx        = -1,
       int              endIdx          = -1,
       int              parentElementId = -1,
-      double           verticalOffset  = 0,
+      int              readPage        = 0,
+      Point            readPoint       = default(Point),
+      ViewModes        viewMode        = Const.DefaultViewMode,
+      int              pageMargin      = Const.DefaultPageMargin,
+      float            zoom            = Const.DefaultZoom,
       bool             shouldDisplay   = true)
     {
-      PDFElement pdfEl = new PDFElement
-      {
-        FilePath           = filePath,
-        StartPage          = startPage,
-        EndPage            = endPage,
-        StartIndex         = startIdx,
-        EndIndex           = endIdx,
-        ReadVerticalOffset = verticalOffset,
-      };
-
-      string title;
-      string fileName   = Path.GetFileName(filePath);
-      string importDate = DateTime.Now.ToString("MMM dd, yyyy, hh:mm:ss");
+      IBinary binMem = null;
 
       try
       {
-        using (var pdfDoc = PdfDocument.Load(filePath))
-          title = pdfDoc.Title;
+        var fileName = Path.GetFileName(filePath);
+        var binMems = Svc.SMA.Registry.Binary.FindByName(new Regex(fileName + ".*",
+                                                                   RegexOptions.IgnoreCase)).ToList();
 
+        if (binMems.Any())
+        {
+          var oriPdfFileInfo = new FileInfo(filePath);
+
+          foreach (var itBinMem in binMems)
+          {
+            var smPdfFilePath = itBinMem.GetFilePath("pdf");
+            var smPdfFileInfo = new FileInfo(smPdfFilePath);
+
+            if (smPdfFileInfo.Length != oriPdfFileInfo.Length)
+              continue;
+
+            binMem = itBinMem;
+            break;
+          }
+        }
+
+        if (binMem == null)
+        {
+          int binMemId = Svc.SMA.Registry.Binary.AddMember(filePath,
+                                                           fileName);
+
+          if (binMemId < 0)
+            return CreationResult.FailBinaryRegistryInsertionFailed;
+
+          binMem = Svc.SMA.Registry.Binary[binMemId];
+        }
+      }
+      catch (Exception ex)
+      {
+        return CreationResult.FailUnknown;
+      }
+
+#if false
+     try
+     {
         var pdfPluginFolderPath = Svc<PDFPlugin>.CollectionFS.GetPluginResourcePath(Svc<PDFPlugin>.PluginContext);
         var pdfPluginFilePath = Path.Combine(pdfPluginFolderPath,
                                              fileName);
@@ -140,7 +209,7 @@ namespace SuperMemoAssistant.Plugins.PDF
         {
           if (File.Exists(pdfPluginFilePath))
           {
-            var fileInfo          = new FileInfo(filePath);
+            var fileInfo = new FileInfo(filePath);
             var pdfPluginFileInfo = new FileInfo(pdfPluginFilePath);
 
             if (fileInfo.Length != pdfPluginFileInfo.Length)
@@ -154,7 +223,19 @@ namespace SuperMemoAssistant.Plugins.PDF
           }
 
           filePath = pdfPluginFilePath;
-        }
+
+          pdfEl = new PDFElement
+          {
+            FilePath = filePath,
+            StartPage = startPage,
+            EndPage = endPage,
+            StartIndex = startIdx,
+            EndIndex = endIdx,
+            ReadPage = readPage,
+            ReadPoint = readPoint,
+          };
+
+          title = pdfEl.GetInfos();
       }
       catch (IOException ex)
       {
@@ -164,14 +245,77 @@ namespace SuperMemoAssistant.Plugins.PDF
       {
         return CreationResult.FailUnknown;
       }
+#endif
+
+      return Create(binMem,
+                    startPage,
+                    endPage,
+                    startIdx,
+                    endIdx,
+                    parentElementId,
+                    readPage,
+                    readPoint,
+                    viewMode,
+                    pageMargin,
+                    zoom,
+                    shouldDisplay);
+    }
+
+    public static CreationResult Create(
+      IBinary   binMem,
+      int       startPage       = -1,
+      int       endPage         = -1,
+      int       startIdx        = -1,
+      int       endIdx          = -1,
+      int       parentElementId = -1,
+      int       readPage        = 0,
+      Point     readPoint       = default(Point),
+      ViewModes viewMode        = Const.DefaultViewMode,
+      int       pageMargin      = Const.DefaultPageMargin,
+      float     zoom            = Const.DefaultZoom,
+      bool      shouldDisplay   = true)
+    {
+      PDFElement pdfEl;
+      string     title;
+      string     author;
+      string     creationDate;
+      string     filePath;
+
+      try
+      {
+        filePath = binMem.GetFilePath("pdf");
+
+        if (File.Exists(filePath) == false)
+          return CreationResult.FailBinaryMemberFileMissing;
+
+        pdfEl = new PDFElement
+        {
+          BinaryMemberId = binMem.Id,
+          FilePath       = filePath,
+          StartPage      = startPage,
+          EndPage        = endPage,
+          StartIndex     = startIdx,
+          EndIndex       = endIdx,
+          ReadPage       = readPage,
+          ReadPoint      = readPoint,
+          ViewMode       = viewMode,
+          PageMargin     = pageMargin,
+          Zoom           = zoom,
+        };
+
+        pdfEl.GetInfos(out title,
+                       out author,
+                       out creationDate);
+      }
+      catch (Exception ex)
+      {
+        return CreationResult.FailUnknown;
+      }
 
       string elementHtml = string.Format(Const.ElementFormat,
                                          title,
-                                         fileName,
-                                         pdfEl.GetJsonB64(),
-                                         title,
-                                         importDate,
-                                         filePath);
+                                         binMem.Name,
+                                         pdfEl.GetJsonB64());
 
       IElement parentElement =
         parentElementId > 0
@@ -181,10 +325,17 @@ namespace SuperMemoAssistant.Plugins.PDF
       var elemBuilder =
         new ElementBuilder(ElementType.Topic,
                            elementHtml)
-          .WithParent(parentElement);
+          .WithParent(parentElement)
+          .WithReference(
+            r => r.WithTitle(title)
+                  .WithAuthor(author)
+                  .WithDate(creationDate)
+                  .WithSource("PDF")
+                  .WithLink(Svc.SMA.Collection.MakeRelative(filePath))
+          );
 
       if (shouldDisplay == false)
-        PDFState.Instance.ReturnToLastElement = true;
+        elemBuilder = elemBuilder.DoNotDisplay();
 
       return Svc.SMA.Registry.Element.Add(elemBuilder)
         ? CreationResult.Ok
@@ -192,7 +343,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     }
 
     public static PDFElement TryReadElement(string elText,
-                                            int    elementId = -1)
+                                            int    elementId)
     {
       if (string.IsNullOrWhiteSpace(elText))
         return null;
@@ -208,16 +359,22 @@ namespace SuperMemoAssistant.Plugins.PDF
 
         var pdfEl = JsonConvert.DeserializeObject<PDFElement>(toDeserialize);
 
-        if (pdfEl != null && elementId > 0)
+        if (pdfEl != null) // && elementId > 0)
         {
           pdfEl.ElementId = elementId;
-
+          pdfEl.FilePath  = pdfEl.BinaryMember.GetFilePath("pdf");
+          
+          // TODO: Remove element Id test when better element transition is implemented
+          // Double check
+          if (Svc.SMA.UI.ElementWindow.CurrentElementId != elementId || File.Exists(pdfEl.FilePath) == false)
+            return null;
+#if false
           foreach (IElement childEl in Svc.SMA.Registry.Element[elementId].Children)
             try
             {
               IComponentHtml compHtml;
 
-              if ((compHtml = childEl.ComponentGroup.GetFirstHtmlComponent()) == null)
+              if ((compHtml = childEl.ComponentGroup?.GetFirstHtmlComponent()) == null)
                 continue;
 
               var childTextMember = compHtml.Text;
@@ -225,22 +382,23 @@ namespace SuperMemoAssistant.Plugins.PDF
               if (childTextMember == null)
                 continue;
 
-              var childText  = childTextMember.Value;
+              var childText = childTextMember.Value;
               var childPdfEl = TryReadElement(childText);
 
               if (childPdfEl == null)
                 continue;
 
-              pdfEl.IPDFExtracts.Add(new SelectInfo
+              pdfEl.PDFExtracts.Add(new SelectInfo
                 {
-                  StartPage  = childPdfEl.StartPage,
-                  EndPage    = childPdfEl.EndPage,
+                  StartPage = childPdfEl.StartPage,
+                  EndPage = childPdfEl.EndPage,
                   StartIndex = childPdfEl.StartIndex,
-                  EndIndex   = childPdfEl.EndIndex
+                  EndIndex = childPdfEl.EndIndex
                 }
               );
             }
             catch (Exception ex) { }
+#endif
         }
 
         return pdfEl;
@@ -253,6 +411,9 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public SaveResult Save()
     {
+      if (IsChanged == false)
+        return SaveResult.Ok;
+
       if (ElementId <= 0)
         return SaveToBackup();
 
@@ -265,32 +426,41 @@ namespace SuperMemoAssistant.Plugins.PDF
           IControlHtml ctrlHtml = Svc.SMA.UI.ElementWindow.ControlGroup.GetFirstHtmlControl();
 
           ctrlHtml.Text = UpdateHtml(ctrlHtml.Text);
+
+          IsChanged = false;
         }
 
         else
         {
-          var elem = Svc.SMA.Registry.Element[ElementId];
+          return SaveResult.Fail;
 
-          if (elem == null || elem.Deleted)
-            return SaveResult.FailDeleted;
-
-          var compGroup = elem.ComponentGroup;
-
-          if (compGroup == null || compGroup.Count == 0)
-            return SaveResult.FailDeleted;
-
-          var htmlComp = compGroup.GetFirstHtmlComponent();
-
-          if (htmlComp == null)
-            return SaveResult.FailInvalidComponent;
-
-          var textMember = htmlComp.Text;
-
-          if (textMember == null || textMember.Empty)
-            return SaveResult.FailInvalidTextMember;
-
-          textMember.Value = UpdateHtml(textMember.Value);
+          /*
+            var elem = Svc.SMA.Registry.Element[ElementId];
+  
+            if (elem == null || elem.Deleted)
+              return SaveResult.FailDeleted;
+  
+            var compGroup = elem.ComponentGroup;
+  
+            if (compGroup == null || compGroup.Count == 0)
+              return SaveResult.FailDeleted;
+  
+            var htmlComp = compGroup.GetFirstHtmlComponent();
+  
+            if (htmlComp == null)
+              return SaveResult.FailInvalidComponent;
+  
+            var textMember = htmlComp.Text;
+  
+            if (textMember == null || textMember.Empty)
+              return SaveResult.FailInvalidTextMember;
+  
+            textMember.Value = UpdateHtml(textMember.Value);
+            
+            IsChanged = false;
+          */
         }
+
 
         return SaveResult.Ok;
       }
@@ -303,6 +473,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     public SaveResult SaveToBackup()
     {
       // TODO: Save to temp file
+      // TODO: Set Dirty = false
       return SaveResult.Fail;
     }
 
@@ -327,6 +498,55 @@ namespace SuperMemoAssistant.Plugins.PDF
       return elementJson.Base64Encode();
     }
 
+    public static void GetInfos(string     filePath,
+                                out string title,
+                                out string authors,
+                                out string date)
+    {
+      using (var pdfDoc = PdfDocument.Load(filePath))
+      {
+        title   = pdfDoc.Title;
+        authors = pdfDoc.Author;
+        date    = pdfDoc.CreationDate;
+      }
+
+      if (string.IsNullOrWhiteSpace(title))
+      {
+        title   = Path.GetFileName(filePath);
+        authors = null;
+        date    = null;
+      }
+    }
+
+    public void GetInfos(out string title,
+                         out string authors,
+                         out string date)
+    {
+      GetInfos(FilePath,
+               out title,
+               out authors,
+               out date);
+
+      if (StartPage >= 0 && EndPage >= 0)
+        title += $" ({StartPage + 1}:{StartIndex} -> {EndPage + 1}:{EndIndex})";
+    }
+
+    private void OnCollectionChanged(object                                                          sender,
+                                     System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+      IsChanged = true;
+    }
+
+    #endregion
+
+
+
+
+    #region Events
+
+    /// <inheritdoc />
+    public event PropertyChangedEventHandler PropertyChanged;
+
     #endregion
 
 
@@ -336,11 +556,11 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public enum CreationResult
     {
-      Ok                            = 0,
-      FailUnknown                   = 1,
-      FailFileSameNameAlreadyExists = 2,
-      FailCannotCreateElement       = 3,
-      FailCannotCopyFile            = 4,
+      Ok,
+      FailUnknown,
+      FailCannotCreateElement,
+      FailBinaryRegistryInsertionFailed,
+      FailBinaryMemberFileMissing
     }
 
     public enum SaveResult

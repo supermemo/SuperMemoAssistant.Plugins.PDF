@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/11/19 13:14
-// Modified On:  2018/11/22 11:54
+// Modified On:  2018/11/26 13:38
 // Modified By:  Alexis
 
 #endregion
@@ -45,22 +45,19 @@ namespace SuperMemoAssistant.Plugins.PDF
     #region Constants & Statics
 
     public static PDFState Instance { get; } = new PDFState();
-
+    
     #endregion
 
 
 
 
     #region Properties & Fields - Non-Public
-
-    private bool _returnToLastElementValue = false;
-
+    
     protected PDFWindow PdfWindow { get; set; }
 
     protected SynchronizationContext SyncContext { get; set; }
 
     protected PDFElement     LastElement              { get; set; }
-    private   AutoResetEvent ReturnToLastElementEvent { get; } = new AutoResetEvent(true);
 
     #endregion
 
@@ -84,19 +81,6 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public PDFCfg Config { get; private set; }
 
-    public bool ReturnToLastElement
-    {
-      get => _returnToLastElementValue;
-      set
-      {
-        if (value)
-          SetTopMost(true,
-                     true);
-
-        _returnToLastElementValue = value;
-      }
-    }
-
     #endregion
 
 
@@ -104,33 +88,18 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Methods
 
-    public void OnElementChanged(IElement    newElem,
+    public void OnElementChanged(IElement     newElem,
                                  IControlHtml ctrlHtml)
     {
-      if (ReturnToLastElement)
-      {
-        if (LastElement != null)
-        {
-          ReturnToLastElementEvent.Reset();
-          new Thread(EnsureReturnToLastElement).Start(); // TODO: Use thread pool
-        }
+      PdfWindow?.CancelSave();
 
-        else
-        {
-          SetTopMost(false);
-        }
-
-        ReturnToLastElement = false;
-
+      if (newElem == null)
         return;
-      }
 
       if (LastElement?.ElementId == newElem.Id)
       {
-        ReturnToLastElementEvent.Set();
-
-        SyncContext.Post(_ => PdfWindow.Activate(),
-                         null);
+        //SyncContext.Post(_ => PdfWindow.Activate(),
+                         //null);
 
         return;
       }
@@ -139,7 +108,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       PDFElement pdfEl = PDFElement.TryReadElement(html,
                                                    newElem.Id);
 
-      bool noNewElem = pdfEl == null;
+      bool noNewElem  = pdfEl == null;
       bool noLastElem = LastElement == null || (Svc.SMA.Registry.Element[LastElement.ElementId]?.Deleted ?? true);
 
       if (noNewElem && noLastElem)
@@ -149,12 +118,10 @@ namespace SuperMemoAssistant.Plugins.PDF
         delegate
         {
           bool close = LastElement != null && pdfEl == null;
-
-          if (LastElement != null)
-            CloseElement();
-
-          if (pdfEl != null)
-            OpenElement(pdfEl);
+          
+          CloseElement();
+          
+          OpenElement(pdfEl);
 
           if (close)
           {
@@ -169,7 +136,11 @@ namespace SuperMemoAssistant.Plugins.PDF
     {
       try
       {
-        var res = LastElement.Save(); // TODO: Display warning + Save to temp file
+        if (LastElement != null && LastElement.IsChanged)
+        {
+          // TODO: Display warning + Save to temp file
+          //var res = LastElement.Save();
+        }
       }
       finally
       {
@@ -179,6 +150,9 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public void OpenElement(PDFElement pdfElem)
     {
+      if (pdfElem == null)
+        return;
+
       LastElement = pdfElem;
 
       EnsurePdfWindow();
@@ -218,27 +192,11 @@ namespace SuperMemoAssistant.Plugins.PDF
       SynchronizationContext.SetSynchronizationContext(SyncContext);
     }
 
-    private void EnsureReturnToLastElement()
-    {
-      try
-      {
-        DateTime start = DateTime.Now;
-
-        do
-        {
-          Svc.SMA.UI.ElementWindow.GoToElement(LastElement.ElementId);
-        } while (ReturnToLastElementEvent.WaitOne(200) == false && (DateTime.Now - start).TotalMilliseconds < 1500);
-      }
-      finally
-      {
-        SetTopMost(false,
-                   true);
-      }
-    }
-
     private void SetTopMost(bool topmost,
                             bool send = false)
     {
+      return;
+  #if false
       if (send)
         SyncContext.Send(SetTopMost,
                          topmost);
@@ -246,6 +204,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       else
         SyncContext.Post(SetTopMost,
                          topmost);
+  #endif
     }
 
     private void SetTopMost(object o)

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/11 14:36
-// Modified On:  2018/11/24 13:09
+// Modified On:  2018/12/05 14:37
 // Modified By:  Alexis
 
 #endregion
@@ -35,6 +35,7 @@ using System.Windows;
 using System.Windows.Input;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Sys.IO.Devices;
 using Keyboard = System.Windows.Input.Keyboard;
@@ -67,6 +68,11 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     {
       Key.Left, Key.Right
     };
+    public static readonly Key[] VerticalArrowKeys =
+    {
+      Key.Up, Key.Down
+    };
+    public static readonly Key[] ArrowKeys = SideArrowKeys.Concat(VerticalArrowKeys).ToArray();
     public static readonly Key[] PageKeys =
     {
       Key.PageUp, Key.PageDown
@@ -174,7 +180,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         && (kbMod & KeyboardModifiers.ShiftKey) == KeyboardModifiers.ShiftKey)
       {
         e.Handled = true;
-        
+
         ExtendActionType actionType = e.Key == Key.PageDown
           ? ExtendActionType.Add
           : ExtendActionType.Remove;
@@ -190,8 +196,48 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         CopySelectionToClipboard();
       }
 
+      else if (e.Key == Key.Escape)
+      {
+        if (SelectedArea != null)
+        {
+          e.Handled    = true;
+          SelectedArea = null;
+        }
+      }
+
       //
       // Navigation
+
+      else if (kbMod == (KeyboardModifiers.AltKey | KeyboardModifiers.ControlKey)
+        && ArrowKeys.Contains(e.Key))
+      {
+        IElement curElem = Svc.SMA.UI.ElementWindow.CurrentElement;
+        IElement newElem = null;
+
+        switch (e.Key)
+        {
+          case Key.Up:
+            newElem = curElem?.Parent;
+            break;
+
+          case Key.Down:
+            newElem = curElem?.FirstChild;
+            break;
+
+          case Key.Left:
+            newElem = curElem?.PrevSibling;
+            break;
+
+          case Key.Right:
+            newElem = curElem?.NextSibling;
+            break;
+        }
+
+        if (newElem != null)
+          Svc.SMA.UI.ElementWindow.GoToElement(newElem.Id);
+
+        e.Handled = true;
+      }
 
       else if (kbMod == 0)
       {
@@ -207,13 +253,13 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           e.Handled = true;
         }
 
-        else if (e.Key == Key.PageUp)
+        else if (e.Key == Key.PageUp || e.Key == Key.Left)
         {
           PageUp();
           e.Handled = true;
         }
 
-        else if (e.Key == Key.PageDown)
+        else if (e.Key == Key.PageDown || e.Key == Key.Right)
         {
           PageDown();
           e.Handled = true;
@@ -241,6 +287,24 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       base.OnKeyUp(e);
     }
 
+    protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
+    {
+      if (Document != null)
+      {
+        var loc = e.GetPosition(this);
+        int pageIndex = DeviceToPage(loc.X,
+                                     loc.Y,
+                                     out Point pagePoint);
+
+        if (OnMouseDoubleClickProcessSelection(e,
+                                               pageIndex,
+                                               pagePoint))
+          return;
+      }
+
+      base.OnMouseDoubleClick(e);
+    }
+
     protected override void OnMouseDown(MouseButtonEventArgs e)
     {
       if (Document != null)
@@ -262,6 +326,42 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       base.OnMouseDown(e);
     }
 
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+      if (Document != null)
+      {
+        var loc = e.GetPosition(this);
+        int pageIndex = DeviceToPage(loc.X,
+                                     loc.Y,
+                                     out Point pagePoint);
+
+        if (OnMouseMoveProcessSelection(e,
+                                        pageIndex,
+                                        pagePoint))
+          return;
+      }
+
+      base.OnMouseMove(e);
+    }
+
+    protected override void OnMouseUp(MouseButtonEventArgs e)
+    {
+      if (Document != null)
+      {
+        var loc = e.GetPosition(this);
+        int pageIndex = DeviceToPage(loc.X,
+                                     loc.Y,
+                                     out Point pagePoint);
+
+        if (OnMouseUpProcessSelection(e,
+                                      pageIndex,
+                                      pagePoint))
+          return;
+      }
+
+      base.OnMouseUp(e);
+    }
+
     /// <inheritdoc />
     public override void MouseWheelDown()
     {
@@ -271,13 +371,18 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       {
         if (SizeMode != SizeModes.Zoom)
           SizeMode = SizeModes.Zoom;
+        
+        var    mousePoint   = GetMousePoint();
+        int    pageIdx      = MouseToPagePoint(out Point pagePoint);
+        double viewportPctX = mousePoint.X / _viewport.Width;
+        double viewportPctY = mousePoint.Y / _viewport.Height;
+        
+        Zoom = GetPrevZoomLevel(Zoom);
 
-        int i = ZoomRatios.Length - 1;
-
-        while (i > 0 && Zoom <= ZoomRatios[i])
-          i--;
-
-        Zoom = ZoomRatios[i];
+        ScrollToPoint(pageIdx,
+                      pagePoint);
+        SetVerticalOffset(VerticalOffset - _viewport.Height * viewportPctY);
+        SetHorizontalOffset(HorizontalOffset - _viewport.Width * viewportPctX);
       }
 
       else
@@ -296,12 +401,17 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         if (SizeMode != SizeModes.Zoom)
           SizeMode = SizeModes.Zoom;
 
-        int i = 0;
+        var mousePoint = GetMousePoint();
+        int pageIdx = MouseToPagePoint(out Point pagePoint);
+        double viewportPctX = mousePoint.X / _viewport.Width;
+        double viewportPctY = mousePoint.Y / _viewport.Height;
 
-        while (i < ZoomRatios.Length - 1 && Zoom >= ZoomRatios[i])
-          i++;
+        Zoom = GetNextZoomLevel(Zoom);
 
-        Zoom = ZoomRatios[i];
+        ScrollToPoint(pageIdx,
+                      pagePoint);
+        SetVerticalOffset(VerticalOffset - _viewport.Height * viewportPctY);
+        SetHorizontalOffset(HorizontalOffset - _viewport.Width * viewportPctX);
       }
 
       else
@@ -313,17 +423,49 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     /// <summary>Scrolls up within content by one page.</summary>
     public override void PageUp()
     {
-      double childHeight = _viewport.Height * 0.8;
+      switch (ViewMode)
+      {
+        case ViewModes.SinglePage:
+        case ViewModes.Horizontal:
+          ScrollToPage(CurrentIndex - 1);
+          break;
 
-      SetVerticalOffset(VerticalOffset - childHeight);
+        case ViewModes.TilesLine:
+        case ViewModes.TilesHorizontal:
+        case ViewModes.TilesVertical:
+          ScrollToPage(CurrentIndex - 2 + CurrentIndex % 2);
+          break;
+
+        case ViewModes.Vertical:
+          double childHeight = _viewport.Height * 0.8;
+
+          SetVerticalOffset(VerticalOffset - childHeight);
+          break;
+      }
     }
 
     /// <summary>Scrolls down within content by one page.</summary>
     public override void PageDown()
     {
-      double childHeight = _viewport.Height * 0.8;
+      switch (ViewMode)
+      {
+        case ViewModes.SinglePage:
+        case ViewModes.Horizontal:
+          ScrollToPage(CurrentIndex + 1);
+          break;
 
-      SetVerticalOffset(VerticalOffset + childHeight);
+        case ViewModes.TilesLine:
+        case ViewModes.TilesHorizontal:
+        case ViewModes.TilesVertical:
+          ScrollToPage(CurrentIndex + 2 - CurrentIndex % 2);
+          break;
+
+        case ViewModes.Vertical:
+          double childHeight = _viewport.Height * 0.8;
+
+          SetVerticalOffset(VerticalOffset + childHeight);
+          break;
+      }
     }
 
     #endregion

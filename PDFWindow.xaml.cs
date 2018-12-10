@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/09 02:33
-// Modified On:  2018/11/21 00:57
+// Modified On:  2018/11/29 16:21
 // Modified By:  Alexis
 
 #endregion
@@ -49,10 +49,10 @@ namespace SuperMemoAssistant.Plugins.PDF
     {
       InitializeComponent();
 
-      Top = PDFState.Instance.Config.WindowTop;
+      Top    = PDFState.Instance.Config.WindowTop;
       Height = PDFState.Instance.Config.WindowHeight;
-      Left = PDFState.Instance.Config.WindowLeft;
-      Width = PDFState.Instance.Config.WindowWidth;
+      Left   = PDFState.Instance.Config.WindowLeft;
+      Width  = PDFState.Instance.Config.WindowWidth;
       WindowState = PDFState.Instance.Config.WindowState == WindowState.Maximized
         ? WindowState.Maximized
         : WindowState.Normal;
@@ -97,13 +97,21 @@ namespace SuperMemoAssistant.Plugins.PDF
                                                Left,
                                                Width,
                                                WindowState);
-      
+
       base.OnClosing(e);
     }
+
+    protected override void OnClosed(EventArgs e)
+    {
+      IPDFViewer.Document.Dispose();
+
+      base.OnClosed(e);
+    }
+
     protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
     {
       base.OnGotKeyboardFocus(e);
-      
+
       IPDFViewer.Focus();
     }
 
@@ -134,6 +142,12 @@ namespace SuperMemoAssistant.Plugins.PDF
         Show();
 
       IPDFViewer.LoadDocument(pdfElement);
+    }
+
+
+    public void CancelSave()
+    {
+      IPDFViewer.CancelSave();
     }
 
     #endregion

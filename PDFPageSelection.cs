@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/11/15 23:50
-// Modified On:  2018/12/09 23:58
+// Created On:   2018/11/30 01:43
+// Modified On:  2018/11/30 02:11
 // Modified By:  Alexis
 
 #endregion
@@ -30,29 +30,47 @@
 
 
 
-using System.Text.RegularExpressions;
-using Patagames.Pdf.Net.Controls.Wpf;
-
 namespace SuperMemoAssistant.Plugins.PDF
 {
-  internal class Const
+  public class PDFPageSelection
   {
-    #region Constants & Statics
+    #region Constructors
 
-    // HTML snippets here are formatted in the final form they should assume in SM.
+    public PDFPageSelection(int startPage,
+                            int endPage)
+    {
+      StartPage = startPage;
+      EndPage   = endPage;
+    }
 
-    public const string ElementFormat = @"<DIV id=pdf-element-title>{0}</DIV>
-<DIV id=pdf-element-filename>{1}</DIV>
-<DIV id=pdf-element-data>{2}</DIV>";
-    public const string ElementDataFormat = "<DIV id=pdf-element-data>{0}</DIV>";
-
-    public static readonly Regex RE_Element = new Regex("<DIV id=pdf-element-data>([^<]+)</DIV>",
-                                                        RegexOptions.IgnoreCase);
+    #endregion
 
 
-    public const ViewModes DefaultViewMode   = ViewModes.Vertical;
-    public const int       DefaultPageMargin = 4;
-    public const float     DefaultZoom       = 1.0f;
+
+
+    #region Properties & Fields - Public
+
+    public PDFPageSelection Normalized => StartPage <= EndPage
+      ? this
+      : new PDFPageSelection(EndPage,
+                             StartPage);
+
+    public int StartPage { get; set; }
+    public int EndPage   { get; set; }
+
+    #endregion
+
+
+
+
+    #region Methods
+
+    public bool Contains(int pageIndex)
+    {
+      var norm = Normalized;
+
+      return pageIndex >= norm.StartPage && pageIndex <= norm.EndPage;
+    }
 
     #endregion
   }

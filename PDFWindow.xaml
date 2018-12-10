@@ -4,37 +4,77 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:pdf="clr-namespace:SuperMemoAssistant.Plugins.PDF.Viewer"
-        xmlns:toolBars="clr-namespace:Patagames.Pdf.Net.Controls.Wpf.ToolBars;assembly=Patagames.Pdf.Wpf"
+        xmlns:ptgToolBars="clr-namespace:Patagames.Pdf.Net.Controls.Wpf.ToolBars;assembly=Patagames.Pdf.Wpf"
+        xmlns:smaToolBars="clr-namespace:SuperMemoAssistant.Plugins.PDF.ToolBars"
         mc:Ignorable="d"
         Title="PDFWindow" Height="450" Width="800">
-  <Grid>
-      <Grid.RowDefinitions>
-          <RowDefinition Height="auto" />
-          <RowDefinition />
-          <RowDefinition Height="auto" />
-      </Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
 
-      <ToolBarTray Grid.Row="0">
-          <!--<toolBars:PdfToolBarRotate PdfViewer="{Binding ElementName=IPDFViewer}"
-                                 Name="toolbarRotate" />
-      <toolBars:PdfToolBarSearch PdfViewer="{Binding ElementName=IPDFViewer}"
-                                    Name="toolbarSearch" />-->
-      </ToolBarTray>
+        <Grid Grid.Row="0"
+              Background="#EEF5FD">
 
-      <ScrollViewer Grid.Row="1"
-                    CanContentScroll="True"
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Auto">
-          <pdf:IPDFViewer x:Name="IPDFViewer"
-                          Background="#828689"
-                          SizeMode="Zoom" />
-      </ScrollViewer>
+            <ToolBarTray HorizontalAlignment="Left"
+                         IsLocked="True">
+                <ptgToolBars:PdfToolBarSizes PdfViewer="{Binding ElementName=IPDFViewer}"
+                                             OverflowMode="Never" />
+                <ptgToolBars:PdfToolBarRotate PdfViewer="{Binding ElementName=IPDFViewer}"
+                                              Name="ToolbarRotate"
+                                              OverflowMode="Never" />
+            </ToolBarTray>
 
-      <ToolBarTray Grid.Row="2">
-          <!--<toolBars:PdfToolBarZoomEx PdfViewer="{Binding ElementName=IPDFViewer}"
-                                 Name="toolbarZoom" />
-      <toolBars:PdfToolBarPages PdfViewer="{Binding ElementName=IPDFViewer}"
-                                 Name="toolbarPages" />-->
-      </ToolBarTray>
-  </Grid>
+            <ToolBarTray HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         IsLocked="True">
+                <ptgToolBars:PdfToolBarSearch PdfViewer="{Binding ElementName=IPDFViewer}"
+                                              Name="ToolbarSearch"
+                                              OverflowMode="Never" />
+            </ToolBarTray>
+
+        </Grid>
+
+        <ScrollViewer Grid.Row="1"
+                      CanContentScroll="True"
+                      PanningMode="Both"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Auto"
+                      FocusVisualStyle="{x:Null}">
+            <pdf:IPDFViewer x:Name="IPDFViewer"
+                            Background="#ABABAB"
+                            ShowCurrentPageHighlight="False"
+                            ShowPageSeparator="False"
+                            PageMargin="4"
+                            SizeMode="Zoom" />
+        </ScrollViewer>
+
+        <Grid Grid.Row="2"
+              Background="#EEF5FD">
+
+            <ToolBarTray HorizontalAlignment="Center"
+                         IsLocked="True">
+                <ptgToolBars:PdfToolBarPages PdfViewer="{Binding ElementName=IPDFViewer}"
+                                             Name="ToolbarPages"
+                                             OverflowMode="Never" />
+            </ToolBarTray>
+
+            <ToolBarTray HorizontalAlignment="Right"
+                         IsLocked="True">
+
+                <smaToolBars:PdfToolBarPageMargin PdfViewer="{Binding ElementName=IPDFViewer}"
+                                                  OverflowMode="Never" />
+                <ptgToolBars:PdfToolBarViewModes PdfViewer="{Binding ElementName=IPDFViewer}"
+                                                 OverflowMode="Never" />
+                <ptgToolBars:PdfToolBarZoomEx PdfViewer="{Binding ElementName=IPDFViewer}"
+                                              Name="ToolbarZoom"
+                                              OverflowMode="Never"
+                                              VerticalContentAlignment="Center"
+                                              Height="32" />
+            </ToolBarTray>
+
+        </Grid>
+    </Grid>
 </Window>

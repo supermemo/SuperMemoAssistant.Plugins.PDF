@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/11/22 11:17
-// Modified On:  2018/11/24 15:37
+// Modified On:  2018/12/06 22:35
 // Modified By:  Alexis
 
 #endregion
@@ -32,7 +32,9 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Windows;
+using System.Windows.Input;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
@@ -40,11 +42,36 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 {
   public partial class IPDFViewer
   {
+    #region Properties & Fields - Public
+
     public string TitleOrFileName => string.IsNullOrWhiteSpace(Document.Title)
       ? Path.GetFileName(PDFElement.FilePath)
       : Document.Title;
 
+    #endregion
+
+
+
+
     #region Methods
+
+    protected string SelectedTextEncoded()
+    {
+      var text = SelectedText;
+
+      text = text.Replace("\uFFFE",
+                          ""); // "-\r\n"
+
+      var win1252Encoding = Encoding.GetEncoding("windows-1252");
+
+      var utf8Bytes = Encoding.UTF8.GetBytes(text);
+      var win1252Bytes = Encoding.Convert(
+        Encoding.UTF8,
+        win1252Encoding,
+        utf8Bytes);
+
+      return win1252Encoding.GetString(win1252Bytes);
+    }
 
     protected bool IsEndOfSelectionInScreen()
     {
@@ -69,25 +96,121 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       return ClientRect.Contains(topLeftPt);
     }
 
+    public override void ScrollToPoint(int pageIndex, Point pagePoint)
+    {
+      int count = Document?.Pages.Count ?? 0;
+
+      if (count == 0 || pageIndex < 0 || pageIndex > count - 1)
+        return;
+
+      // ReSharper disable once CompareOfFloatsByEqualityOperator
+      if (pagePoint.Y == 0)
+        ScrollToPage(pageIndex);
+
+      else
+        base.ScrollToPoint(pageIndex,
+                           pagePoint);
+    }
+
     protected void ScrollToEndOfSelection()
     {
       ScrollToChar(SelectInfo.EndPage,
                    SelectInfo.EndIndex);
 
-      var scrollY = - ClientRect.Size.Height / 2 - _autoScrollPosition.Y;
+      var scrollY = -ClientRect.Size.Height / 2 - _autoScrollPosition.Y;
 
       SetVerticalOffset(scrollY);
     }
 
-    public void CenterChar(int pageIndex,
-                           int charIndex)
+    protected Point GetCharPointEx(int    pageIndex,
+                                   int    charIndex,
+                                   double pageOffsetPercent = -0.10)
     {
-      var offset = GetTextVerticalOffset(pageIndex,
-                                         charIndex);
+      if (pageIndex < 0 || pageIndex > Document.Pages.Count || charIndex < 0)
+        return default(Point);
 
-      SetVerticalOffset(offset);
+      var res = GetCharPoint(pageIndex,
+                             charIndex);
+
+      double pageOffset = _viewport.Height * pageOffsetPercent;
+
+      res.Y = Math.Min(0,
+                       res.Y + pageOffset);
+
+      return res;
     }
 
+    protected Point GetCharPoint(int pageIndex,
+                                 int charIndex)
+    {
+      if (pageIndex < 0 || pageIndex > Document.Pages.Count || charIndex < 0)
+        return default(Point);
+
+      var page          = Document.Pages[pageIndex];
+      int pageCharCount = page.Text.CountChars;
+
+      if (charIndex >= pageCharCount)
+        charIndex = pageCharCount - 1;
+
+      var ti = page.Text.GetTextInfo(charIndex,
+                                     1);
+
+      if (ti.Rects == null || ti.Rects.Count == 0)
+        return default(Point);
+
+      return new Point(ti.Rects[0].left,
+                       ti.Rects[0].top);
+    }
+
+    protected int GetTextLength(int page,
+                                int startIdx = 0,
+                                int endIdx   = 0)
+    {
+      int len = Document.Pages[page].Text.CountChars;
+
+      if (endIdx > 0)
+        len -= len - (endIdx + 1);
+
+      len -= startIdx;
+
+      return len;
+    }
+
+    protected int MouseToPagePoint(out Point pagePoint)
+    {
+      var mousePt = GetMousePoint();
+
+      return DeviceToPage(mousePt.X,
+                          mousePt.Y,
+                          out pagePoint);
+    }
+
+    protected Point GetMousePoint()
+    {
+      return Mouse.GetPosition(this);
+    }
+
+    protected float GetNextZoomLevel(float currentZoom)
+    {
+      int i = 0;
+
+      while (i < ZoomRatios.Length - 1 && currentZoom >= ZoomRatios[i])
+        i++;
+
+      return ZoomRatios[i];
+    }
+
+    protected float GetPrevZoomLevel(float currentZoom)
+    {
+      int i = ZoomRatios.Length - 1;
+
+      while (i > 0 && currentZoom <= ZoomRatios[i])
+        i--;
+
+      return ZoomRatios[i];
+    }
+
+#if false
     protected double GetPageVerticalOffset(int pageIndex)
     {
       if (pageIndex < 0 || pageIndex > Document.Pages.Count)
@@ -107,39 +230,15 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       if (pageIndex < 0 || pageIndex > Document.Pages.Count || charIndex < 0)
         return 0;
 
-      var page          = Document.Pages[pageIndex];
-      int pageCharCount = page.Text.CountChars;
-
-      if (charIndex >= pageCharCount)
-        charIndex = pageCharCount - 1;
-
-      var ti = page.Text.GetTextInfo(charIndex,
-                                     1);
-
-      if (ti.Rects == null || ti.Rects.Count == 0)
-        return 0;
-
+      var charPt = GetCharPoint(pageIndex,
+                                charIndex);
       var pt = PageToClient(pageIndex,
-                            new Point(ti.Rects[0].left,
-                                      ti.Rects[0].top));
+                            charPt);
       var pageY = GetPageVerticalOffset(pageIndex);
 
       return pt.Y + pageY;
     }
-
-    protected int GetTextLength(int page,
-                                int startIdx = 0,
-                                int endIdx   = 0)
-    {
-      int len = Document.Pages[page].Text.CountChars;
-
-      if (endIdx > 0)
-        len -= len - (endIdx + 1);
-
-      len -= startIdx;
-
-      return len;
-    }
+#endif
 
     #endregion
   }
