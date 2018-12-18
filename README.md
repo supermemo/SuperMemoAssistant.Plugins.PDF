@@ -23,6 +23,9 @@ Incremental PDF for SuperMemo
       - Mouse click on image: Select image
     - Area (snapshot) selection
       - Mouse selection over page: Clip area as image snapshot
+  - Bookmarks
+    - Enter: Go to bookmark
+    - Ctrl+Alt+X: PDF Extract (extract bookmark page range as pdf pages)
 - Knowledge Tree
   - Alt/Ctrl+Arrows: Pass to SuperMemo
   - Ctrl+Alt+Left/Right: Go to previous/next Sibling in KT
