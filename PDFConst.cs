@@ -1,4 +1,5 @@
 ﻿#region License & Metadata
+
 // The MIT License (MIT)
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20,22 +21,43 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/11/23 15:12
-// Modified On:  2018/11/23 15:12
+// Created On:   2018/11/15 23:50
+// Modified On:  2018/12/13 12:38
 // Modified By:  Alexis
+
 #endregion
 
 
 
 
-using System.Drawing;
+using System.Text.RegularExpressions;
+using Patagames.Pdf.Net.Controls.Wpf;
+
+// ReSharper disable InconsistentNaming
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
-  public class PDFImageExtract
+  internal static class PDFConst
   {
-    public int PageIndex { get; set; }
-    public int ObjectIndex { get; set; }
-    public Rectangle BoundingBox { get; set; }
+    #region Constants & Statics
+
+    public const string WindowTitle = "SuperMemo Incremental PDF";
+
+    // HTML snippets here are formatted in the final form they should assume in SM.
+
+    public const string ElementFormat = @"<DIV id=pdf-element-title>{0}</DIV>
+<DIV id=pdf-element-filename>{1}</DIV>
+<DIV id=pdf-element-data>{2}</DIV>";
+    public const string ElementDataFormat = "<DIV id=pdf-element-data>{0}</DIV>";
+
+    public static readonly Regex RE_Element = new Regex("<DIV id=pdf-element-data>([^<]+)</DIV>",
+                                                        RegexOptions.IgnoreCase);
+
+
+    public const ViewModes DefaultViewMode   = ViewModes.Vertical;
+    public const int       DefaultPageMargin = 4;
+    public const float     DefaultZoom       = 1.0f;
+
+    #endregion
   }
 }

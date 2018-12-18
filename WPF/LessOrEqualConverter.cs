@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/11/30 01:43
-// Modified On:  2018/11/30 02:11
+// Created On:   2018/12/12 01:29
+// Modified On:  2018/12/13 12:48
 // Modified By:  Alexis
 
 #endregion
@@ -30,46 +30,35 @@
 
 
 
-namespace SuperMemoAssistant.Plugins.PDF
-{
-  public class PDFPageSelection
-  {
-    #region Constructors
+using System;
+using System.Globalization;
+using System.Windows.Data;
 
-    public PDFPageSelection(int startPage,
-                            int endPage)
+namespace SuperMemoAssistant.Plugins.PDF.WPF
+{
+  public class LessOrEqualConverter : IValueConverter
+  {
+    #region Methods Impl
+
+    /// <inheritdoc />
+    public object Convert(object      value,
+                          Type        targetType,
+                          object      parameter,
+                          CultureInfo culture)
     {
-      StartPage = startPage;
-      EndPage   = endPage;
+      int val1 = System.Convert.ToInt32(value);
+      int val2 = System.Convert.ToInt32(parameter);
+
+      return val1 <= val2;
     }
 
-    #endregion
-
-
-
-
-    #region Properties & Fields - Public
-
-    public PDFPageSelection Normalized => StartPage <= EndPage
-      ? this
-      : new PDFPageSelection(EndPage,
-                             StartPage);
-
-    public int StartPage { get; set; }
-    public int EndPage   { get; set; }
-
-    #endregion
-
-
-
-
-    #region Methods
-
-    public bool Contains(int pageIndex)
+    /// <inheritdoc />
+    public object ConvertBack(object      value,
+                              Type        targetType,
+                              object      parameter,
+                              CultureInfo culture)
     {
-      var norm = Normalized;
-
-      return pageIndex >= norm.StartPage && pageIndex <= norm.EndPage;
+      throw new NotImplementedException();
     }
 
     #endregion

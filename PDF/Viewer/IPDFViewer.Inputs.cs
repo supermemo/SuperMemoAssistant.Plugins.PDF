@@ -42,7 +42,7 @@ using Keyboard = System.Windows.Input.Keyboard;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
-namespace SuperMemoAssistant.Plugins.PDF.Viewer
+namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
   public partial class IPDFViewer
   {
@@ -237,6 +237,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           Svc.SMA.UI.ElementWindow.GoToElement(newElem.Id);
 
         e.Handled = true;
+      }
+
+      else if (kbMod == KeyboardModifiers.ControlKey
+        && e.Key == Key.G)
+      {
+        //InputBox
       }
 
       else if (kbMod == 0)

@@ -37,7 +37,7 @@ using System.Windows.Controls.Primitives;
 using Patagames.Pdf.Net.Controls.Wpf;
 using Patagames.Pdf.Net.Controls.Wpf.ToolBars;
 
-namespace SuperMemoAssistant.Plugins.PDF.ToolBars
+namespace SuperMemoAssistant.Plugins.PDF.PDF.ToolBars
 {
   /// <summary>
   ///   Provides a container for Windows toolbar objects with predefined functionality for
@@ -140,7 +140,7 @@ namespace SuperMemoAssistant.Plugins.PDF.ToolBars
 
       else
       {
-        LastThickness        = LastThickness ?? new Thickness(Const.DefaultPageMargin);
+        LastThickness        = LastThickness ?? new Thickness(PDFConst.DefaultPageMargin);
         PdfViewer.PageMargin = LastThickness.Value;
       }
     }

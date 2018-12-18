@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/10/26 20:56
-// Modified On:  2018/12/10 00:03
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/17 11:12
 // Modified By:  Alexis
 
 #endregion
@@ -49,9 +49,10 @@ using SuperMemoAssistant.Interop.SuperMemo.Elements;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Interop.SuperMemo.Registry.Members;
+using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Services;
 
-namespace SuperMemoAssistant.Plugins.PDF
+namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
   public class PDFElement : INotifyPropertyChanged
   {
@@ -75,7 +76,8 @@ namespace SuperMemoAssistant.Plugins.PDF
       EndIndex       = -1;
       ReadPage       = 0;
       ReadPoint      = default(Point);
-      SMExtracts     = PDFExtracts = new ObservableCollection<SelectInfo>();
+      PDFExtracts    = new ObservableCollection<SelectInfo>();
+      SMExtracts     = new ObservableCollection<SelectInfo>();
       SMImgExtracts  = new ObservableCollection<PDFImageExtract>();
 
       PDFExtracts.CollectionChanged   += OnCollectionChanged;
@@ -115,11 +117,11 @@ namespace SuperMemoAssistant.Plugins.PDF
     public Point ReadPoint { get; set; }
 
     [JsonProperty(PropertyName = "VM")]
-    public ViewModes ViewMode { get; set; } = Const.DefaultViewMode;
+    public ViewModes ViewMode { get; set; } = PDFConst.DefaultViewMode;
     [JsonProperty(PropertyName = "PM")]
-    public int PageMargin { get; set; } = Const.DefaultPageMargin;
+    public int PageMargin { get; set; } = PDFConst.DefaultPageMargin;
     [JsonProperty(PropertyName = "Z")]
-    public float Zoom { get; set; } = Const.DefaultZoom;
+    public float Zoom { get; set; } = PDFConst.DefaultZoom;
 
     [JsonIgnore]
     public int ElementId { get; set; }
@@ -152,9 +154,9 @@ namespace SuperMemoAssistant.Plugins.PDF
       int              parentElementId = -1,
       int              readPage        = 0,
       Point            readPoint       = default(Point),
-      ViewModes        viewMode        = Const.DefaultViewMode,
-      int              pageMargin      = Const.DefaultPageMargin,
-      float            zoom            = Const.DefaultZoom,
+      ViewModes        viewMode        = PDFConst.DefaultViewMode,
+      int              pageMargin      = PDFConst.DefaultPageMargin,
+      float            zoom            = PDFConst.DefaultZoom,
       bool             shouldDisplay   = true)
     {
       IBinary binMem = null;
@@ -198,55 +200,6 @@ namespace SuperMemoAssistant.Plugins.PDF
         return CreationResult.FailUnknown;
       }
 
-#if false
-     try
-     {
-        var pdfPluginFolderPath = Svc<PDFPlugin>.CollectionFS.GetPluginResourcePath(Svc<PDFPlugin>.PluginContext);
-        var pdfPluginFilePath = Path.Combine(pdfPluginFolderPath,
-                                             fileName);
-
-        if (filePath != pdfPluginFilePath)
-        {
-          if (File.Exists(pdfPluginFilePath))
-          {
-            var fileInfo = new FileInfo(filePath);
-            var pdfPluginFileInfo = new FileInfo(pdfPluginFilePath);
-
-            if (fileInfo.Length != pdfPluginFileInfo.Length)
-              return CreationResult.FailFileSameNameAlreadyExists;
-          }
-
-          else
-          {
-            File.Copy(filePath,
-                      pdfPluginFilePath);
-          }
-
-          filePath = pdfPluginFilePath;
-
-          pdfEl = new PDFElement
-          {
-            FilePath = filePath,
-            StartPage = startPage,
-            EndPage = endPage,
-            StartIndex = startIdx,
-            EndIndex = endIdx,
-            ReadPage = readPage,
-            ReadPoint = readPoint,
-          };
-
-          title = pdfEl.GetInfos();
-      }
-      catch (IOException ex)
-      {
-        return CreationResult.FailCannotCopyFile;
-      }
-      catch (Exception ex)
-      {
-        return CreationResult.FailUnknown;
-      }
-#endif
-
       return Create(binMem,
                     startPage,
                     endPage,
@@ -270,13 +223,13 @@ namespace SuperMemoAssistant.Plugins.PDF
       int       parentElementId = -1,
       int       readPage        = 0,
       Point     readPoint       = default(Point),
-      ViewModes viewMode        = Const.DefaultViewMode,
-      int       pageMargin      = Const.DefaultPageMargin,
-      float     zoom            = Const.DefaultZoom,
-      bool      shouldDisplay   = true)
+      ViewModes viewMode        = PDFConst.DefaultViewMode,
+      int       pageMargin      = PDFConst.DefaultPageMargin,
+      float     zoom            = PDFConst.DefaultZoom,
+      bool      shouldDisplay   = true,
+      string    title           = null)
     {
       PDFElement pdfEl;
-      string     title;
       string     author;
       string     creationDate;
       string     filePath;
@@ -303,16 +256,21 @@ namespace SuperMemoAssistant.Plugins.PDF
           Zoom           = zoom,
         };
 
-        pdfEl.GetInfos(out title,
+        pdfEl.GetInfos(out string pdfTitle,
                        out author,
                        out creationDate);
+
+        if (string.IsNullOrWhiteSpace(title))
+          title = null;
+
+        title = title ?? pdfTitle ?? binMem.Name;
       }
       catch (Exception ex)
       {
         return CreationResult.FailUnknown;
       }
 
-      string elementHtml = string.Format(Const.ElementFormat,
+      string elementHtml = string.Format(PDFConst.ElementFormat,
                                          title,
                                          binMem.Name,
                                          pdfEl.GetJsonB64());
@@ -326,6 +284,7 @@ namespace SuperMemoAssistant.Plugins.PDF
         new ElementBuilder(ElementType.Topic,
                            elementHtml)
           .WithParent(parentElement)
+          .WithTitle(title)
           .WithReference(
             r => r.WithTitle(title)
                   .WithAuthor(author)
@@ -348,7 +307,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       if (string.IsNullOrWhiteSpace(elText))
         return null;
 
-      var reRes = Const.RE_Element.Match(elText);
+      var reRes = PDFConst.RE_Element.Match(elText);
 
       if (reRes.Success == false)
         return null;
@@ -363,42 +322,11 @@ namespace SuperMemoAssistant.Plugins.PDF
         {
           pdfEl.ElementId = elementId;
           pdfEl.FilePath  = pdfEl.BinaryMember.GetFilePath("pdf");
-          
+
           // TODO: Remove element Id test when better element transition is implemented
           // Double check
           if (Svc.SMA.UI.ElementWindow.CurrentElementId != elementId || File.Exists(pdfEl.FilePath) == false)
             return null;
-#if false
-          foreach (IElement childEl in Svc.SMA.Registry.Element[elementId].Children)
-            try
-            {
-              IComponentHtml compHtml;
-
-              if ((compHtml = childEl.ComponentGroup?.GetFirstHtmlComponent()) == null)
-                continue;
-
-              var childTextMember = compHtml.Text;
-
-              if (childTextMember == null)
-                continue;
-
-              var childText = childTextMember.Value;
-              var childPdfEl = TryReadElement(childText);
-
-              if (childPdfEl == null)
-                continue;
-
-              pdfEl.PDFExtracts.Add(new SelectInfo
-                {
-                  StartPage = childPdfEl.StartPage,
-                  EndPage = childPdfEl.EndPage,
-                  StartIndex = childPdfEl.StartIndex,
-                  EndIndex = childPdfEl.EndIndex
-                }
-              );
-            }
-            catch (Exception ex) { }
-#endif
         }
 
         return pdfEl;
@@ -484,11 +412,11 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     private string UpdateHtml(string html)
     {
-      string newElementDataDiv = string.Format(Const.ElementDataFormat,
+      string newElementDataDiv = string.Format(PDFConst.ElementDataFormat,
                                                GetJsonB64());
 
-      return Const.RE_Element.Replace(html,
-                                      newElementDataDiv);
+      return PDFConst.RE_Element.Replace(html,
+                                         newElementDataDiv);
     }
 
     private string GetJsonB64()
@@ -503,6 +431,9 @@ namespace SuperMemoAssistant.Plugins.PDF
                                 out string authors,
                                 out string date)
     {
+      authors = null;
+      date    = null;
+
       using (var pdfDoc = PdfDocument.Load(filePath))
       {
         title   = pdfDoc.Title;
@@ -511,11 +442,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       }
 
       if (string.IsNullOrWhiteSpace(title))
-      {
-        title   = Path.GetFileName(filePath);
-        authors = null;
-        date    = null;
-      }
+        title = null;
     }
 
     public void GetInfos(out string title,
@@ -529,6 +456,27 @@ namespace SuperMemoAssistant.Plugins.PDF
 
       if (StartPage >= 0 && EndPage >= 0)
         title += $" ({StartPage + 1}:{StartIndex} -> {EndPage + 1}:{EndIndex})";
+    }
+
+    public ElementBuilder.ElemReference ConfigureReferences(ElementBuilder.ElemReference r,
+                                                            string                       title = null)
+    {
+      string filePath = BinaryMember.GetFilePath("pdf");
+
+      GetInfos(out string pdfTitle,
+               out string author,
+               out string creationDate);
+
+      if (string.IsNullOrWhiteSpace(title))
+        title = null;
+
+      title = title ?? pdfTitle ?? BinaryMember.Name;
+
+      return r.WithTitle(title)
+              .WithAuthor(author)
+              .WithDate(creationDate)
+              .WithSource("PDF")
+              .WithLink(Svc.SMA.Collection.MakeRelative(filePath));
     }
 
     private void OnCollectionChanged(object                                                          sender,

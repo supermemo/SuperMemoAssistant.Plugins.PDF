@@ -39,9 +39,12 @@ using Patagames.Pdf;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Sys.Drawing;
 
-namespace SuperMemoAssistant.Plugins.PDF.Viewer
+// ReSharper disable BitwiseOperatorOnEnumWithoutFlags
+
+namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
   public partial class IPDFViewer
   {
@@ -86,16 +89,26 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                                pageIndex);
     }
 
+    protected override int GetCharIndexAtPos(int pageIdx, Point pagePoint)
+    {
+      return Document.Pages[pageIdx].Text.GetCharIndexAtPos(
+        (int)pagePoint.X,
+        (int)pagePoint.Y,
+        20.0f,
+        20.0f
+      );
+    }
+
     protected override IEnumerable<Int32Rect> NormalizeRects(IEnumerable<FS_RECTF> rects,
                                                              int                   pageIndex)
     {
       return base.NormalizeRects(rects,
                                  pageIndex);
 
-      rects = SmoothSelectionAlongY(rects.ToList());
+      /*rects = SmoothSelectionAlongY(rects.ToList());
 
       return rects.Select(r => PageToDeviceRect(r,
-                                                pageIndex));
+                                                pageIndex));*/
     }
 
     #endregion
@@ -112,10 +125,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       bool handled    = false;
       bool invalidate = false;
 
-      if (pageIndex >= 0 && Document.Pages[pageIndex].Text.GetCharIndexAtPos((float)pagePoint.X,
-                                                                             (float)pagePoint.Y,
-                                                                             10.0f,
-                                                                             10.0f) < 0)
+      if (pageIndex >= 0 && GetCharIndexAtPos(pageIndex, pagePoint) < 0)
       {
         SelectedImage = null;
         SelectedArea  = null;
@@ -171,10 +181,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         }
 
         if (pageIndex >= 0)
-          if (Document.Pages[pageIndex].Text.GetCharIndexAtPos((float)pagePoint.X,
-                                                               (float)pagePoint.Y,
-                                                               10.0f,
-                                                               10.0f) < 0)
+          if (GetCharIndexAtPos(pageIndex, pagePoint) < 0)
           {
             if (SelectedPages != null && kbMod == KeyboardModifiers.ShiftKey)
             {
@@ -404,11 +411,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       if (selInfo.StartPage < 0 || selInfo.EndPage < 0)
         return;
 
-      int charIdx = Document.Pages[pageIdx].Text.GetCharIndexAtPos(
-        (float)pagePoint.X,
-        (float)pagePoint.Y,
-        10.0f,
-        10.0f);
+      int charIdx = GetCharIndexAtPos(pageIdx, pagePoint);
 
       if (charIdx < 0)
         return;

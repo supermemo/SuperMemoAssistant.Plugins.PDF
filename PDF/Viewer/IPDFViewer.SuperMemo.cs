@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/06/12 20:17
-// Modified On:  2018/12/10 02:19
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/15 01:06
 // Modified By:  Alexis
 
 #endregion
@@ -37,10 +37,11 @@ using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Elements;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
+using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Sys.Drawing;
 
-namespace SuperMemoAssistant.Plugins.PDF.Viewer
+namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
   public partial class IPDFViewer
   {
@@ -60,7 +61,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           PageIndex   = SelectedImage.PageIndex,
         };
         var imgObj           = (PdfImageObject)Document.Pages[SelectedImage.PageIndex].PageObjects[SelectedImage.ObjectIndex];
-        var imgRegistryTitle = TitleOrFileName + $": image {SelectedImage.ObjectIndex} page {SelectedImage.PageIndex}";
+        var imgRegistryTitle = TitleOrFileName + $": {SelectedImage}";
 
         ret = CreateImageExtract(imgExtract,
                                  imgObj.Bitmap.Image,
@@ -88,7 +89,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         if (img == null)
           return false;
 
-        var imgRegistryTitle = TitleOrFileName + $": area extract page {SelectedArea.PageIndex}";
+        var imgRegistryTitle = TitleOrFileName + $": {SelectedArea}";
 
         ret = CreateImageExtract(imgExtract,
                                  img,
@@ -110,6 +111,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                              text,
                              false)
             .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
+            .WithReference(r => PDFElement.ConfigureReferences(r))
             .DoNotDisplay()
         );
 
@@ -147,6 +149,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
           EndIndex   = Document.Pages[selPages.EndPage].Text.CountChars
         };
 
+        if (IsPageInClientRect(selPages.EndPage) == false)
+          Document.Pages[selPages.EndPage].Dispose();
+
         ret = CreateIPDFExtract(selInfo);
 
         if (ret)
@@ -166,7 +171,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       return ret;
     }
 
-    protected bool CreateIPDFExtract(SelectInfo selInfo)
+    protected bool CreateIPDFExtract(SelectInfo selInfo,
+                                     string     title = null)
     {
       Save(false);
 
@@ -184,7 +190,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                                    PDFElement.ViewMode,
                                    PDFElement.PageMargin,
                                    PDFElement.Zoom,
-                                   false) == PDFElement.CreationResult.Ok;
+                                   false,
+                                   title) == PDFElement.CreationResult.Ok;
 
       if (ret)
       {
@@ -216,6 +223,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         new ElementBuilder(ElementType.Topic,
                            new ElementBuilder.ImageContent(imgRegistryId))
           .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
+          .WithReference(r =>
+                           PDFElement.ConfigureReferences(r)
+                                     .WithComment(title))
           .DoNotDisplay()
       );
 
@@ -329,6 +339,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                         CharsCount = lastPageCharCount - PDFElement.EndIndex,
                         Color      = OutOfExtractExtractColor
                       });
+
+      if (IsPageInClientRect(PDFElement.EndPage) == false)
+        Document.Pages[PDFElement.EndPage].Dispose();
     }
 
     #endregion

@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/06/11 14:29
-// Modified On:  2018/12/09 01:37
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/13 16:46
 // Modified By:  Alexis
 
 #endregion
@@ -35,19 +35,20 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
 using JetBrains.Annotations;
+using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
+using SuperMemoAssistant.Plugins.PDF.Extensions;
+using SuperMemoAssistant.Plugins.PDF.Models;
 
-namespace SuperMemoAssistant.Plugins.PDF.Viewer
+namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
   /// <inheritdoc />
   public partial class IPDFViewer : PdfViewer
   {
     #region Properties & Fields - Non-Public
 
-    private int _ignoreChanges = 0;
-
-    protected PDFElement                             PDFElement             { get; set; }
+    private   int                                    _ignoreChanges = 0;
     protected Dictionary<int, List<HighlightInfo>>   ExtractHighlights      { get; } = new Dictionary<int, List<HighlightInfo>>();
     protected Dictionary<int, List<PDFImageExtract>> ImageExtractHighlights { get; } = new Dictionary<int, List<PDFImageExtract>>();
 
@@ -64,8 +65,17 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
     public IPDFViewer()
     {
-      _smoothSelection    = true;
+      _smoothSelection = true;
     }
+
+    #endregion
+
+
+
+
+    #region Properties & Fields - Public
+
+    public PDFElement PDFElement { get; protected set; }
 
     #endregion
 
@@ -78,8 +88,6 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     {
       _ignoreChanges++;
 
-      base.OnDocumentLoaded(ev);
-
       DeselectArea();
       DeselectImage();
       DeselectPages();
@@ -89,9 +97,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       RemoveHighlightFromText();
 
       PDFElement.PDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.StartPage,
-                                                                   e.EndPage,
-                                                                   e.StartIndex,
-                                                                   e.EndIndex));
+                                                                  e.EndPage,
+                                                                  e.StartIndex,
+                                                                  e.EndIndex));
       PDFElement.SMExtracts.ForEach(e => AddSMExtractHighlight(e.StartPage,
                                                                e.EndPage,
                                                                e.StartIndex,
@@ -101,12 +109,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
       GenerateOutOfExtractHighlights();
 
-      ViewMode = PDFElement.ViewMode;
+      ViewMode   = PDFElement.ViewMode;
       PageMargin = new Thickness(PDFElement.PageMargin);
-      Zoom = PDFElement.Zoom;
+      Zoom       = PDFElement.Zoom;
 
       ScrollToPoint(PDFElement.ReadPage,
                     PDFElement.ReadPoint);
+
+      base.OnDocumentLoaded(ev);
 
       _ignoreChanges--;
     }
@@ -114,20 +124,18 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
     protected override void OnSizeModeChanged(EventArgs e)
     {
       base.OnSizeModeChanged(e);
-      
+
       if (_ignoreChanges <= 0 && PDFElement != null)
-      {
         if (SizeMode != SizeModes.Zoom)
         {
           _preventStackOverflowBugWorkaround = true;
-          Zoom = (float)(CalcActualRect(CurrentIndex).Width / (CurrentPage.Width / 72.0 * 96));
+          Zoom                               = (float)(CalcActualRect(CurrentIndex).Width / (CurrentPage.Width / 72.0 * 96));
           _preventStackOverflowBugWorkaround = false;
-          
+
           PDFElement.Zoom = Zoom;
 
           Save(true);
         }
-      }
     }
 
     protected override void OnViewModeChanged(EventArgs e)
@@ -212,6 +220,46 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
       else
         OnDocumentLoaded(null);
+    }
+
+    public void ExtractBookmark(PdfBookmark bookmark)
+    {
+      PdfDestination destination = bookmark.Action?.Destination ?? bookmark.Destination;
+
+      if (destination == null)
+        return;
+
+      int firstPage = destination.PageIndex;
+      int lastPage  = Document.Pages.Count - 1;
+
+      PdfBookmark nextBookmark = bookmark.GetNextBookmark(Document);
+
+      if (nextBookmark != null)
+      {
+        PdfDestination nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
+
+        if (nextDestination.PageIndex - 1 > firstPage)
+          lastPage = nextDestination.PageIndex - 1;
+      }
+
+      var selInfo = new SelectInfo
+      {
+        StartPage  = firstPage,
+        EndPage    = lastPage,
+        StartIndex = 0,
+        EndIndex   = Document.Pages[lastPage].Text.CountChars,
+      };
+
+      CreateIPDFExtract(selInfo, bookmark.Title);
+    }
+
+    public void ProcessBookmark(PdfBookmark bookmark)
+    {
+      if (bookmark.Action != null)
+        ProcessAction(bookmark.Action);
+
+      else if (bookmark.Destination != null)
+        ProcessDestination(bookmark.Destination);
     }
 
     protected void Save(bool delayed)

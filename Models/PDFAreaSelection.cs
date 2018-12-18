@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/11/30 00:29
-// Modified On:  2018/12/10 01:49
+// Created On:   2018/12/10 14:45
+// Modified On:  2018/12/17 11:19
 // Modified By:  Alexis
 
 #endregion
@@ -33,7 +33,7 @@
 using System;
 using System.Drawing;
 
-namespace SuperMemoAssistant.Plugins.PDF
+namespace SuperMemoAssistant.Plugins.PDF.Models
 {
   public class PDFAreaSelection
   {
@@ -64,6 +64,18 @@ namespace SuperMemoAssistant.Plugins.PDF
     public double Y1        { get; set; }
     public double X2        { get; set; }
     public double Y2        { get; set; }
+
+    #endregion
+
+
+
+
+    #region Methods Impl
+
+    public override string ToString()
+    {
+      return $"area extract page {PageIndex}";
+    }
 
     #endregion
 

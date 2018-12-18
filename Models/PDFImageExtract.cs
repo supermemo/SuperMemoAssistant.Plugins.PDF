@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/11/15 23:50
-// Modified On:  2018/12/09 23:58
+// Created On:   2018/12/10 14:45
+// Modified On:  2018/12/17 11:19
 // Modified By:  Alexis
 
 #endregion
@@ -30,29 +30,29 @@
 
 
 
-using System.Text.RegularExpressions;
-using Patagames.Pdf.Net.Controls.Wpf;
+using System.Drawing;
 
-namespace SuperMemoAssistant.Plugins.PDF
+namespace SuperMemoAssistant.Plugins.PDF.Models
 {
-  internal class Const
+  public class PDFImageExtract
   {
-    #region Constants & Statics
+    #region Properties & Fields - Public
 
-    // HTML snippets here are formatted in the final form they should assume in SM.
+    public int       PageIndex   { get; set; }
+    public int       ObjectIndex { get; set; }
+    public Rectangle BoundingBox { get; set; }
 
-    public const string ElementFormat = @"<DIV id=pdf-element-title>{0}</DIV>
-<DIV id=pdf-element-filename>{1}</DIV>
-<DIV id=pdf-element-data>{2}</DIV>";
-    public const string ElementDataFormat = "<DIV id=pdf-element-data>{0}</DIV>";
-
-    public static readonly Regex RE_Element = new Regex("<DIV id=pdf-element-data>([^<]+)</DIV>",
-                                                        RegexOptions.IgnoreCase);
+    #endregion
 
 
-    public const ViewModes DefaultViewMode   = ViewModes.Vertical;
-    public const int       DefaultPageMargin = 4;
-    public const float     DefaultZoom       = 1.0f;
+
+
+    #region Methods Impl
+
+    public override string ToString()
+    {
+      return $"image {ObjectIndex} page {PageIndex}";
+    }
 
     #endregion
   }

@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/10/26 21:19
-// Modified On:  2018/11/21 00:57
+// Created On:   2018/12/12 01:33
+// Modified On:  2018/12/13 12:39
 // Modified By:  Alexis
 
 #endregion
@@ -30,21 +30,36 @@
 
 
 
-using System.Windows;
+using System;
+using System.Globalization;
+using System.Windows.Data;
 
-namespace SuperMemoAssistant.Plugins.PDF
+namespace SuperMemoAssistant.Plugins.PDF.WPF
 {
-  public class PDFCfg
+  public class GreaterConverter : IValueConverter
   {
-    #region Properties & Fields - Public
+    #region Methods Impl
 
-    public bool CopyDocumentToFS { get; set; } = false;
+    /// <inheritdoc />
+    public object Convert(object      value,
+                          Type        targetType,
+                          object      parameter,
+                          CultureInfo culture)
+    {
+      int val1 = System.Convert.ToInt32(value);
+      int val2 = System.Convert.ToInt32(parameter);
 
-    public double      WindowTop    { get; set; } = 100;
-    public double      WindowHeight { get; set; } = 600;
-    public double      WindowLeft   { get; set; } = 100;
-    public double      WindowWidth  { get; set; } = 800;
-    public WindowState WindowState  { get; set; } = WindowState.Normal;
+      return val1 > val2;
+    }
+
+    /// <inheritdoc />
+    public object ConvertBack(object      value,
+                              Type        targetType,
+                              object      parameter,
+                              CultureInfo culture)
+    {
+      throw new NotImplementedException();
+    }
 
     #endregion
   }

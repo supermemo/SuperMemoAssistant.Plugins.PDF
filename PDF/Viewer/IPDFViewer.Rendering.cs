@@ -35,18 +35,20 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Media;
+using Anotar.Serilog;
 using Patagames.Pdf;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
+using SuperMemoAssistant.Plugins.PDF.Models;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using Pen = System.Windows.Media.Pen;
 
-namespace SuperMemoAssistant.Plugins.PDF.Viewer
+namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
   public partial class IPDFViewer
   {
@@ -237,8 +239,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
 
         int scaledPageWidth = (int)pageRenderRect.Width;
         int scaledPageHeight = (int)pageRenderRect.Height;
-
-        float scale = scaledPageWidth / page.Width;
+        
         Bitmap fullRender;
 
         using (var bmp = new PdfBitmap(scaledPageWidth,
@@ -305,6 +306,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       }
       catch (Exception ex)
       {
+        LogTo.Error(ex,
+                    $"Failed to render PDF area: page {pageIndex}, {lt}:{rb}");
         return null;
       }
     }

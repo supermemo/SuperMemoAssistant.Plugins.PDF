@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/11/19 13:14
-// Modified On:  2018/11/26 13:38
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/13 12:39
 // Modified By:  Alexis
 
 #endregion
@@ -36,28 +36,29 @@ using System.Windows;
 using System.Windows.Threading;
 using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
+using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Services;
 
-namespace SuperMemoAssistant.Plugins.PDF
+namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
   public class PDFState
   {
     #region Constants & Statics
 
     public static PDFState Instance { get; } = new PDFState();
-    
+
     #endregion
 
 
 
 
     #region Properties & Fields - Non-Public
-    
+
     protected PDFWindow PdfWindow { get; set; }
 
     protected SynchronizationContext SyncContext { get; set; }
 
-    protected PDFElement     LastElement              { get; set; }
+    protected PDFElement LastElement { get; set; }
 
     #endregion
 
@@ -97,12 +98,7 @@ namespace SuperMemoAssistant.Plugins.PDF
         return;
 
       if (LastElement?.ElementId == newElem.Id)
-      {
-        //SyncContext.Post(_ => PdfWindow.Activate(),
-                         //null);
-
         return;
-      }
 
       string html = ctrlHtml?.Text ?? string.Empty;
       PDFElement pdfEl = PDFElement.TryReadElement(html,
@@ -118,9 +114,9 @@ namespace SuperMemoAssistant.Plugins.PDF
         delegate
         {
           bool close = LastElement != null && pdfEl == null;
-          
+
           CloseElement();
-          
+
           OpenElement(pdfEl);
 
           if (close)
@@ -182,7 +178,10 @@ namespace SuperMemoAssistant.Plugins.PDF
       Config.WindowLeft   = left;
       Config.WindowWidth  = width;
       Config.WindowState  = windowState;
+    }
 
+    public void SaveConfig()
+    {
       Svc<PDFPlugin>.Configuration.Save(Config);
     }
 
@@ -195,8 +194,6 @@ namespace SuperMemoAssistant.Plugins.PDF
     private void SetTopMost(bool topmost,
                             bool send = false)
     {
-      return;
-  #if false
       if (send)
         SyncContext.Send(SetTopMost,
                          topmost);
@@ -204,7 +201,6 @@ namespace SuperMemoAssistant.Plugins.PDF
       else
         SyncContext.Post(SetTopMost,
                          topmost);
-  #endif
     }
 
     private void SetTopMost(object o)

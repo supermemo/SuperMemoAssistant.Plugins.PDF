@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/11/22 11:17
-// Modified On:  2018/12/06 22:35
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/13 16:26
 // Modified By:  Alexis
 
 #endregion
@@ -32,13 +32,14 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
-namespace SuperMemoAssistant.Plugins.PDF.Viewer
+namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
   public partial class IPDFViewer
   {
@@ -60,9 +61,16 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       var text = SelectedText;
 
       text = text.Replace("\uFFFE",
-                          ""); // "-\r\n"
+                          "-\n");
 
-      var win1252Encoding = Encoding.GetEncoding("windows-1252");
+      text = HtmlEncode(text);
+
+      return text.Replace("\r\n",
+                          "\n")
+                 .Replace("\n",
+                          "\n<br />");
+
+      /*var win1252Encoding = Encoding.GetEncoding("windows-1252");
 
       var utf8Bytes = Encoding.UTF8.GetBytes(text);
       var win1252Bytes = Encoding.Convert(
@@ -70,7 +78,22 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
         win1252Encoding,
         utf8Bytes);
 
-      return win1252Encoding.GetString(win1252Bytes);
+      return win1252Encoding.GetString(win1252Bytes);*/
+    }
+
+    public static string HtmlEncode(string value)
+    {
+      // call the normal HtmlEncode first
+      char[]        chars        = WebUtility.HtmlEncode(value).ToCharArray();
+      StringBuilder encodedValue = new StringBuilder();
+
+      foreach (char c in chars)
+        if ((int)c > 127) // above normal ASCII
+          encodedValue.Append("&#" + (int)c + ";");
+        else
+          encodedValue.Append(c);
+
+      return encodedValue.ToString();
     }
 
     protected bool IsEndOfSelectionInScreen()
@@ -96,7 +119,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       return ClientRect.Contains(topLeftPt);
     }
 
-    public override void ScrollToPoint(int pageIndex, Point pagePoint)
+    public override void ScrollToPoint(int   pageIndex,
+                                       Point pagePoint)
     {
       int count = Document?.Pages.Count ?? 0;
 
@@ -117,7 +141,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
       ScrollToChar(SelectInfo.EndPage,
                    SelectInfo.EndIndex);
 
-      var scrollY = -ClientRect.Size.Height / 2 - _autoScrollPosition.Y;
+      var scrollY = -_viewport.Height / 2 - _autoScrollPosition.Y;
 
       SetVerticalOffset(scrollY);
     }
@@ -162,18 +186,40 @@ namespace SuperMemoAssistant.Plugins.PDF.Viewer
                        ti.Rects[0].top);
     }
 
-    protected int GetTextLength(int page,
+    protected int GetTextLength(int pageIdx,
                                 int startIdx = 0,
                                 int endIdx   = 0)
     {
-      int len = Document.Pages[page].Text.CountChars;
+      var page = Document.Pages[pageIdx];
 
-      if (endIdx > 0)
-        len -= len - (endIdx + 1);
+      try
+      {
+        var text = page.Text;
 
-      len -= startIdx;
+        int len = text.CountChars;
 
-      return len;
+        if (endIdx > 0)
+          len -= len - (endIdx + 1);
+
+        len -= startIdx;
+
+        return len;
+      }
+      finally
+      {
+        if (IsPageInClientRect(pageIdx) == false)
+          page?.Dispose();
+      }
+    }
+
+    protected bool IsPageInClientRect(int pageIdx)
+    {
+      if (pageIdx < 0 || pageIdx >= Document.Pages.Count)
+        return false;
+
+      Rect actualRect = CalcActualRect(pageIdx);
+
+      return actualRect.IntersectsWith(ClientRect);
     }
 
     protected int MouseToPagePoint(out Point pagePoint)
