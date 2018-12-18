@@ -7,6 +7,7 @@ Incremental PDF for SuperMemo
 ### Keyboard & Mouse controls
 
 - Core features
+  - Open a PDF: Ctrl+Win+I
   - Knowledge
     - Alt+X: SuperMemo Extract (extract selection as text or image)
     - Ctrl+Alt+X: PDF Extract (extract selection as pdf pages)
