@@ -46,3 +46,13 @@ Incremental PDF for SuperMemo
     - Ctrl+C: Copy selection
     - Escape: Deselect Area
     
+### View Modes
+
+![View Modes](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/PDF-ViewModes.png)
+
+- 1: Toggle inter-page margin
+- 2: Single page mode
+- 3: Continuous vertical page mode
+- 4: Continuous horizontal page mode
+- 5: Grid mode
+- 6: Book mode
