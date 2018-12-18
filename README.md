@@ -1,3 +1,5 @@
+![Incremental PDF Plugin](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/SMA-Incremental-PDF.jpg)
+
 ## SuperMemoAssistant.Plugins.PDF
 
 Incremental PDF for SuperMemo
