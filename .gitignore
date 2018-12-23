@@ -328,6 +328,4 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
-/icudt.dll
-/Pdf.Net.SDK.licx
 *.rsls

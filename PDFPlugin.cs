@@ -78,11 +78,11 @@ namespace SuperMemoAssistant.Plugins.PDF
       Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
 
       Svc<PDFPlugin>.KeyboardHotKey.RegisterHotKey(new HotKey(true,
-                                                              false,
-                                                              false,
                                                               true,
+                                                              false,
+                                                              false,
                                                               Key.I,
-                                                              "IPDF: Open file"),
+                                                              "PDF: Open file"),
                                                    PDFState.Instance.OpenFile);
     }
 

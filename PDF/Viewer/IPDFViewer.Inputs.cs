@@ -484,15 +484,20 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected bool ForwardKeysToSM(Keys keys,
                                    int  timeout = 100)
     {
+      var autoElem = Svc.SMA.UI.ElementWindow.AutomationElement;
+
+      if (autoElem == null)
+        return false;
+
       if (keys.Alt && keys.Ctrl == false && keys.Win == false)
         return Sys.IO.Devices.Keyboard.PostSysKeysAsync(
-          Svc.SMA.UI.ElementWindow.AutomationElement.WindowHandle,
+          autoElem.WindowHandle,
           keys
         ).Wait(timeout);
 
       else
         return Sys.IO.Devices.Keyboard.PostKeysAsync(
-          Svc.SMA.UI.ElementWindow.AutomationElement.WindowHandle,
+          autoElem.WindowHandle,
           keys
         ).Wait(timeout);
     }

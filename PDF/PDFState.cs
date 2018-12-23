@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/13 12:39
+// Modified On:  2018/12/21 03:58
 // Modified By:  Alexis
 
 #endregion
@@ -157,14 +157,25 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       PdfWindow.Activate();
     }
 
-    public void OpenFile()
+    public bool OpenFile()
     {
-      EnsurePdfWindow();
+      //EnsurePdfWindow();
 
-      string filePath = PdfWindow.OpenFileDialog();
+      SyncContext.Post(
+        _ =>
+        {
+          if (PdfWindow == null)
+            CreatePdfWindow(null);
 
-      if (filePath != null)
-        PDFElement.Create(filePath);
+          string filePath = PdfWindow.OpenFileDialog();
+
+          if (filePath != null)
+            PDFElement.Create(filePath);
+        },
+        null
+      );
+
+      return true;
     }
 
     public void UpdateWindowPosition(double      top,
