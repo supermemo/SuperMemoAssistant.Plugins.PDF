@@ -165,7 +165,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       if (string.IsNullOrWhiteSpace(pdfTitle))
         pdfTitle = IPDFViewer.PDFElement.BinaryMember.Name;
 
-      Title = PDFConst.WindowTitle + " - " + pdfTitle;
+      Title = pdfTitle + " - " + PDFConst.WindowTitle;
 
       Bookmarks.Clear();
 

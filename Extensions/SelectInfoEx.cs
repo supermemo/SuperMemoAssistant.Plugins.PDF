@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/11/19 16:37
-// Modified On:  2018/11/20 22:40
+// Modified On:  2018/12/24 03:21
 // Modified By:  Alexis
 
 #endregion
@@ -79,6 +79,13 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
       }
 
       return len;
+    }
+
+
+    public static bool IsTextSelectionValid(this SelectInfo selInfo)
+    {
+      return selInfo.StartPage >= 0 && selInfo.StartIndex >= 0
+        && selInfo.EndPage >= 0 && selInfo.EndIndex >= 0;
     }
 
     #endregion

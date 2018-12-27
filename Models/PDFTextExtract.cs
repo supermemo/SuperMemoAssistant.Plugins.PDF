@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:45
-// Modified On:  2018/12/17 11:19
+// Created On:   2018/12/23 17:09
+// Modified On:  2018/12/23 17:21
 // Modified By:  Alexis
 
 #endregion
@@ -30,32 +30,45 @@
 
 
 
-using System.Drawing;
 using Newtonsoft.Json;
+using Patagames.Pdf.Net.Controls.Wpf;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
-  public class PDFImageExtract
+  public class PDFTextExtract
   {
     #region Properties & Fields - Public
-    
-    [JsonProperty(PropertyName = "PI")]
-    public int       PageIndex   { get; set; }
-    [JsonProperty(PropertyName = "OI")]
-    public int       ObjectIndex { get; set; }
-    [JsonProperty(PropertyName = "BB")]
-    public Rectangle BoundingBox { get; set; }
+
+    [JsonProperty(PropertyName = "EI")] public int EndIndex;
+    [JsonProperty(PropertyName = "EP")] public int EndPage;
+    [JsonProperty(PropertyName = "SI")] public int StartIndex;
+    [JsonProperty(PropertyName = "SP")] public int StartPage;
+
+    [JsonProperty(PropertyName = "StartPage")]
+    public int StartPageLegacy { set => StartPage = value; }
+    [JsonProperty(PropertyName = "StartIndex")]
+    public int StartIndexLegacy { set => StartIndex = value; }
+    [JsonProperty(PropertyName = "EndPage")]
+    public int EndPageLegacy { set => EndPage = value; }
+    [JsonProperty(PropertyName = "EndIndex")]
+    public int EndIndexLegacy { set => EndIndex = value; }
 
     #endregion
 
 
 
 
-    #region Methods Impl
+    #region Methods
 
-    public override string ToString()
+    public static implicit operator PDFTextExtract(SelectInfo selInfo)
     {
-      return $"image {ObjectIndex} page {PageIndex}";
+      return new PDFTextExtract
+      {
+        StartPage  = selInfo.StartPage,
+        StartIndex = selInfo.StartIndex,
+        EndPage    = selInfo.EndPage,
+        EndIndex   = selInfo.EndIndex
+      };
     }
 
     #endregion

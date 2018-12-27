@@ -31,6 +31,7 @@
 
 
 using System.Windows;
+using SuperMemoAssistant.Plugins.PDF.MathPix;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
@@ -47,6 +48,10 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     public WindowState WindowState  { get; set; } = WindowState.Normal;
 
     public double SidePanelWidth { get; set; } = 256;
+
+    public string MathPixAppId { get; set; } = null;
+    public string MathPixAppKey { get; set; } = null;
+    public MathPixAPI.Metadata MathPixMetadata { get; set; } = null;
 
     #endregion
   }

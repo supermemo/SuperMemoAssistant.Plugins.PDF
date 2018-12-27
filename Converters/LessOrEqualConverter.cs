@@ -34,7 +34,7 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace SuperMemoAssistant.Plugins.PDF.WPF
+namespace SuperMemoAssistant.Plugins.PDF.Converters
 {
   public class LessOrEqualConverter : IValueConverter
   {

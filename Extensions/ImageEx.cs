@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:45
-// Modified On:  2018/12/17 11:19
+// Created On:   2018/12/26 16:56
+// Modified On:  2018/12/26 16:59
 // Modified By:  Alexis
 
 #endregion
@@ -30,32 +30,26 @@
 
 
 
+using System;
 using System.Drawing;
-using Newtonsoft.Json;
+using System.Drawing.Imaging;
+using System.IO;
 
-namespace SuperMemoAssistant.Plugins.PDF.Models
+namespace SuperMemoAssistant.Plugins.PDF.Extensions
 {
-  public class PDFImageExtract
+  public static class ImageEx
   {
-    #region Properties & Fields - Public
-    
-    [JsonProperty(PropertyName = "PI")]
-    public int       PageIndex   { get; set; }
-    [JsonProperty(PropertyName = "OI")]
-    public int       ObjectIndex { get; set; }
-    [JsonProperty(PropertyName = "BB")]
-    public Rectangle BoundingBox { get; set; }
+    #region Methods
 
-    #endregion
-
-
-
-
-    #region Methods Impl
-
-    public override string ToString()
+    public static string GetBase64(this Image  image,
+                                   ImageFormat format)
     {
-      return $"image {ObjectIndex} page {PageIndex}";
+      using (MemoryStream ms = new MemoryStream())
+      {
+        image.Save(ms,
+                   format);
+        return Convert.ToBase64String(ms.ToArray());
+      }
     }
 
     #endregion

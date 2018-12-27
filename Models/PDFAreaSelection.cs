@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:45
-// Modified On:  2018/12/17 11:19
+// Modified On:  2018/12/26 17:19
 // Modified By:  Alexis
 
 #endregion
@@ -58,12 +58,13 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
 
 
     #region Properties & Fields - Public
-
-    public int    PageIndex { get; set; }
-    public double X1        { get; set; }
-    public double Y1        { get; set; }
-    public double X2        { get; set; }
-    public double Y2        { get; set; }
+    
+    public AreaType Type { get; set; } = AreaType.Normal;
+    public int      PageIndex { get; set; }
+    public double   X1        { get; set; }
+    public double   Y1        { get; set; }
+    public double   X2        { get; set; }
+    public double   Y2        { get; set; }
 
     #endregion
 
@@ -116,6 +117,19 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
                                        y1),
               new System.Windows.Point(x2,
                                        y2));
+    }
+
+    #endregion
+
+
+
+
+    #region Enums
+
+    public enum AreaType
+    {
+      Normal = 1,
+      Ocr    = 2,
     }
 
     #endregion

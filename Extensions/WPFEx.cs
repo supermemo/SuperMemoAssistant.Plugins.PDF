@@ -33,7 +33,7 @@
 using System.Linq;
 using System.Windows;
 
-namespace SuperMemoAssistant.Plugins.PDF.Utils
+namespace SuperMemoAssistant.Plugins.PDF.Extensions
 {
   internal static class WPFEx
   {

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/20 14:42
+// Modified On:  2018/12/23 17:37
 // Modified By:  Alexis
 
 #endregion
@@ -51,6 +51,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       bool ret = false;
 
+      bool txtExtract  = false;
+      var  imgExtracts = new List<PDFImageExtract>();
+      var  contents    = new List<ElementBuilder.IContent>();
+
       // Image extract
       if (SelectedImage != null)
       {
@@ -63,16 +67,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         var imgObj           = (PdfImageObject)Document.Pages[SelectedImage.PageIndex].PageObjects[SelectedImage.ObjectIndex];
         var imgRegistryTitle = TitleOrFileName + $": {SelectedImage}";
 
-        ret = CreateImageExtract(imgExtract,
-                                 imgObj.Bitmap.Image,
-                                 imgRegistryTitle);
+        var content = CreateImageContent(imgExtract,
+                                         imgObj.Bitmap.Image,
+                                         imgRegistryTitle);
 
-        if (ret)
-          DeselectImage();
+        if (content != null)
+        {
+          imgExtracts.Add(imgExtract);
+          contents.Add(content);
+        }
       }
 
       // Area extract
-      else if (SelectedArea != null)
+      if (SelectedArea != null)
       {
         var imgExtract = new PDFImageExtract
         {
@@ -86,30 +93,36 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                              lt,
                              rb);
 
-        if (img == null)
-          return false;
-
         var imgRegistryTitle = TitleOrFileName + $": {SelectedArea}";
 
-        ret = CreateImageExtract(imgExtract,
-                                 img,
-                                 imgRegistryTitle);
+        var content = CreateImageContent(imgExtract,
+                                         img,
+                                         imgRegistryTitle);
 
-        if (ret)
-          DeselectArea();
+        if (content != null)
+        {
+          imgExtracts.Add(imgExtract);
+          contents.Add(content);
+        }
       }
 
       // Text extract
-      else if (string.IsNullOrWhiteSpace(SelectedText) == false)
+      if (string.IsNullOrWhiteSpace(SelectedText) == false)
       {
-        string text = SelectedTextEncoded();
+        string text = GetSelectedTextHtml();
 
+        contents.Add(new ElementBuilder.TextContent(true,
+                                                    text));
+        txtExtract = true;
+      }
+
+      if (contents.Count > 0)
+      {
         Save(false);
 
         ret = Svc.SMA.Registry.Element.Add(
           new ElementBuilder(ElementType.Topic,
-                             text,
-                             false)
+                             contents.ToArray())
             .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
             .WithReference(r => PDFElement.ConfigureReferences(r))
             .DoNotDisplay()
@@ -117,94 +130,48 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         if (ret)
         {
-          var selInfo = SelectInfo;
+          foreach (var imgExtract in imgExtracts)
+          {
+            PDFElement.SMImgExtracts.Add(imgExtract);
+            AddImgExtractHighlight(imgExtract.PageIndex,
+                                   imgExtract.BoundingBox);
+          }
 
-          PDFElement.SMExtracts.Add(selInfo);
+          if (txtExtract)
+          {
+            var selInfo = SelectInfo;
+
+            PDFElement.SMExtracts.Add(selInfo);
+            AddSMExtractHighlight(selInfo.StartPage,
+                                  selInfo.EndPage,
+                                  selInfo.StartIndex,
+                                  selInfo.EndIndex);
+          }
+
           Save(false);
-
-          AddSMExtractHighlight(selInfo.StartPage,
-                                selInfo.EndPage,
-                                selInfo.StartIndex,
-                                selInfo.EndIndex);
-
-          DeselectText();
+          DeselectAll();
         }
       }
 
       return ret;
     }
 
-    protected bool CreateIPDFExtract()
+    protected ElementBuilder.IContent CreateImageContent(PDFImageExtract extract,
+                                                         Image           image,
+                                                         string          title)
     {
-      bool ret = false;
+      if (image == null)
+        return null;
 
-      if (SelectedPages != null)
-      {
-        var selPages = SelectedPages.Normalized;
-        var selInfo = new SelectInfo
-        {
-          StartPage  = selPages.StartPage,
-          StartIndex = 0,
-          EndPage    = selPages.EndPage,
-          EndIndex   = Document.Pages[selPages.EndPage].Text.CountChars
-        };
+      int imgRegistryId = Svc.SMA.Registry.Image.AddMember(
+        new ImageWrapper(image),
+        title
+      );
 
-        if (IsPageInClientRect(selPages.EndPage) == false)
-          Document.Pages[selPages.EndPage].Dispose();
+      if (imgRegistryId <= 0)
+        return null;
 
-        ret = CreateIPDFExtract(selInfo);
-
-        if (ret)
-          DeselectPages();
-      }
-
-      else if (string.IsNullOrWhiteSpace(SelectedText) == false)
-      {
-        var selInfo = SelectInfo;
-
-        ret = CreateIPDFExtract(selInfo);
-
-        if (ret)
-          DeselectText();
-      }
-
-      return ret;
-    }
-
-    protected bool CreateIPDFExtract(SelectInfo selInfo,
-                                     string     title = null)
-    {
-      Save(false);
-
-      var extractPagePt = GetCharPointEx(selInfo.StartPage,
-                                         selInfo.StartIndex);
-
-      bool ret = PDFElement.Create(PDFElement.BinaryMember,
-                                   selInfo.StartPage,
-                                   selInfo.EndPage,
-                                   selInfo.StartIndex,
-                                   selInfo.EndIndex,
-                                   PDFElement.ElementId,
-                                   selInfo.StartPage,
-                                   extractPagePt,
-                                   PDFElement.ViewMode,
-                                   PDFElement.PageMargin,
-                                   PDFElement.Zoom,
-                                   false,
-                                   title) == PDFElement.CreationResult.Ok;
-
-      if (ret)
-      {
-        PDFElement.PDFExtracts.Add(selInfo);
-        Save(false);
-
-        AddIPDFExtractHighlight(selInfo.StartPage,
-                                selInfo.EndPage,
-                                selInfo.StartIndex,
-                                selInfo.EndIndex);
-      }
-
-      return ret;
+      return new ElementBuilder.ImageContent(imgRegistryId);
     }
 
     protected bool CreateImageExtract(PDFImageExtract extract,
@@ -240,6 +207,84 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       return ret;
     }
+
+    // PDF Extracts
+
+    protected bool CreatePDFExtract()
+    {
+      bool ret = false;
+
+      if (SelectedPages != null)
+      {
+        var selPages = SelectedPages.Normalized;
+        var selInfo = new SelectInfo
+        {
+          StartPage  = selPages.StartPage,
+          StartIndex = 0,
+          EndPage    = selPages.EndPage,
+          EndIndex   = Document.Pages[selPages.EndPage].Text.CountChars
+        };
+
+        if (IsPageInClientRect(selPages.EndPage) == false)
+          Document.Pages[selPages.EndPage].Dispose();
+
+        ret = CreatePDFExtract(selInfo);
+
+        if (ret)
+          DeselectPages();
+      }
+
+      else if (string.IsNullOrWhiteSpace(SelectedText) == false)
+      {
+        var selInfo = SelectInfo;
+
+        ret = CreatePDFExtract(selInfo);
+
+        if (ret)
+          DeselectText();
+      }
+
+      return ret;
+    }
+
+    protected bool CreatePDFExtract(SelectInfo selInfo,
+                                    string     title = null)
+    {
+      Save(false);
+
+      var extractPagePt = GetCharPointEx(selInfo.StartPage,
+                                         selInfo.StartIndex);
+
+      bool ret = PDFElement.Create(PDFElement.BinaryMember,
+                                   selInfo.StartPage,
+                                   selInfo.EndPage,
+                                   selInfo.StartIndex,
+                                   selInfo.EndIndex,
+                                   PDFElement.ElementId,
+                                   selInfo.StartPage,
+                                   extractPagePt,
+                                   PDFElement.ViewMode,
+                                   PDFElement.PageMargin,
+                                   PDFElement.Zoom,
+                                   false,
+                                   title) == PDFElement.CreationResult.Ok;
+
+      if (ret)
+      {
+        PDFElement.PDFExtracts.Add(selInfo);
+        Save(false);
+
+        AddPDFExtractHighlight(selInfo.StartPage,
+                               selInfo.EndPage,
+                               selInfo.StartIndex,
+                               selInfo.EndIndex);
+      }
+
+      return ret;
+    }
+
+    //
+    // Highlights
 
     protected void AddSMExtractHighlight(int startPage,
                                          int endPage,
@@ -286,10 +331,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       ImageExtractHighlights[pageIndex] = pageHighlights;
     }
 
-    protected void AddIPDFExtractHighlight(int startPage,
-                                           int endPage,
-                                           int startIdx,
-                                           int endIdx)
+    protected void AddPDFExtractHighlight(int startPage,
+                                          int endPage,
+                                          int startIdx,
+                                          int endIdx)
     {
       for (int pageIdx = startPage; pageIdx <= endPage; pageIdx++)
       {
@@ -307,7 +352,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           {
             CharIndex  = pageStartIdx,
             CharsCount = pageCount,
-            Color      = IPDFExtractColor
+            Color      = PDFExtractColor
           }
         );
 

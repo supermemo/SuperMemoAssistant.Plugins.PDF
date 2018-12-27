@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/17 11:12
+// Modified On:  2018/12/23 17:18
 // Modified By:  Alexis
 
 #endregion
@@ -37,6 +37,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using Anotar.Serilog;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Patagames.Pdf.Net;
@@ -56,15 +57,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
   public class PDFElement : INotifyPropertyChanged
   {
-    #region Properties & Fields - Non-Public
-
-    private PDFCfg Config { get; }
-
-    #endregion
-
-
-
-
     #region Constructors
 
     public PDFElement()
@@ -76,8 +68,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       EndIndex       = -1;
       ReadPage       = 0;
       ReadPoint      = default(Point);
-      PDFExtracts    = new ObservableCollection<SelectInfo>();
-      SMExtracts     = new ObservableCollection<SelectInfo>();
+      PDFExtracts    = new ObservableCollection<PDFTextExtract>();
+      SMExtracts     = new ObservableCollection<PDFTextExtract>();
       SMImgExtracts  = new ObservableCollection<PDFImageExtract>();
 
       PDFExtracts.CollectionChanged   += OnCollectionChanged;
@@ -105,9 +97,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     public int EndIndex { get; set; }
 
     [JsonProperty(PropertyName = "PDFE")]
-    public ObservableCollection<SelectInfo> PDFExtracts { get; }
+    public ObservableCollection<PDFTextExtract> PDFExtracts { get; }
     [JsonProperty(PropertyName = "SME")]
-    public ObservableCollection<SelectInfo> SMExtracts { get; }
+    public ObservableCollection<PDFTextExtract> SMExtracts { get; }
     [JsonProperty(PropertyName = "SMIE")]
     public ObservableCollection<PDFImageExtract> SMImgExtracts { get; }
 
@@ -197,6 +189,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       }
       catch (Exception ex)
       {
+        LogTo.Error(ex,
+                    "Exception thrown while creating new PDF element");
         return CreationResult.FailUnknown;
       }
 
@@ -267,6 +261,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       }
       catch (Exception ex)
       {
+        LogTo.Error(ex,
+                    "Exception thrown while creating new PDF element");
         return CreationResult.FailUnknown;
       }
 
@@ -421,7 +417,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     private string GetJsonB64()
     {
-      string elementJson = JsonConvert.SerializeObject(this);
+      string elementJson = JsonConvert.SerializeObject(this,
+                                                       Formatting.None);
 
       return elementJson.Base64Encode();
     }

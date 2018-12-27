@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/13 16:46
+// Modified On:  2018/12/26 17:28
 // Modified By:  Alexis
 
 #endregion
@@ -46,6 +46,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
   /// <inheritdoc />
   public partial class IPDFViewer : PdfViewer
   {
+    #region Constants & Statics
+
+    public static readonly DependencyProperty LoadingIndicatorVisibilityProperty =
+      DependencyProperty.Register("LoadingIndicatorVisibility",
+                                  typeof(Visibility),
+                                  typeof(IPDFViewer),
+                                  new PropertyMetadata(Visibility.Hidden));
+
+    #endregion
+
+
+
+
     #region Properties & Fields - Non-Public
 
     private   int                                    _ignoreChanges = 0;
@@ -75,6 +88,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Properties & Fields - Public
 
+    public Visibility LoadingIndicatorVisibility
+    {
+      get => (Visibility)GetValue(LoadingIndicatorVisibilityProperty);
+      set => SetValue(LoadingIndicatorVisibilityProperty,
+                      value);
+    }
+
     public PDFElement PDFElement { get; protected set; }
 
     #endregion
@@ -96,10 +116,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       ExtractHighlights.Clear();
       RemoveHighlightFromText();
 
-      PDFElement.PDFExtracts.ForEach(e => AddIPDFExtractHighlight(e.StartPage,
-                                                                  e.EndPage,
-                                                                  e.StartIndex,
-                                                                  e.EndIndex));
+      PDFElement.PDFExtracts.ForEach(e => AddPDFExtractHighlight(e.StartPage,
+                                                                 e.EndPage,
+                                                                 e.StartIndex,
+                                                                 e.EndIndex));
       PDFElement.SMExtracts.ForEach(e => AddSMExtractHighlight(e.StartPage,
                                                                e.EndPage,
                                                                e.StartIndex,
@@ -250,7 +270,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         EndIndex   = Document.Pages[lastPage].Text.CountChars,
       };
 
-      CreateIPDFExtract(selInfo, bookmark.Title);
+      CreatePDFExtract(selInfo,
+                       bookmark.Title);
     }
 
     public void ProcessBookmark(PdfBookmark bookmark)
@@ -305,6 +326,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           PDFElement.Save();
           SaveThread = null;
         }
+    }
+
+    public void ShowLoadingIndicator()
+    {
+      LoadingIndicatorVisibility = Visibility.Visible;
+    }
+
+    public void HideLoadingIndicator()
+    {
+      LoadingIndicatorVisibility = Visibility.Hidden;
     }
 
     #endregion

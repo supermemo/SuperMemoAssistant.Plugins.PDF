@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/06/11 14:33
-// Modified On:  2018/12/10 01:38
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/26 21:40
 // Modified By:  Alexis
 
 #endregion
@@ -39,6 +39,7 @@ using Patagames.Pdf;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Sys.Drawing;
 
@@ -59,9 +60,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Properties & Fields - Non-Public
 
+    protected SelectionType CurrentSelectionTool { get; set; } = SelectionType.None;
+
     protected PDFImageExtract  SelectedImage { get; set; }
     protected PDFAreaSelection SelectedArea  { get; set; }
     protected PDFPageSelection SelectedPages { get; set; }
+
+    protected List<SelectInfo> SelectInfoList { get; } = new List<SelectInfo>();
+    protected List<SelectInfo> SelectInfos => IsTextSelectionValid(out var selInfo)
+      ? SelectInfoList.Append(selInfo).ToList()
+      : SelectInfoList;
 
     #endregion
 
@@ -70,26 +78,57 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Methods Impl
 
-    //
-    // Tools
-
-    /// <inheritdoc />
     protected override void ProcessMouseDownForSelectTextTool(Point pagePoint,
                                                               int   pageIndex)
     {
       var keyMod = GetKeyboardModifiers();
 
       if ((keyMod & KeyboardModifiers.ShiftKey) == KeyboardModifiers.ShiftKey)
+      {
         ExtendSelection(pagePoint,
                         pageIndex,
                         (keyMod & KeyboardModifiers.ControlKey) == KeyboardModifiers.ControlKey);
+      }
 
       else
+      {
+        if ((keyMod & KeyboardModifiers.ControlKey) == KeyboardModifiers.ControlKey)
+          if (IsTextSelectionValid(out var selInfo))
+          {
+            SelectInfoList.Add(selInfo);
+
+            _selectInfo = new SelectInfo
+            {
+              StartPage = pageIndex,
+              EndPage   = pageIndex,
+              StartIndex = GetCharIndexAtPos(pageIndex,
+                                             pagePoint),
+              EndIndex = -1
+            };
+
+            return;
+          }
+
         base.ProcessMouseDownForSelectTextTool(pagePoint,
                                                pageIndex);
+      }
     }
 
-    protected override int GetCharIndexAtPos(int pageIdx, Point pagePoint)
+    protected override void ProcessMouseDoubleClickForSelectTextTool(Point pagePoint,
+                                                                     int   pageIndex)
+    {
+      var keyMod = GetKeyboardModifiers();
+
+      if (keyMod == KeyboardModifiers.ControlKey)
+        if (IsTextSelectionValid(out var selInfo))
+          SelectInfoList.Add(selInfo);
+
+      base.ProcessMouseDoubleClickForSelectTextTool(pagePoint,
+                                                    pageIndex);
+    }
+
+    protected override int GetCharIndexAtPos(int   pageIdx,
+                                             Point pagePoint)
     {
       return Document.Pages[pageIdx].Text.GetCharIndexAtPos(
         (int)pagePoint.X,
@@ -111,6 +150,31 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                 pageIndex));*/
     }
 
+    protected override void GenerateSelectedTextProperty()
+    {
+      string ret = "";
+
+      if (Document != null)
+      {
+        var selTexts = SelectInfos.Select(SelectionToText);
+
+        ret = string.Join("\r\n[...]",
+                          selTexts);
+      }
+
+      SetValue(SelectedTextProperty,
+               ret);
+      OnSelectionChanged(EventArgs.Empty);
+    }
+
+    public override void DeselectText()
+    {
+      SelectInfoList.Clear();
+
+      if (IsTextSelectionValid())
+        base.DeselectText();
+    }
+
     #endregion
 
 
@@ -125,13 +189,15 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       bool handled    = false;
       bool invalidate = false;
 
-      if (pageIndex >= 0 && GetCharIndexAtPos(pageIndex, pagePoint) < 0)
+      if (pageIndex >= 0 && GetCharIndexAtPos(pageIndex,
+                                              pagePoint) < 0)
       {
-        SelectedImage = null;
-        SelectedArea  = null;
+        DeselectAll();
 
         SelectedPages = new PDFPageSelection(pageIndex,
                                              pageIndex);
+
+        CurrentSelectionTool = SelectionType.Page;
 
         handled    = true;
         invalidate = true;
@@ -154,44 +220,32 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (e.LeftButton == MouseButtonState.Pressed)
       {
-        if (kbMod == 0
-          && SelectInfo.StartPage >= 0)
+        if (kbMod == 0)
         {
-          DeselectText();
+          DeselectAll();
           invalidate = true;
         }
 
-        if (SelectedImage?.BoundingBox.Contains((int)pagePoint.X,
-                                                (int)pagePoint.Y) == false)
-        {
-          SelectedImage = null;
-          invalidate    = true;
-        }
-
-        if (SelectedArea != null)
-        {
-          SelectedArea = null;
-          invalidate   = true;
-        }
-
-        if (kbMod != KeyboardModifiers.ShiftKey && SelectedPages != null)
-        {
-          SelectedPages = null;
-          invalidate    = true;
-        }
-
         if (pageIndex >= 0)
-          if (GetCharIndexAtPos(pageIndex, pagePoint) < 0)
+        {
+          if (CurrentSelectionTool == SelectionType.Page && kbMod == KeyboardModifiers.ShiftKey)
           {
-            if (SelectedPages != null && kbMod == KeyboardModifiers.ShiftKey)
-            {
-              SelectedPages.EndPage = pageIndex;
+            SelectedPages.EndPage = pageIndex;
 
-              handled    = true;
+            handled    = true;
+            invalidate = true;
+          }
+
+          else
+          {
+            if (SelectedPages != null)
+            {
+              DeselectPages();
               invalidate = true;
             }
 
-            else
+            if (GetCharIndexAtPos(pageIndex,
+                                  pagePoint) < 0)
             {
               var pageObj = Document.Pages[pageIndex].PageObjects
                                     .FirstOrDefault(
@@ -210,6 +264,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                   PageIndex   = pageIndex,
                 };
 
+                CurrentSelectionTool = SelectionType.Image;
+
                 invalidate = true;
                 handled    = true;
               }
@@ -222,10 +278,21 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                     pagePoint.X,
                                                     pagePoint.Y);
 
+                if ((kbMod & KeyboardModifiers.AltKey) == KeyboardModifiers.AltKey)
+                  SelectedArea.Type = PDFAreaSelection.AreaType.Ocr;
+
+                CurrentSelectionTool = SelectionType.Area;
+
                 handled = true;
               }
             }
+
+            else
+            {
+              CurrentSelectionTool = SelectionType.Text;
+            }
           }
+        }
       }
 
       if (invalidate)
@@ -241,7 +308,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       bool handled    = false;
       bool invalidate = false;
 
-      if (SelectedArea != null && pageIndex == SelectedArea.PageIndex && e.LeftButton == MouseButtonState.Pressed)
+      if (CurrentSelectionTool == SelectionType.Area && pageIndex == SelectedArea.PageIndex && e.LeftButton == MouseButtonState.Pressed)
       {
         SelectedArea.X2 = Math.Min(pagePoint.X,
                                    Document.Pages[pageIndex].Width);
@@ -266,7 +333,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       bool invalidate = false;
 
       if (e.ChangedButton == MouseButton.Left)
-        if (SelectedArea != null)
+        if (CurrentSelectionTool == SelectionType.Area)
         {
           if (pageIndex == SelectedArea.PageIndex)
           {
@@ -281,12 +348,28 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           if (Math.Abs(rect.Width) < 2 || Math.Abs(rect.Height) < 2)
             SelectedArea = null;
 
+          if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Ocr)
+          {
+            OcrSelectedArea().ContinueWith(
+              (mathPix) =>
+              {
+                if (mathPix?.Result == null)
+                  return;
+
+                Dispatcher.Invoke(() => ShowTeXEditor(mathPix.Result.Text));
+              }
+            );
+          }
+
           handled    = true;
           invalidate = true;
         }
 
       if (invalidate)
         InvalidateVisual();
+
+      if (CurrentSelectionTool != SelectionType.Page)
+        CurrentSelectionTool = SelectionType.None;
 
       return handled;
     }
@@ -347,7 +430,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       var selInfo = SelectInfo;
 
-      if (selInfo.StartPage < 0 || selInfo.EndPage < 0 || nbChar <= 0)
+      if (selInfo.IsTextSelectionValid() == false || nbChar <= 0)
         return;
 
       while (nbChar > 0)
@@ -408,10 +491,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       var selInfo = SelectInfo;
 
-      if (selInfo.StartPage < 0 || selInfo.EndPage < 0)
+      if (selInfo.IsTextSelectionValid() == false)
         return;
 
-      int charIdx = GetCharIndexAtPos(pageIdx, pagePoint);
+      int charIdx = GetCharIndexAtPos(pageIdx,
+                                      pagePoint);
 
       if (charIdx < 0)
         return;
@@ -446,26 +530,66 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       InvalidateVisual();
     }
 
+    public void DeselectAll()
+    {
+      DeselectText();
+      DeselectPages();
+      DeselectImage();
+      DeselectArea();
+    }
+
     protected void DeselectArea()
     {
-      SelectedArea = null;
-      InvalidateVisual();
+      if (SelectedArea != null)
+      {
+        SelectedArea = null;
+        InvalidateVisual();
+      }
     }
 
     protected void DeselectImage()
     {
-      SelectedImage = null;
-      InvalidateVisual();
+      if (SelectedImage != null)
+      {
+        SelectedImage = null;
+        InvalidateVisual();
+      }
     }
 
     protected void DeselectPages()
     {
-      SelectedPages = null;
-      InvalidateVisual();
+      if (SelectedPages != null)
+      {
+        SelectedPages        = null;
+        CurrentSelectionTool = SelectionType.None;
+        InvalidateVisual();
+      }
     }
 
     protected void CopySelectionToClipboard()
     {
+      /*
+      int selTypeCount = 0;
+
+      if (SelectedImage != null)
+        selTypeCount++;
+
+      if (SelectedArea != null)
+        selTypeCount++;
+
+      if (string.IsNullOrWhiteSpace(SelectedText) == false)
+        selTypeCount++;
+
+      if (selTypeCount > 0)
+      {
+        CopyMultiSelectionToClipboard();
+      }
+
+      else*/
+      if (string.IsNullOrWhiteSpace(SelectedText) == false)
+        Clipboard.SetText(SelectedText,
+                          TextDataFormat.UnicodeText);
+
       if (SelectedImage != null)
       {
         PdfImageObject imgObject = (PdfImageObject)Document
@@ -494,13 +618,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         Clipboard.SetImage(imageWrapper.ToBitmapImage());
       }
-
-      else if (string.IsNullOrWhiteSpace(SelectedText) == false)
-      {
-        Clipboard.SetText(SelectedText,
-                          TextDataFormat.UnicodeText);
-      }
     }
+
+    protected void CopyMultiSelectionToClipboard() { }
 
     #endregion
 
@@ -521,6 +641,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       Word,
       Page,
       Document
+    }
+
+
+    protected enum SelectionType
+    {
+      None,
+      Text,
+      Page,
+      Image,
+      Area,
     }
 
     #endregion

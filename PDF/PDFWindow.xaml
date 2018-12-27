@@ -7,6 +7,7 @@
         xmlns:smaViewer="clr-namespace:SuperMemoAssistant.Plugins.PDF.PDF.Viewer"
         xmlns:smaToolBars="clr-namespace:SuperMemoAssistant.Plugins.PDF.PDF.ToolBars"
         xmlns:ptg="clr-namespace:Patagames.Pdf.Net;assembly=Patagames.Pdf"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
         Title="SuperMemo Incremental PDF" Height="450" Width="800"
         KeyDown="Window_KeyDown">
@@ -172,20 +173,27 @@
                           ShowsPreview="True"
                           Background="#ABABAB" />
 
-            <ScrollViewer Grid.Column="3"
-                          CanContentScroll="True"
-                          PanningMode="Both"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Auto"
-                          Background="#ABABAB"
-                          FocusVisualStyle="{x:Null}">
-                <smaViewer:IPDFViewer x:Name="IPDFViewer"
-                                      ShowCurrentPageHighlight="False"
-                                      ShowPageSeparator="False"
-                                      PageMargin="4"
-                                      SizeMode="Zoom"
-                                      FocusVisualStyle="{x:Null}" />
-            </ScrollViewer>
+            <Grid Grid.Column="3">
+
+                <mah:ProgressRing VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"
+                                  Visibility="{Binding ElementName=IPDFViewer, Path=LoadingIndicatorVisibility}" />
+
+                <ScrollViewer CanContentScroll="True"
+                              PanningMode="Both"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto"
+                              Background="#ABABAB"
+                              FocusVisualStyle="{x:Null}">
+                    <smaViewer:IPDFViewer x:Name="IPDFViewer"
+                                          ShowCurrentPageHighlight="False"
+                                          ShowPageSeparator="False"
+                                          PageMargin="4"
+                                          SizeMode="Zoom"
+                                          FocusVisualStyle="{x:Null}" />
+                </ScrollViewer>
+
+            </Grid>
         </Grid>
 
         <Grid Grid.Row="2"

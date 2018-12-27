@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:45
-// Modified On:  2018/12/17 11:19
+// Created On:   2018/12/24 02:04
+// Modified On:  2018/12/24 02:09
 // Modified By:  Alexis
 
 #endregion
@@ -30,32 +30,42 @@
 
 
 
-using System.Drawing;
-using Newtonsoft.Json;
+using System;
+using SuperMemoAssistant.Sys;
 
-namespace SuperMemoAssistant.Plugins.PDF.Models
+namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 {
-  public class PDFImageExtract
+  public class HtmlTagSpan : HtmlTag<HtmlTagSpan>
   {
-    #region Properties & Fields - Public
-    
-    [JsonProperty(PropertyName = "PI")]
-    public int       PageIndex   { get; set; }
-    [JsonProperty(PropertyName = "OI")]
-    public int       ObjectIndex { get; set; }
-    [JsonProperty(PropertyName = "BB")]
-    public Rectangle BoundingBox { get; set; }
+    #region Constructors
+
+    public HtmlTagSpan() {}
+
+    public HtmlTagSpan(Span span,
+                       int  priority = 0) : base(priority,
+                                                 span) { }
 
     #endregion
 
 
 
 
-    #region Methods Impl
+    #region Properties Impl - Public
 
-    public override string ToString()
+    public override string Tag => "span";
+
+    #endregion
+
+
+
+
+    #region Methods
+
+    public HtmlTagSpan WithStyle(Func<HtmlStyle, HtmlStyle> styleBuilder)
     {
-      return $"image {ObjectIndex} page {PageIndex}";
+      styleBuilder(Style);
+
+      return this;
     }
 
     #endregion

@@ -99,7 +99,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (e.Key == Key.X
         && kbMod == (KeyboardModifiers.AltKey | KeyboardModifiers.ControlKey))
       {
-        CreateIPDFExtract();
+        CreatePDFExtract();
         e.Handled = true;
       }
 

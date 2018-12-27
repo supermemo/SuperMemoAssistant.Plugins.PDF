@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/06/11 14:55
-// Modified On:  2018/12/10 02:16
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/23 16:59
 // Modified By:  Alexis
 
 #endregion
@@ -62,10 +62,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                                     68,
                                                                     194,
                                                                     255);
-    protected static readonly Color IPDFExtractColor = Color.FromArgb(90,
-                                                                      255,
-                                                                      106,
-                                                                      0);
+    protected static readonly Color PDFExtractColor = Color.FromArgb(90,
+                                                                     255,
+                                                                     106,
+                                                                     0);
 
     protected static Pen AreaBorderPen { get; } = new Pen(new SolidColorBrush(Color.FromArgb(255,
                                                                                              SMExtractColor.R,
@@ -105,11 +105,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                        Rect           actualRect,
                                        int            pageIndex)
     {
-      DrawImageSelection(drawingContext,
-                         pageIndex);
-
       DrawImageExtracts(drawingContext,
                         pageIndex);
+
+      DrawImageSelection(drawingContext,
+                         pageIndex);
 
       DrawAreaSelection(drawingContext,
                         pageIndex);
@@ -124,12 +124,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     }
 
     protected override void DrawTextSelection(PdfBitmap  bitmap,
-                                              SelectInfo selInfo,
+                                              SelectInfo _,
                                               int        pageIndex)
     {
-      base.DrawTextSelection(bitmap,
-                             selInfo,
-                             pageIndex);
+      foreach (var selInfo in SelectInfos)
+        base.DrawTextSelection(bitmap,
+                               selInfo,
+                               pageIndex);
 
       base.DrawTextHighlight(bitmap,
                              ExtractHighlights.SafeGet(pageIndex),
@@ -227,7 +228,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                    deviceRec);
     }
 
-    protected Bitmap RenderArea(int              pageIndex,
+    protected Bitmap RenderArea(int                  pageIndex,
                                 System.Windows.Point lt,
                                 System.Windows.Point rb)
     {
@@ -237,9 +238,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         var pageRenderRect = GetRenderRect(pageIndex);
 
-        int scaledPageWidth = (int)pageRenderRect.Width;
+        int scaledPageWidth  = (int)pageRenderRect.Width;
         int scaledPageHeight = (int)pageRenderRect.Height;
-        
+
         Bitmap fullRender;
 
         using (var bmp = new PdfBitmap(scaledPageWidth,
@@ -266,7 +267,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
           fullRender = new Bitmap(bmp.Image);
         }
-        
+
         var pt1 = page.PageToDevice(0,
                                     0,
                                     scaledPageWidth,

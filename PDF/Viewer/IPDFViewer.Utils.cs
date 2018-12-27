@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/13 16:26
+// Modified On:  2018/12/25 20:00
 // Modified By:  Alexis
 
 #endregion
@@ -32,10 +32,16 @@
 
 using System;
 using System.IO;
-using System.Net;
-using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Plugins.PDF.Extensions;
+using SuperMemoAssistant.Plugins.PDF.MathPix;
+using SuperMemoAssistant.Plugins.PDF.Models;
+using SuperMemoAssistant.Plugins.PDF.Utils.Web;
+
+// ReSharper disable ArrangeRedundantParentheses
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
@@ -56,51 +62,122 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Methods
 
-    protected string SelectedTextEncoded()
+    public void ShowTeXEditor(string tex)
     {
-      var text = SelectedText;
+      var mpWdw = new MathPixWindow(tex);
 
-      text = text.Replace("\uFFFE",
-                          "-\n");
-
-      text = HtmlEncode(text);
-
-      return text.Replace("\r\n",
-                          "\n")
-                 .Replace("\n",
-                          "\n<br />");
-
-      /*var win1252Encoding = Encoding.GetEncoding("windows-1252");
-
-      var utf8Bytes = Encoding.UTF8.GetBytes(text);
-      var win1252Bytes = Encoding.Convert(
-        Encoding.UTF8,
-        win1252Encoding,
-        utf8Bytes);
-
-      return win1252Encoding.GetString(win1252Bytes);*/
+      mpWdw.ShowDialog();
     }
 
-    public static string HtmlEncode(string value)
+    public Task<MathPixAPI> OcrSelectedArea()
     {
-      // call the normal HtmlEncode first
-      char[]        chars        = WebUtility.HtmlEncode(value).ToCharArray();
-      StringBuilder encodedValue = new StringBuilder();
+      if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Ocr)
+      {
+        var config = PDFState.Instance.Config;
 
-      foreach (char c in chars)
-        if ((int)c > 127) // above normal ASCII
-          encodedValue.Append("&#" + (int)c + ";");
+        if (string.IsNullOrWhiteSpace(config.MathPixAppId)
+          || string.IsNullOrWhiteSpace(config.MathPixAppKey))
+        {
+          MessageBox.Show("OCR unavailable. Please configure your AppId and AppKey.",
+                          "Error: Ocr");
+        }
+
         else
-          encodedValue.Append(c);
+        {
+          ShowLoadingIcon = true;
 
-      return encodedValue.ToString();
+          var (lt, rb) = SelectedArea.NormalizedPoints();
+          var img = RenderArea(SelectedArea.PageIndex,
+                               lt,
+                               rb);
+
+          return MathPixAPI.Ocr(config.MathPixAppId,
+                      config.MathPixAppKey,
+                      config.MathPixMetadata,
+                      img)
+                 .ContinueWith(
+                   (mathPixRes) =>
+                   {
+                     try
+                     {
+                       var mathPix = mathPixRes.Result;
+
+                       if (mathPix == null || string.IsNullOrWhiteSpace(mathPix.Error) == false)
+                       {
+                         MessageBox.Show($"Ocr failed. {mathPix?.Error}",
+                                         "Error: Ocr");
+                         SelectedArea = null;
+                         return null;
+                       }
+
+                       return mathPix;
+                     }
+                     finally
+                     {
+                       Dispatcher.Invoke(() => ShowLoadingIcon = false);
+                     }
+                   });
+        }
+      }
+
+      return null;
+    }
+
+    public string GetSelectedTextHtml()
+    {
+      var htmlBuilder = new HtmlBuilder(Document,
+                                        PDFElement);
+      htmlBuilder.Append(SelectInfos);
+
+      foreach (var pageIdx in htmlBuilder.PagesToDispose)
+        if (IsPageInClientRect(pageIdx) == false)
+          Document.Pages[pageIdx].Dispose();
+
+      return htmlBuilder.Build();
+    }
+
+    public string SelectionToText(SelectInfo selInfo)
+    {
+      string ret = string.Empty;
+
+      if (selInfo.IsTextSelectionValid())
+        for (int i = selInfo.StartPage; i <= selInfo.EndPage; i++)
+        {
+          if (ret != "")
+            ret += "\r\n";
+
+          int s = 0;
+          if (i == selInfo.StartPage)
+            s = selInfo.StartIndex;
+
+          int len = Document.Pages[i].Text.CountChars;
+          if (i == selInfo.EndPage)
+            len = (selInfo.EndIndex + 1) - s;
+
+          ret += Document.Pages[i].Text.GetText(s,
+                                                len);
+        }
+
+      return ret;
+    }
+
+    public bool IsTextSelectionValid()
+    {
+      return SelectInfo.IsTextSelectionValid();
+    }
+
+    public bool IsTextSelectionValid(out SelectInfo selInfo)
+    {
+      selInfo = SelectInfo;
+
+      return selInfo.IsTextSelectionValid();
     }
 
     protected bool IsEndOfSelectionInScreen()
     {
       var selInfo = SelectInfo;
 
-      if (selInfo.StartPage < 0 || selInfo.EndPage < 0)
+      if (selInfo.IsTextSelectionValid() == false)
         return true;
 
       var ti = Document
