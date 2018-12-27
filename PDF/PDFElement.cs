@@ -128,6 +128,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     [DoNotNotify]
     public bool IsFullDocument => StartPage < 0;
 
+    [JsonIgnore]
     public IBinary BinaryMember => Svc.SMA.Registry.Binary?[BinaryMemberId];
 
     #endregion

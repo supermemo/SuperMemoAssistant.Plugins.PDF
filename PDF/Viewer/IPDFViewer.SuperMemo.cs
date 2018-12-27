@@ -79,7 +79,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
 
       // Area extract
-      if (SelectedArea != null)
+      if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Normal)
       {
         var imgExtract = new PDFImageExtract
         {
@@ -116,6 +116,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         txtExtract = true;
       }
 
+      if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Ocr)
+      {
+        contents.Add(new ElementBuilder.TextContent(true,
+                                                    SelectedArea.OcrText));
+      }
+
+      // Generate extract
       if (contents.Count > 0)
       {
         Save(false);

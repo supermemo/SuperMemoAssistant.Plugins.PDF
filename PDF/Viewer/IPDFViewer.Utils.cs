@@ -35,6 +35,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Forge.Forms;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.MathPix;
@@ -66,7 +67,28 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       var mpWdw = new MathPixWindow(tex);
 
-      mpWdw.ShowDialog();
+      if (mpWdw.ShowDialog() ?? false)
+        SelectedArea.OcrText = mpWdw.Text;
+
+      else
+        SelectedArea = null;
+    }
+
+    public void ShowGoToPageDialog()
+    {
+      /*
+      Show.Window()
+          .For(new Prompt<int> { Title = "Page number ?", Value = CurrentIndex + 1 })
+          .ContinueWith(
+            (res) =>
+            {
+              if (res == null || "Ok".Equals(res.Result.Action) == false)
+                return;
+
+              ScrollToPage((int)res.Result.ActionParameter);
+            }
+          );
+          */
     }
 
     public Task<MathPixAPI> OcrSelectedArea()
@@ -84,7 +106,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         else
         {
-          ShowLoadingIcon = true;
+          ShowLoadingIndicator();
 
           var (lt, rb) = SelectedArea.NormalizedPoints();
           var img = RenderArea(SelectedArea.PageIndex,
@@ -96,7 +118,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                       config.MathPixMetadata,
                       img)
                  .ContinueWith(
-                   (mathPixRes) =>
+                   mathPixRes =>
                    {
                      try
                      {
@@ -114,7 +136,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                      }
                      finally
                      {
-                       Dispatcher.Invoke(() => ShowLoadingIcon = false);
+                       Dispatcher.Invoke(HideLoadingIndicator);
                      }
                    });
         }

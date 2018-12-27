@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/06/11 14:36
-// Modified On:  2018/12/05 14:37
+// Created On:   2018/12/10 14:46
+// Modified On:  2018/12/27 13:27
 // Modified By:  Alexis
 
 #endregion
@@ -89,7 +89,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     // Raw inputs
 
     /// <inheritdoc />
-    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    protected override void OnKeyDown(KeyEventArgs e)
     {
       var kbMod = GetKeyboardModifiers();
 
@@ -108,8 +108,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         CreateSMExtract();
         e.Handled = true;
-
-        return;
       }
 
       //
@@ -145,7 +143,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         && kbMod == (KeyboardModifiers.ShiftKey | KeyboardModifiers.ControlKey))
       {
         e.Handled = true;
-        Svc.SMA.UI.ElementWindow.FocusWindow();
+        Svc.SMA.UI.ElementWindow.ActivateWindow();
         Svc.SMA.UI.ElementWindow.Done();
       }
 
@@ -153,7 +151,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         && kbMod == (KeyboardModifiers.ShiftKey | KeyboardModifiers.ControlKey))
       {
         e.Handled = true;
-        Svc.SMA.UI.ElementWindow.FocusWindow();
+        Svc.SMA.UI.ElementWindow.ActivateWindow();
         Svc.SMA.UI.ElementWindow.Delete();
       }
 
@@ -198,11 +196,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       else if (e.Key == Key.Escape)
       {
-        if (SelectedArea != null)
-        {
-          e.Handled    = true;
-          SelectedArea = null;
-        }
+        DeselectArea();
+        e.Handled = true;
       }
 
       //
@@ -242,7 +237,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       else if (kbMod == KeyboardModifiers.ControlKey
         && e.Key == Key.G)
       {
-        //InputBox
+        ShowGoToPageDialog();
       }
 
       else if (kbMod == 0)
@@ -284,7 +279,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         }
       }
 
-      base.OnPreviewKeyDown(e);
+      base.OnKeyDown(e);
     }
 
     /// <inheritdoc />
@@ -377,12 +372,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         if (SizeMode != SizeModes.Zoom)
           SizeMode = SizeModes.Zoom;
-        
+
         var    mousePoint   = GetMousePoint();
         int    pageIdx      = MouseToPagePoint(out Point pagePoint);
         double viewportPctX = mousePoint.X / _viewport.Width;
         double viewportPctY = mousePoint.Y / _viewport.Height;
-        
+
         Zoom = GetPrevZoomLevel(Zoom);
 
         ScrollToPoint(pageIdx,
@@ -407,8 +402,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         if (SizeMode != SizeModes.Zoom)
           SizeMode = SizeModes.Zoom;
 
-        var mousePoint = GetMousePoint();
-        int pageIdx = MouseToPagePoint(out Point pagePoint);
+        var    mousePoint   = GetMousePoint();
+        int    pageIdx      = MouseToPagePoint(out Point pagePoint);
         double viewportPctX = mousePoint.X / _viewport.Width;
         double viewportPctY = mousePoint.Y / _viewport.Height;
 
@@ -484,20 +479,20 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected bool ForwardKeysToSM(Keys keys,
                                    int  timeout = 100)
     {
-      var autoElem = Svc.SMA.UI.ElementWindow.AutomationElement;
+      var wdw = Svc.SMA.UI.ElementWindow.Window;
 
-      if (autoElem == null)
+      if (wdw == null)
         return false;
 
       if (keys.Alt && keys.Ctrl == false && keys.Win == false)
         return Sys.IO.Devices.Keyboard.PostSysKeysAsync(
-          autoElem.WindowHandle,
+          wdw.Handle,
           keys
         ).Wait(timeout);
 
       else
         return Sys.IO.Devices.Keyboard.PostKeysAsync(
-          autoElem.WindowHandle,
+          wdw.Handle,
           keys
         ).Wait(timeout);
     }

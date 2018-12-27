@@ -205,6 +205,10 @@
       <Project>{380a4f46-413d-49b4-884f-21c7683f093c}</Project>
       <Name>Pdf.WpfPubl</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\libs\Process.NET\src\Process.NET\Process.NET.csproj">
+      <Project>{501257D3-F788-4A5D-B990-16C01FF71926}</Project>
+      <Name>Process.NET</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\SuperMemoAssistant.Interop\SuperMemoAssistant.Interop.csproj">
       <Project>{fd0e1be8-bed3-4ab0-a9c8-022a2dbc8450}</Project>
       <Name>SuperMemoAssistant.Interop</Name>

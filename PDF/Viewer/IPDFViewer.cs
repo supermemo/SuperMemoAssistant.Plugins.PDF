@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/26 17:28
+// Modified On:  2018/12/27 17:00
 // Modified By:  Alexis
 
 #endregion
@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using JetBrains.Annotations;
 using Patagames.Pdf.Net;
@@ -67,7 +68,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected DateTime LastChange { get; set; } = DateTime.Now;
     protected object   SaveLock   { get; set; } = new object();
-    protected Thread   SaveThread { get; set; }
+    protected Task     SaveTask   { get; set; }
 
     #endregion
 
@@ -288,19 +289,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       LastChange = DateTime.Now;
 
       lock (SaveLock)
-        if (SaveThread != null)
+        if (SaveTask != null)
         {
           if (delayed)
             return;
 
-          SaveThread = null;
+          SaveTask = null;
           PDFElement.Save();
         }
 
         else if (delayed)
         {
-          SaveThread = new Thread(SaveDelayed);
-          SaveThread.Start();
+          SaveTask = Task.Factory.StartNew(SaveDelayed,
+                                           TaskCreationOptions.LongRunning);
         }
 
         else
@@ -312,7 +313,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     public void CancelSave()
     {
       lock (SaveLock)
-        SaveThread = null;
+        SaveTask = null;
     }
 
     protected void SaveDelayed()
@@ -321,10 +322,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         Thread.Sleep(50);
 
       lock (SaveLock)
-        if (SaveThread != null)
+        if (SaveTask != null)
         {
           PDFElement.Save();
-          SaveThread = null;
+          SaveTask = null;
         }
     }
 
