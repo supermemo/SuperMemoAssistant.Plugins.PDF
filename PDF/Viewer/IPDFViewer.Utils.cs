@@ -63,6 +63,24 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Methods
 
+    public void ShowGoToPageDialog()
+    {
+      Show.Window()
+          .For(new Prompt<string> { Title = "Page number ?", Value = (CurrentIndex + 1).ToString() })
+          .ContinueWith(
+            task =>
+            {
+              if (task == null || "Ok".Equals(task.Result.Action) == false)
+                return;
+
+              string pageStr = (string)task.Result.ActionParameter;
+
+              if (int.TryParse(pageStr, out int page))
+                ScrollToPage(page);
+            }
+          );
+    }
+
     public void ShowTeXEditor(string tex)
     {
       var mpWdw = new MathPixWindow(tex);
@@ -74,31 +92,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         SelectedArea = null;
     }
 
-    public void ShowGoToPageDialog()
-    {
-      /*
-      Show.Window()
-          .For(new Prompt<int> { Title = "Page number ?", Value = CurrentIndex + 1 })
-          .ContinueWith(
-            (res) =>
-            {
-              if (res == null || "Ok".Equals(res.Result.Action) == false)
-                return;
-
-              ScrollToPage((int)res.Result.ActionParameter);
-            }
-          );
-          */
-    }
-
     public Task<MathPixAPI> OcrSelectedArea()
     {
       if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Ocr)
       {
-        var config = PDFState.Instance.Config;
-
-        if (string.IsNullOrWhiteSpace(config.MathPixAppId)
-          || string.IsNullOrWhiteSpace(config.MathPixAppKey))
+        if (string.IsNullOrWhiteSpace(Config.MathPixAppId)
+          || string.IsNullOrWhiteSpace(Config.MathPixAppKey))
         {
           MessageBox.Show("OCR unavailable. Please configure your AppId and AppKey.",
                           "Error: Ocr");
@@ -113,9 +112,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                lt,
                                rb);
 
-          return MathPixAPI.Ocr(config.MathPixAppId,
-                      config.MathPixAppKey,
-                      config.MathPixMetadata,
+          return MathPixAPI.Ocr(Config.MathPixAppId,
+                      Config.MathPixAppKey,
+                      Config.MathPixMetadata,
                       img)
                  .ContinueWith(
                    mathPixRes =>

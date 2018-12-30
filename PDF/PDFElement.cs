@@ -108,6 +108,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     [JsonProperty(PropertyName = "RPt")]
     public Point ReadPoint { get; set; }
 
+    [JsonProperty(PropertyName = "EF")]
+    public ExtractFormat ExtractFormat { get; set; } = ExtractFormat.HtmlRichText;
+
     [JsonProperty(PropertyName = "VM")]
     public ViewModes ViewMode { get; set; } = PDFConst.DefaultViewMode;
     [JsonProperty(PropertyName = "PM")]
@@ -116,12 +119,15 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     public float Zoom { get; set; } = PDFConst.DefaultZoom;
 
     [JsonIgnore]
+    [DoNotNotify]
     public int ElementId { get; set; }
 
     [JsonIgnore]
+    [DoNotNotify]
     public string FilePath { get; set; }
 
     [JsonIgnore]
+    [DoNotNotify]
     public bool IsChanged { get; set; }
 
     [JsonIgnore]
@@ -129,6 +135,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     public bool IsFullDocument => StartPage < 0;
 
     [JsonIgnore]
+    [DoNotNotify]
     public IBinary BinaryMember => Svc.SMA.Registry.Binary?[BinaryMemberId];
 
     #endregion
@@ -282,6 +289,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                            elementHtml)
           .WithParent(parentElement)
           .WithTitle(title)
+          .WithPriority(PDFState.Instance.Config.PDFExtractPriority)
           .WithReference(
             r => r.WithTitle(title)
                   .WithAuthor(author)

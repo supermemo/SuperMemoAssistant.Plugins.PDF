@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/26 21:40
+// Modified On:  2018/12/30 01:41
 // Modified By:  Alexis
 
 #endregion
@@ -62,9 +62,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected SelectionType CurrentSelectionTool { get; set; } = SelectionType.None;
 
-    protected PDFImageExtract  SelectedImage { get; set; }
-    protected PDFAreaSelection SelectedArea  { get; set; }
     protected PDFPageSelection SelectedPages { get; set; }
+
+    protected List<PDFImageExtract> SelectedImageList { get; } = new List<PDFImageExtract>();
+    protected PDFImageExtract       SelectedImage     { get; set; }
+    protected List<PDFImageExtract> SelectedImages => SelectedImage == null
+      ? SelectedImageList
+      : SelectedImageList.Append(SelectedImage).ToList();
+
+    protected List<PDFAreaSelection> SelectedAreaList { get; } = new List<PDFAreaSelection>();
+    protected PDFAreaSelection       SelectedArea     { get; set; }
+    protected List<PDFAreaSelection> SelectedAreas => SelectedArea == null
+      ? SelectedAreaList
+      : SelectedAreaList.Append(SelectedArea).ToList();
 
     protected List<SelectInfo> SelectInfoList { get; } = new List<SelectInfo>();
     protected List<SelectInfo> SelectInfos => IsTextSelectionValid(out var selInfo)
@@ -255,6 +265,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
               if (pageObj is PdfImageObject imgObj)
               {
+                if (SelectedImage != null)
+                  SelectedImageList.Add(SelectedImage);
+
                 int objIdx = Document.Pages[pageIndex].PageObjects.IndexOf(pageObj);
 
                 SelectedImage = new PDFImageExtract
@@ -272,6 +285,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
               else
               {
+                if (SelectedArea != null && SelectedArea.IsValid())
+                  SelectedAreaList.Add(SelectedArea);
+
                 SelectedArea = new PDFAreaSelection(pageIndex,
                                                     pagePoint.X,
                                                     pagePoint.Y,
@@ -349,9 +365,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             SelectedArea = null;
 
           if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Ocr)
-          {
             OcrSelectedArea().ContinueWith(
-              (mathPix) =>
+              mathPix =>
               {
                 if (mathPix?.Result == null)
                   return;
@@ -359,7 +374,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                 Dispatcher.Invoke(() => ShowTeXEditor(mathPix.Result.Text));
               }
             );
-          }
 
           handled    = true;
           invalidate = true;
@@ -543,6 +557,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (SelectedArea != null)
       {
         SelectedArea = null;
+        SelectedAreaList.Clear();
         InvalidateVisual();
       }
     }
@@ -552,6 +567,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (SelectedImage != null)
       {
         SelectedImage = null;
+        SelectedImageList.Clear();
         InvalidateVisual();
       }
     }

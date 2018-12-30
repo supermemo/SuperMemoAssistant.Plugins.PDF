@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/12 02:44
+// Modified On:  2018/12/30 01:34
 // Modified By:  Alexis
 
 #endregion
@@ -44,6 +44,7 @@ using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
+using SuperMemoAssistant.Plugins.PDF.Models;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
@@ -55,6 +56,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     #region Properties & Fields - Non-Public
 
     protected double LastSidePanelWidth { get; set; }
+
+    protected PDFCfg Config => PDFState.Instance.Config;
 
     #endregion
 
@@ -69,16 +72,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       DataContext = this;
 
-      Top    = PDFState.Instance.Config.WindowTop;
-      Height = PDFState.Instance.Config.WindowHeight;
-      Left   = PDFState.Instance.Config.WindowLeft;
-      Width  = PDFState.Instance.Config.WindowWidth;
-      WindowState = PDFState.Instance.Config.WindowState == WindowState.Maximized
+      Top    = Config.WindowTop;
+      Height = Config.WindowHeight;
+      Left   = Config.WindowLeft;
+      Width  = Config.WindowWidth;
+      WindowState = Config.WindowState == WindowState.Maximized
         ? WindowState.Maximized
         : WindowState.Normal;
 
-      if (double.IsNaN(PDFState.Instance.Config.SidePanelWidth) == false)
-        sidePanelColumn.Width = new GridLength(PDFState.Instance.Config.SidePanelWidth);
+      if (double.IsNaN(Config.SidePanelWidth) == false)
+        sidePanelColumn.Width = new GridLength(Config.SidePanelWidth);
     }
 
     #endregion
@@ -125,7 +128,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                                                Width,
                                                WindowState);
 
-      PDFState.Instance.Config.SidePanelWidth = LastSidePanelWidth;
+      Config.SidePanelWidth = LastSidePanelWidth;
       PDFState.Instance.SaveConfig();
 
       base.OnClosing(e);
@@ -207,7 +210,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       IPDFViewer?.CancelSave();
     }
 
-    private void Window_KeyDown(object sender, KeyEventArgs e)
+    private void Window_KeyDown(object       sender,
+                                KeyEventArgs e)
     {
       var kbMod = GetKeyboardModifiers();
 
@@ -216,6 +220,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       {
         btnBookmarks.IsChecked = !btnBookmarks.IsChecked;
         tvBookmarks.Focus();
+        e.Handled = true;
+      }
+
+      else if (kbMod == KeyboardModifiers.ControlKey
+        && e.Key == Key.O)
+      {
+        ShowOptionDialog();
         e.Handled = true;
       }
 
@@ -229,21 +240,26 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
         else if (e.SystemKey == Key.B)
         {
+          btnBookmarks.IsChecked = true;
           tvBookmarks.Focus();
           e.Handled = true;
         }
       }
     }
 
-    private void TvBookmarks_MouseDoubleClick(object               sender,
-                                              MouseButtonEventArgs e)
+    public void ShowOptionDialog()
     {
-      PdfBookmark bookmark = (PdfBookmark)tvBookmarks.SelectedItem;
+      Forge.Forms.Show.Window()
+           .For<PDFCfg>(Config)
+           .ContinueWith(
+             task =>
+             {
+               if (task == null || "save".Equals(task.Result.Action) == false)
+                 return;
 
-      if (bookmark == null)
-        return;
-
-      IPDFViewer.ProcessBookmark(bookmark);
+               PDFState.Instance.SaveConfig();
+             }
+           );
     }
 
     private void TvBookmarks_PreviewMouseRightButtonDown(object               sender,
@@ -264,6 +280,17 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         source = VisualTreeHelper.GetParent(source);
 
       return source as TreeViewItem;
+    }
+
+    private void TvBookmarks_MouseDoubleClick(object               sender,
+                                              MouseButtonEventArgs e)
+    {
+      PdfBookmark bookmark = (PdfBookmark)tvBookmarks.SelectedItem;
+
+      if (bookmark == null)
+        return;
+
+      IPDFViewer.ProcessBookmark(bookmark);
     }
 
     private void TvBookmarks_MenuItem_GoTo(object          sender,

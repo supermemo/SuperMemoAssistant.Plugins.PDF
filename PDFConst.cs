@@ -59,5 +59,11 @@ namespace SuperMemoAssistant.Plugins.PDF
     public const float     DefaultZoom       = 1.0f;
 
     #endregion
+
+
+
+    
+    public const double DefaultSMExtractPriority = 15.0;
+    public const double DefaultPDFExtractPriority = 0.0;
   }
 }

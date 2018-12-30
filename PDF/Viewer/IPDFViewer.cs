@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/27 17:00
+// Modified On:  2018/12/29 23:26
 // Modified By:  Alexis
 
 #endregion
@@ -62,7 +62,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Properties & Fields - Non-Public
 
-    private   int                                    _ignoreChanges = 0;
+    private int _ignoreChanges = 0;
+
+
+    protected PDFCfg                                 Config                 => PDFState.Instance.Config;
     protected Dictionary<int, List<HighlightInfo>>   ExtractHighlights      { get; } = new Dictionary<int, List<HighlightInfo>>();
     protected Dictionary<int, List<PDFImageExtract>> ImageExtractHighlights { get; } = new Dictionary<int, List<PDFImageExtract>>();
 
@@ -327,6 +330,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           PDFElement.Save();
           SaveTask = null;
         }
+    }
+
+    protected void SaveConfig()
+    {
+      PDFState.Instance.SaveConfig();
     }
 
     public void ShowLoadingIndicator()

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:45
-// Modified On:  2018/12/27 12:54
+// Modified On:  2018/12/30 01:51
 // Modified By:  Alexis
 
 #endregion
@@ -118,6 +118,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
                                        y1),
               new System.Windows.Point(x2,
                                        y2));
+    }
+    
+    public bool IsValid()
+    {
+      return Type == AreaType.Normal
+        || Type == AreaType.Ocr && string.IsNullOrWhiteSpace(OcrText) == false;
     }
 
     #endregion

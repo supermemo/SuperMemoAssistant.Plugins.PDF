@@ -147,7 +147,7 @@
 
                                 <StackPanel.ContextMenu>
                                     <ContextMenu>
-                                        <MenuItem Header="Go to" Click="TvBookmarks_MenuItem_GoTo" />
+                                        <MenuItem Header="Go to (Enter)" Click="TvBookmarks_MenuItem_GoTo" />
                                         <Separator />
                                         <MenuItem Header="PDF Extract (Ctrl+Alt+X)"
                                                   Click="TvBookmark_MenuItem_PDFExtract" />

@@ -32,6 +32,7 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
@@ -55,20 +56,23 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var  imgExtracts = new List<PDFImageExtract>();
       var  contents    = new List<ElementBuilder.IContent>();
 
+      var selImages = SelectedImages;
+      var selImageAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Normal);
+      var selTextAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Ocr).ToList();
+
       // Image extract
-      if (SelectedImage != null)
+      foreach (var selImage in selImages)
       {
         var imgExtract = new PDFImageExtract
         {
-          BoundingBox = SelectedImage.BoundingBox,
-          ObjectIndex = SelectedImage.ObjectIndex,
-          PageIndex   = SelectedImage.PageIndex,
+          BoundingBox = selImage.BoundingBox,
+          ObjectIndex = selImage.ObjectIndex,
+          PageIndex   = selImage.PageIndex,
         };
-        var imgObj           = (PdfImageObject)Document.Pages[SelectedImage.PageIndex].PageObjects[SelectedImage.ObjectIndex];
-        var imgRegistryTitle = TitleOrFileName + $": {SelectedImage}";
+        var imgObj           = (PdfImageObject)Document.Pages[selImage.PageIndex].PageObjects[selImage.ObjectIndex];
+        var imgRegistryTitle = TitleOrFileName + $": {selImage}";
 
-        var content = CreateImageContent(imgExtract,
-                                         imgObj.Bitmap.Image,
+        var content = CreateImageContent(imgObj.Bitmap.Image,
                                          imgRegistryTitle);
 
         if (content != null)
@@ -79,24 +83,23 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
 
       // Area extract
-      if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Normal)
+      foreach (var selArea in selImageAreas)
       {
         var imgExtract = new PDFImageExtract
         {
-          BoundingBox = SelectedArea.Normalized(),
+          BoundingBox = selArea.Normalized(),
           ObjectIndex = -1,
-          PageIndex   = SelectedArea.PageIndex,
+          PageIndex   = selArea.PageIndex,
         };
 
-        var (lt, rb) = SelectedArea.NormalizedPoints();
+        var (lt, rb) = selArea.NormalizedPoints();
         var img = RenderArea(imgExtract.PageIndex,
                              lt,
                              rb);
 
-        var imgRegistryTitle = TitleOrFileName + $": {SelectedArea}";
+        var imgRegistryTitle = TitleOrFileName + $": {selArea}";
 
-        var content = CreateImageContent(imgExtract,
-                                         img,
+        var content = CreateImageContent(img,
                                          imgRegistryTitle);
 
         if (content != null)
@@ -116,10 +119,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         txtExtract = true;
       }
 
-      if (SelectedArea != null && SelectedArea.Type == PDFAreaSelection.AreaType.Ocr)
+      if (selTextAreas.Any())
       {
+        var text = string.Join("\r\n<br/>[...] ",
+                               selTextAreas.Select(a => a.OcrText));
         contents.Add(new ElementBuilder.TextContent(true,
-                                                    SelectedArea.OcrText));
+                                                    text));
       }
 
       // Generate extract
@@ -131,6 +136,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           new ElementBuilder(ElementType.Topic,
                              contents.ToArray())
             .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
+            .WithPriority(Config.SMExtractPriority)
             .WithReference(r => PDFElement.ConfigureReferences(r))
             .DoNotDisplay()
         );
@@ -163,8 +169,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return ret;
     }
 
-    protected ElementBuilder.IContent CreateImageContent(PDFImageExtract extract,
-                                                         Image           image,
+    protected ElementBuilder.IContent CreateImageContent(Image           image,
                                                          string          title)
     {
       if (image == null)
@@ -178,7 +183,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (imgRegistryId <= 0)
         return null;
 
-      return new ElementBuilder.ImageContent(imgRegistryId);
+      return new ElementBuilder.ImageContent(imgRegistryId,
+                                             Config.ImageStretchType);
     }
 
     protected bool CreateImageExtract(PDFImageExtract extract,

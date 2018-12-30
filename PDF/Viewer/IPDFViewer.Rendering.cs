@@ -182,25 +182,27 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected void DrawImageSelection(DrawingContext drawingContext,
                                       int            pageIndex)
     {
-      if (SelectedImage?.PageIndex == pageIndex)
-        DrawImageHighlight(drawingContext,
-                           SelectedImage,
-                           ImageHighlightPen,
-                           ImageHighlightFillHatchedBrush);
+      foreach (var selImg in SelectedImages)
+        if (selImg.PageIndex == pageIndex)
+          DrawImageHighlight(drawingContext,
+                             selImg,
+                             ImageHighlightPen,
+                             ImageHighlightFillHatchedBrush);
     }
 
     protected void DrawAreaSelection(DrawingContext drawingContext,
                                      int            pageIndex)
     {
-      if (SelectedArea?.PageIndex == pageIndex)
-      {
-        var deviceRec = PageToDeviceRect(SelectedArea.Normalized(),
-                                         pageIndex);
+      foreach (var selArea in SelectedAreas)
+        if (selArea.PageIndex == pageIndex)
+        {
+          var deviceRec = PageToDeviceRect(selArea.Normalized(),
+                                           pageIndex);
 
-        drawingContext.DrawRectangle(ImageHighlightFillBrush,
-                                     AreaBorderPen,
-                                     deviceRec);
-      }
+          drawingContext.DrawRectangle(ImageHighlightFillBrush,
+                                       AreaBorderPen,
+                                       deviceRec);
+        }
     }
 
     protected void DrawImageExtracts(DrawingContext drawingContext,
