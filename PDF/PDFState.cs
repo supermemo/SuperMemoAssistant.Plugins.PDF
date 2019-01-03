@@ -157,7 +157,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       PdfWindow.Activate();
     }
 
-    public bool OpenFile()
+    public void OpenFile()
     {
       //EnsurePdfWindow();
 
@@ -174,8 +174,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         },
         null
       );
-
-      return true;
     }
 
     public void UpdateWindowPosition(double      top,
@@ -191,9 +189,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       Config.WindowState  = windowState;
     }
 
-    public void SaveConfig()
+    public void SaveConfig(bool sync = false)
     {
-      Svc<PDFPlugin>.Configuration.Save(Config);
+      var task = Svc<PDFPlugin>.Configuration.Save(Config);
+
+      if (sync)
+        task.Wait();
     }
 
     public void CaptureContext()

@@ -430,5 +430,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     }
 
     #endregion
+
+    private void DictionaryPopup_Closed(object sender, EventArgs e)
+    {
+      DictionaryPopup.DataContext = null;
+    }
   }
 }

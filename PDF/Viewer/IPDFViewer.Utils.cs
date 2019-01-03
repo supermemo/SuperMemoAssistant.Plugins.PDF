@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/25 20:00
+// Modified On:  2018/12/31 14:41
 // Modified By:  Alexis
 
 #endregion
@@ -32,15 +32,21 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Anotar.Serilog;
 using Forge.Forms;
 using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Plugins.Dictionary.Interop;
+using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.MathPix;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Plugins.PDF.Utils.Web;
+using SuperMemoAssistant.Services;
 
 // ReSharper disable ArrangeRedundantParentheses
 
@@ -63,27 +69,115 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Methods
 
+    public void ShowDictionaryPopup()
+    {
+      var dict = Svc<PDFPlugin>.Plugin.DictionaryPlugin;
+
+      if (dict == null || dict.CredentialsAvailable == false || IsTextSelectionValid() == false)
+        return;
+      
+      string text = SelectedText?.Trim(' ',
+                                       '\t',
+                                       '\r',
+                                       '\n');
+      
+      if (string.IsNullOrWhiteSpace(text))
+        return;
+
+      /*
+      int    spaceIdx = text.IndexOfAny(new[] { ' ', '\r' });
+
+      if (spaceIdx > 0)
+        text = text.Substring(0,
+                              spaceIdx);
+
+      if (spaceIdx == 0 || string.IsNullOrWhiteSpace(text))
+        return;
+      */
+      
+      CancellationTokenSource cts = new CancellationTokenSource();
+
+      var pageIdx  = SelectInfo.StartPage;
+      var startIdx = SelectInfo.StartIndex;
+      var textInfos = Document.Pages[pageIdx].Text.GetTextInfo(startIdx,
+                                                               text.Length);
+
+      if (textInfos?.Rects == null || textInfos.Rects.Any() == false)
+      {
+        Show.Window()
+            .For(new Alert($"ShowDictionaryPopup: Failed to get selected text info ({startIdx}:{text.Length}@{pageIdx}).",
+                           "Error"));
+        return;
+      }
+
+      // ReSharper disable once AssignNullToNotNullAttribute
+      var wdw = Window.GetWindow(this);
+
+      if (wdw == null)
+      {
+        LogTo.Error("ShowDictionaryPopup: Window.GetWindow(this) returned null");
+        Show.Window()
+            .For(new Alert("ShowDictionaryPopup: Window.GetWindow(this) returned null",
+                           "Error"));
+        return;
+      }
+
+      var entryResultTask = LookupWordEntryAsync(cts,
+                                                 text,
+                                                 dict);
+
+      var pagePt = PageToClient(pageIdx,
+                                new Point(textInfos.Rects.Last().right,
+                                          textInfos.Rects.Last().top));
+
+      DictionaryPopup.HorizontalOffset = pagePt.X;
+      DictionaryPopup.VerticalOffset   = pagePt.Y;
+      DictionaryPopup.DataContext = new PendingEntryResult(cts,
+                                                           entryResultTask,
+                                                           dict);
+      DictionaryPopup.IsOpen = true;
+    }
+
+    public async Task<EntryResult> LookupWordEntryAsync(CancellationTokenSource cts,
+                                                        string                  word,
+                                                        IDictionaryPlugin       dict)
+    {
+      var lemmas = await dict.LookupLemma(cts.Token,
+                                          word);
+
+      if (lemmas?.Results == null
+        || lemmas.Results.Any() == false
+        || lemmas.Results[0].LexicalEntries.Any() == false
+        || lemmas.Results[0].LexicalEntries[0].InflectionOf.Any() == false)
+        return null;
+
+      word = lemmas.Results[0].LexicalEntries[0].InflectionOf[0].Text;
+
+      if (string.IsNullOrWhiteSpace(word))
+        return null;
+
+      return await dict.LookupEntry(cts.Token,
+                                    word);
+    }
+
     public void ShowGoToPageDialog()
     {
       Show.Window()
-          .For(new Prompt<string> { Title = "Page number ?", Value = (CurrentIndex + 1).ToString() })
+          .For(new Prompt<int> { Title = "Page number ?", Value = CurrentIndex + 1 })
           .ContinueWith(
             task =>
             {
-              if (task == null || "Ok".Equals(task.Result.Action) == false)
+              if (task == null || task.Result.Model.Confirmed == false)
                 return;
 
-              string pageStr = (string)task.Result.ActionParameter;
-
-              if (int.TryParse(pageStr, out int page))
-                ScrollToPage(page);
+              ScrollToPage(task.Result.Model.Value);
             }
           );
     }
 
     public void ShowTeXEditor(string tex)
     {
-      var mpWdw = new MathPixWindow(tex);
+      var mpWdw = new TeXEditorWindow(tex);
 
       if (mpWdw.ShowDialog() ?? false)
         SelectedArea.OcrText = mpWdw.Text;
@@ -113,31 +207,31 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                rb);
 
           return MathPixAPI.Ocr(Config.MathPixAppId,
-                      Config.MathPixAppKey,
-                      Config.MathPixMetadata,
-                      img)
-                 .ContinueWith(
-                   mathPixRes =>
-                   {
-                     try
-                     {
-                       var mathPix = mathPixRes.Result;
+                                Config.MathPixAppKey,
+                                Config.MathPixMetadata,
+                                img)
+                           .ContinueWith(
+                             mathPixRes =>
+                             {
+                               try
+                               {
+                                 var mathPix = mathPixRes.Result;
 
-                       if (mathPix == null || string.IsNullOrWhiteSpace(mathPix.Error) == false)
-                       {
-                         MessageBox.Show($"Ocr failed. {mathPix?.Error}",
-                                         "Error: Ocr");
-                         SelectedArea = null;
-                         return null;
-                       }
+                                 if (mathPix == null || string.IsNullOrWhiteSpace(mathPix.Error) == false)
+                                 {
+                                   MessageBox.Show($"Ocr failed. {mathPix?.Error}",
+                                                   "Error: Ocr");
+                                   SelectedArea = null;
+                                   return null;
+                                 }
 
-                       return mathPix;
-                     }
-                     finally
-                     {
-                       Dispatcher.Invoke(HideLoadingIndicator);
-                     }
-                   });
+                                 return mathPix;
+                               }
+                               finally
+                               {
+                                 Dispatcher.Invoke(HideLoadingIndicator);
+                               }
+                             });
         }
       }
 

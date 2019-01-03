@@ -120,6 +120,7 @@
     <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
@@ -145,9 +146,8 @@
   <ItemGroup>
     <Compile Include="Extensions\ImageEx.cs" />
     <Compile Include="Extensions\PdfBookmarkEx.cs" />
-    <Compile Include="Extensions\TreeViewEx.cs" />
-    <Compile Include="MathPix\MathPixWindow.xaml.cs">
-      <DependentUpon>MathPixWindow.xaml</DependentUpon>
+    <Compile Include="MathPix\TeXEditorWindow.xaml.cs">
+      <DependentUpon>TeXEditorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\ExtractFormat.cs" />
     <Compile Include="Models\PDFTextExtract.cs" />
@@ -199,6 +199,10 @@
       <Project>{501257D3-F788-4A5D-B990-16C01FF71926}</Project>
       <Name>Process.NET</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\SuperMemoAssistant.Plugins.Dictionary.Interop\SuperMemoAssistant.Plugins.Dictionary.Interop.csproj">
+      <Project>{aa97c5aa-ca1a-4988-ae2e-e5a292b63c12}</Project>
+      <Name>SuperMemoAssistant.Plugins.Dictionary.Interop</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\SuperMemoAssistant.Interop\SuperMemoAssistant.Interop.csproj">
       <Project>{fd0e1be8-bed3-4ab0-a9c8-022a2dbc8450}</Project>
       <Name>SuperMemoAssistant.Interop</Name>
@@ -209,7 +213,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="MathPix\MathPixWindow.xaml">
+    <Page Include="MathPix\TeXEditorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -257,15 +261,15 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy /R /Y $(TargetPath) C:\Users\Lila\AppData\Roaming\SuperMemoAssistant\Plugins\faecf9bb-9fd5-4fb1-a3a8-9f7caa57a1fe</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\..\..\packages\Fody.3.3.4\build\Fody.targets" Condition="Exists('..\..\..\packages\Fody.3.3.4\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\packages\Fody.3.3.4\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Fody.3.3.4\build\Fody.targets'))" />
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
     <Error Condition="!Exists('..\..\..\packages\PropertyChanged.Fody.2.6.0\build\PropertyChanged.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\PropertyChanged.Fody.2.6.0\build\PropertyChanged.Fody.props'))" />
     <Error Condition="!Exists('..\..\..\packages\Anotar.Serilog.Fody.4.6.7\build\Anotar.Serilog.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Anotar.Serilog.Fody.4.6.7\build\Anotar.Serilog.Fody.props'))" />
+    <Error Condition="!Exists('..\..\..\packages\Fody.3.3.5\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Fody.3.3.5\build\Fody.targets'))" />
   </Target>
   <Import Project="..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Import Project="..\..\..\packages\Fody.3.3.5\build\Fody.targets" Condition="Exists('..\..\..\packages\Fody.3.3.5\build\Fody.targets')" />
 </Project>

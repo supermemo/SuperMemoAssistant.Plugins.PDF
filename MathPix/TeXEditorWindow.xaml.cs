@@ -36,8 +36,8 @@ using System.Windows;
 
 namespace SuperMemoAssistant.Plugins.PDF.MathPix
 {
-  /// <summary>Interaction logic for MathPixWindow.xaml</summary>
-  public partial class MathPixWindow
+  /// <summary>Interaction logic for TeXEditorWindow.xaml</summary>
+  public partial class TeXEditorWindow
   {
     #region Properties & Fields - Non-Public
 
@@ -53,7 +53,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
 
     #region Constructors
 
-    public MathPixWindow(string latex)
+    public TeXEditorWindow(string latex)
     {
       InitializeComponent();
 

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/29 23:26
+// Modified On:  2018/12/31 04:22
 // Modified By:  Alexis
 
 #endregion
@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using JetBrains.Annotations;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
@@ -54,6 +55,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                   typeof(Visibility),
                                   typeof(IPDFViewer),
                                   new PropertyMetadata(Visibility.Hidden));
+
+    // Using a DependencyProperty as the backing store for DictionaryPopup.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty DictionaryPopupProperty =
+      DependencyProperty.Register("DictionaryPopup",
+                                  typeof(Popup),
+                                  typeof(IPDFViewer),
+                                  new PropertyMetadata(null));
 
     #endregion
 
@@ -91,6 +99,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
 
     #region Properties & Fields - Public
+
+    public Popup DictionaryPopup
+    {
+      get => (Popup)GetValue(DictionaryPopupProperty);
+      set => SetValue(DictionaryPopupProperty,
+                      value);
+    }
 
     public Visibility LoadingIndicatorVisibility
     {
@@ -330,11 +345,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           PDFElement.Save();
           SaveTask = null;
         }
-    }
-
-    protected void SaveConfig()
-    {
-      PDFState.Instance.SaveConfig();
     }
 
     public void ShowLoadingIndicator()

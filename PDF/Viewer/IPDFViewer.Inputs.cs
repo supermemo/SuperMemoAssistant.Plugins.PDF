@@ -194,6 +194,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         CopySelectionToClipboard();
       }
 
+      else if (e.Key == Key.D
+        && kbMod == KeyboardModifiers.ControlKey)
+      {
+        e.Handled = true;
+        ShowDictionaryPopup();
+      }
+
       else if (e.Key == Key.Escape)
       {
         DeselectArea();
