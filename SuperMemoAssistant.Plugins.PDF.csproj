@@ -199,7 +199,7 @@
       <Project>{501257D3-F788-4A5D-B990-16C01FF71926}</Project>
       <Name>Process.NET</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\SuperMemoAssistant.Plugins.Dictionary.Interop\SuperMemoAssistant.Plugins.Dictionary.Interop.csproj">
+    <ProjectReference Include="..\SuperMemoAssistant.Plugins.Dictionary.Interop\SuperMemoAssistant.Plugins.Dictionary.Interop.csproj">
       <Project>{aa97c5aa-ca1a-4988-ae2e-e5a292b63c12}</Project>
       <Name>SuperMemoAssistant.Plugins.Dictionary.Interop</Name>
     </ProjectReference>
