@@ -114,7 +114,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                       value);
     }
 
-    public PDFElement PDFElement { get; protected set; }
+    public PDFElement PDFElement { get; set; }
 
     #endregion
 

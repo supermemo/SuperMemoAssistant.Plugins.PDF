@@ -43,7 +43,6 @@ using Microsoft.Win32;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
@@ -131,13 +130,17 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       Config.SidePanelWidth = LastSidePanelWidth;
       PDFState.Instance.SaveConfig();
 
+      e.Cancel = true;
+      Hide();
+      
+      IPDFViewer.CloseDocument();
+      IPDFViewer.PDFElement = null;
+
       base.OnClosing(e);
     }
 
     protected override void OnClosed(EventArgs e)
     {
-      IPDFViewer.Document.Dispose();
-
       base.OnClosed(e);
     }
 
@@ -196,10 +199,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         : null;
     }
 
-    public void Open([NotNull] PDFElement pdfElement)
+    public void OpenDocument([NotNull] PDFElement pdfElement)
     {
       //if (WPFEx.IsWindowOpen<PDFWindow>() == false)
-      if (IsLoaded == false)
+      if (Visibility != Visibility.Visible)
         Show();
 
       IPDFViewer.LoadDocument(pdfElement);

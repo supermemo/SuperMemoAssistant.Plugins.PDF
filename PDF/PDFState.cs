@@ -120,10 +120,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           OpenElement(pdfEl);
 
           if (close)
-          {
             PdfWindow?.Close();
-            PdfWindow = null;
-          }
         },
         null);
     }
@@ -153,14 +150,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       EnsurePdfWindow();
 
-      PdfWindow.Open(pdfElem);
+      PdfWindow.OpenDocument(pdfElem);
       PdfWindow.Activate();
     }
 
     public void OpenFile()
     {
-      //EnsurePdfWindow();
-
       SyncContext.Post(
         _ =>
         {
@@ -201,6 +196,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     {
       SyncContext = new DispatcherSynchronizationContext();
       SynchronizationContext.SetSynchronizationContext(SyncContext);
+
+      CreatePdfWindow(null);
     }
 
     private void SetTopMost(bool topmost,
@@ -238,6 +235,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     private void PdfWindow_Closed(object    sender,
                                   EventArgs e)
     {
+      PdfWindow.Closed -= PdfWindow_Closed;
       PdfWindow = null;
     }
 
