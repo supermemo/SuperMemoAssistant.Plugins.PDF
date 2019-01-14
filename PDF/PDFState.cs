@@ -35,7 +35,9 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
+using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
+using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Services;
 
@@ -97,7 +99,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       if (newElem == null)
         return;
 
-      if (LastElement?.ElementId == newElem.Id)
+      if (LastElement?.ElementId == newElem.Id
+        || newElem.Type != ElementType.Topic)
         return;
 
       string html = ctrlHtml?.Text ?? string.Empty;
@@ -151,7 +154,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       EnsurePdfWindow();
 
       PdfWindow.OpenDocument(pdfElem);
-      PdfWindow.Activate();
+      PdfWindow.ForceActivate();
     }
 
     public void OpenFile()

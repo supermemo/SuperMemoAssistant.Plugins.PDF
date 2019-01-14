@@ -59,6 +59,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
 
 
     #region Methods
+    
+    public bool IsTextSelectionValid()
+    {
+      return StartPage >= 0 && StartIndex >= 0
+        && EndPage >= 0 && EndIndex >= 0;
+    }
 
     public static implicit operator PDFTextExtract(SelectInfo selInfo)
     {

@@ -98,7 +98,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       };
 
       if (!PdfCommon.IsInitialize)
-        PdfCommon.Initialize();
+        PdfCommon.Initialize(PDFLicense.LicenseKey);
 
       Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
 

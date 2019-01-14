@@ -152,13 +152,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
           if (txtExtract)
           {
-            var selInfo = SelectInfo;
-
-            PDFElement.SMExtracts.Add(selInfo);
-            AddSMExtractHighlight(selInfo.StartPage,
-                                  selInfo.EndPage,
-                                  selInfo.StartIndex,
-                                  selInfo.EndIndex);
+            foreach (var selInfo in SelectInfos)
+            {
+              PDFElement.SMExtracts.Add(selInfo);
+              AddSMExtractHighlight(selInfo);
+            }
           }
 
           Save(false);
@@ -287,45 +285,37 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         PDFElement.PDFExtracts.Add(selInfo);
         Save(false);
 
-        AddPDFExtractHighlight(selInfo.StartPage,
-                               selInfo.EndPage,
-                               selInfo.StartIndex,
-                               selInfo.EndIndex);
+        AddPDFExtractHighlight(selInfo);
       }
 
       return ret;
     }
 
+    protected bool CreateIgnoreHighlight()
+    {
+      if (IsTextSelectionValid(out _) == false)
+        return false;
+
+      foreach (var selInfo in SelectInfos)
+      {
+        PDFElement.IgnoreHighlights.Add(selInfo);
+        AddIgnoreHighlight(selInfo);
+      }
+
+      DeselectText();
+
+      return true;
+    }
+
+
+
     //
     // Highlights
 
-    protected void AddSMExtractHighlight(int startPage,
-                                         int endPage,
-                                         int startIdx,
-                                         int endIdx)
+    protected void AddSMExtractHighlight(PDFTextExtract extract)
     {
-      for (int pageIdx = startPage; pageIdx <= endPage; pageIdx++)
-      {
-        int pageStartIdx = pageIdx == startPage ? startIdx : 0;
-        int pageEndIdx   = pageIdx == endPage ? endIdx : 0;
-        int pageCount = GetTextLength(pageIdx,
-                                      pageStartIdx,
-                                      pageEndIdx);
-
-        var pageHighlights = ExtractHighlights
-          .SafeGet(pageIdx,
-                   new List<HighlightInfo>());
-
-        pageHighlights.Add(new HighlightInfo
-          {
-            CharIndex  = pageStartIdx,
-            CharsCount = pageCount,
-            Color      = SMExtractColor
-          }
-        );
-
-        ExtractHighlights[pageIdx] = pageHighlights;
-      }
+      AddHighlight(extract,
+                   SMExtractColor);
     }
 
     private void AddImgExtractHighlight(int       pageIndex,
@@ -344,33 +334,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       ImageExtractHighlights[pageIndex] = pageHighlights;
     }
 
-    protected void AddPDFExtractHighlight(int startPage,
-                                          int endPage,
-                                          int startIdx,
-                                          int endIdx)
+    protected void AddPDFExtractHighlight(PDFTextExtract extract)
     {
-      for (int pageIdx = startPage; pageIdx <= endPage; pageIdx++)
-      {
-        int pageStartIdx = pageIdx == startPage ? startIdx : 0;
-        int pageEndIdx   = pageIdx == endPage ? endIdx : 0;
-        int pageCount = GetTextLength(pageIdx,
-                                      pageStartIdx,
-                                      pageEndIdx);
-
-        var pageHighlights = ExtractHighlights
-          .SafeGet(pageIdx,
-                   new List<HighlightInfo>());
-
-        pageHighlights.Add(new HighlightInfo
-          {
-            CharIndex  = pageStartIdx,
-            CharsCount = pageCount,
-            Color      = PDFExtractColor
-          }
-        );
-
-        ExtractHighlights[pageIdx] = pageHighlights;
-      }
+      AddHighlight(extract,
+                   PDFExtractColor);
     }
 
     protected void GenerateOutOfExtractHighlights()
@@ -400,6 +367,38 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (IsPageInClientRect(PDFElement.EndPage) == false)
         Document.Pages[PDFElement.EndPage].Dispose();
+    }
+
+    protected void AddIgnoreHighlight(PDFTextExtract extract)
+    {
+      AddHighlight(extract,
+                   IgnoreHighlightColor);
+    }
+
+    protected void AddHighlight(PDFTextExtract extract, System.Windows.Media.Color highlightColor)
+    {
+      for (int pageIdx = extract.StartPage; pageIdx <= extract.EndPage; pageIdx++)
+      {
+        int pageStartIdx = pageIdx == extract.StartPage ? extract.StartIndex : 0;
+        int pageEndIdx   = pageIdx == extract.EndPage ? extract.EndIndex : 0;
+        int pageCount = GetTextLength(pageIdx,
+                                      pageStartIdx,
+                                      pageEndIdx);
+
+        var pageHighlights = ExtractHighlights
+          .SafeGet(pageIdx,
+                   new List<HighlightInfo>());
+
+        pageHighlights.Add(new HighlightInfo
+          {
+            CharIndex  = pageStartIdx,
+            CharsCount = pageCount,
+            Color      = highlightColor
+          }
+        );
+
+        ExtractHighlights[pageIdx] = pageHighlights;
+      }
     }
 
     #endregion

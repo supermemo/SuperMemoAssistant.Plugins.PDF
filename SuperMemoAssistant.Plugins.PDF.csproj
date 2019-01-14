@@ -148,7 +148,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\ImageEx.cs" />
     <Compile Include="Extensions\PdfBookmarkEx.cs" />
     <Compile Include="MathPix\TeXEditorWindow.xaml.cs">
       <DependentUpon>TeXEditorWindow.xaml</DependentUpon>
@@ -160,6 +159,7 @@
     <Compile Include="Extensions\SelectInfoEx.cs" />
     <Compile Include="Models\PDFAreaSelection.cs" />
     <Compile Include="Models\PDFCfg.cs" />
+    <Compile Include="PDFLicense.cs" />
     <Compile Include="PDF\PDFElement.cs" />
     <Compile Include="Models\PDFImageExtract.cs" />
     <Compile Include="Models\PDFPageSelection.cs" />

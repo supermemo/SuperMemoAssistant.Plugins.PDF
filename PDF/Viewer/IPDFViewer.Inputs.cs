@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/27 13:27
+// Modified On:  2019/01/14 18:41
 // Modified By:  Alexis
 
 #endregion
@@ -54,7 +54,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     };
     public static readonly Key[] SMCtrlKeysPassThrough =
     {
-      Key.L, Key.Up, Key.Down, Key.Left, Key.Right
+      Key.L, Key.J, Key.Up, Key.Down, Key.Left, Key.Right
     };
     public static readonly Key[] SMAltKeysPassThrough =
     {
@@ -62,7 +62,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     };
     public static readonly Key[] SMCtrlShiftKeysPassThrough =
     {
-      Key.Enter, Key.Delete
+      Key.J
     };
     public static readonly Key[] SideArrowKeys =
     {
@@ -110,6 +110,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         e.Handled = true;
       }
 
+      else if (e.Key == Key.I
+        && kbMod == (KeyboardModifiers.ShiftKey | KeyboardModifiers.ControlKey))
+      {
+        CreateIgnoreHighlight();
+        e.Handled = true;
+      }
+
       //
       // SM pass-through
 
@@ -125,13 +132,27 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         );
       }
 
+      else if (SMCtrlShiftKeysPassThrough.Contains(e.Key)
+        && kbMod == (KeyboardModifiers.ShiftKey | KeyboardModifiers.ControlKey))
+      {
+        e.Handled = true;
+        ForwardKeysToSM(new Keys(true,
+                                 false,
+                                 true,
+                                 false,
+                                 e.Key)
+        );
+
+        return;
+      }
+
       else if (SMAltKeysPassThrough.Contains(e.SystemKey)
         && kbMod == KeyboardModifiers.AltKey)
       {
         e.Handled = true;
         ForwardKeysToSM(new Keys(false,
                                  true,
-                                 true,
+                                 false,
                                  false,
                                  e.SystemKey)
         );
@@ -153,6 +174,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         e.Handled = true;
         Svc.SMA.UI.ElementWindow.ActivateWindow();
         Svc.SMA.UI.ElementWindow.Delete();
+      }
+
+      else if (e.Key == Key.L
+        && kbMod == (KeyboardModifiers.ShiftKey | KeyboardModifiers.ControlKey))
+      {
+        e.Handled = true;
+        Svc.SMA.UI.ElementWindow.ForceRepetitionAndResume(Config.LearnForcedScheduleInterval,
+                                                          false);
       }
 
       //

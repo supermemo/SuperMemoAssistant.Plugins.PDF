@@ -31,8 +31,8 @@
 
 
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
+using System.Windows.Media;
 using SuperMemoAssistant.Extensions;
 
 namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
@@ -192,8 +192,26 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
       return this;
     }
+
+    public HtmlStyle WithTextColor(System.Drawing.Color color)
+    {
+      if (color.R != 0 || color.G != 0 || color.B != 0)
+        this["color"] = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+
+      else
+        Properties.Remove("color");
+
+      return this;
+    }
     
     public HtmlStyle WithBackgroundColorColor(Color color)
+    {
+      this["background-color"] = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+
+      return this;
+    }
+    
+    public HtmlStyle WithBackgroundColorColor(System.Drawing.Color color)
     {
       this["background-color"] = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
 

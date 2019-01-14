@@ -80,8 +80,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
 
       return len;
     }
-
-
+    
     public static bool IsTextSelectionValid(this SelectInfo selInfo)
     {
       return selInfo.StartPage >= 0 && selInfo.StartIndex >= 0

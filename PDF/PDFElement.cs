@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/23 17:18
+// Modified On:  2019/01/14 12:01
 // Modified By:  Alexis
 
 #endregion
@@ -61,20 +61,22 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     public PDFElement()
     {
-      BinaryMemberId = -1;
-      StartPage      = -1;
-      EndPage        = -1;
-      StartIndex     = -1;
-      EndIndex       = -1;
-      ReadPage       = 0;
-      ReadPoint      = default(Point);
-      PDFExtracts    = new ObservableCollection<PDFTextExtract>();
-      SMExtracts     = new ObservableCollection<PDFTextExtract>();
-      SMImgExtracts  = new ObservableCollection<PDFImageExtract>();
+      BinaryMemberId   = -1;
+      StartPage        = -1;
+      EndPage          = -1;
+      StartIndex       = -1;
+      EndIndex         = -1;
+      ReadPage         = 0;
+      ReadPoint        = default(Point);
+      PDFExtracts      = new ObservableCollection<PDFTextExtract>();
+      SMExtracts       = new ObservableCollection<PDFTextExtract>();
+      SMImgExtracts    = new ObservableCollection<PDFImageExtract>();
+      IgnoreHighlights = new ObservableCollection<PDFTextExtract>();
 
-      PDFExtracts.CollectionChanged   += OnCollectionChanged;
-      SMExtracts.CollectionChanged    += OnCollectionChanged;
-      SMImgExtracts.CollectionChanged += OnCollectionChanged;
+      PDFExtracts.CollectionChanged      += OnCollectionChanged;
+      SMExtracts.CollectionChanged       += OnCollectionChanged;
+      SMImgExtracts.CollectionChanged    += OnCollectionChanged;
+      IgnoreHighlights.CollectionChanged += OnCollectionChanged;
     }
 
     #endregion
@@ -102,6 +104,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     public ObservableCollection<PDFTextExtract> SMExtracts { get; }
     [JsonProperty(PropertyName = "SMIE")]
     public ObservableCollection<PDFImageExtract> SMImgExtracts { get; }
+    [JsonProperty(PropertyName = "IH")]
+    public ObservableCollection<PDFTextExtract> IgnoreHighlights { get; }
 
     [JsonProperty(PropertyName = "RPg")]
     public int ReadPage { get; set; }
@@ -164,7 +168,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       try
       {
         var fileName = Path.GetFileName(filePath);
-        var binMems = Svc.SMA.Registry.Binary.FindByName(new Regex(fileName + ".*",
+        var binMems = Svc.SMA.Registry.Binary.FindByName(new Regex(Regex.Escape(fileName) + ".*",
                                                                    RegexOptions.IgnoreCase)).ToList();
 
         if (binMems.Any())
@@ -319,7 +323,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       try
       {
-        string toDeserialize = reRes.Groups[1].Value.Base64Decode();
+        string toDeserialize = reRes.Groups[1].Value.FromBase64();
 
         var pdfEl = JsonConvert.DeserializeObject<PDFElement>(toDeserialize);
 
@@ -429,7 +433,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       string elementJson = JsonConvert.SerializeObject(this,
                                                        Formatting.None);
 
-      return elementJson.Base64Encode();
+      return elementJson.ToBase64();
     }
 
     public static void GetInfos(string     filePath,

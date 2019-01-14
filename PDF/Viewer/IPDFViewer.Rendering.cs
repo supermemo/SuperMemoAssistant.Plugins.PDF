@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/23 16:59
+// Modified On:  2019/01/14 12:06
 // Modified By:  Alexis
 
 #endregion
@@ -41,6 +41,7 @@ using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
+using SuperMemoAssistant.Interop;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using Brush = System.Windows.Media.Brush;
@@ -58,14 +59,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                                               180,
                                                                               30,
                                                                               30);
-    protected static readonly Color SMExtractColor = Color.FromArgb(90,
-                                                                    68,
-                                                                    194,
-                                                                    255);
+    protected static readonly Color SMExtractColor = SMConst.Stylesheet.ExtractColor;
     protected static readonly Color PDFExtractColor = Color.FromArgb(90,
                                                                      255,
                                                                      106,
                                                                      0);
+    protected static readonly Color IgnoreHighlightColor = SMConst.Stylesheet.IgnoreColor;
 
     protected static Pen AreaBorderPen { get; } = new Pen(new SolidColorBrush(Color.FromArgb(255,
                                                                                              SMExtractColor.R,

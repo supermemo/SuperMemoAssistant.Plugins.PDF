@@ -46,6 +46,19 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
         : Application.Current.Windows.OfType<T>().Any(w => w.Name.Equals(name));
     }
 
+    public static void ForceActivate(this Window wdw)
+    {
+      if (wdw.WindowState == WindowState.Minimized)
+      {
+        wdw.WindowState = WindowState.Normal;
+      }
+
+      wdw.Activate();
+      wdw.Topmost = true;  // important
+      wdw.Topmost = false; // important
+      wdw.Focus();         // important
+    }
+
     #endregion
   }
 }

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/11/15 23:50
-// Modified On:  2018/12/13 12:38
+// Modified On:  2019/01/14 14:05
 // Modified By:  Alexis
 
 #endregion
@@ -58,12 +58,10 @@ namespace SuperMemoAssistant.Plugins.PDF
     public const int       DefaultPageMargin = 4;
     public const float     DefaultZoom       = 1.0f;
 
-    #endregion
 
-
-
-    
-    public const double DefaultSMExtractPriority = 15.0;
+    public const double DefaultSMExtractPriority  = 15.0;
     public const double DefaultPDFExtractPriority = 0.0;
+
+    #endregion
   }
 }

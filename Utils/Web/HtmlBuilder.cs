@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/24 02:05
-// Modified On:  2018/12/26 11:24
+// Modified On:  2019/01/14 17:18
 // Modified By:  Alexis
 
 #endregion
@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Windows.Media;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
@@ -54,7 +55,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
     private PDFElement  PdfElement { get; }
 
 
-    private Dictionary<int, List<Span>> ExtractSpans { get; } = new Dictionary<int, List<Span>>();
+    private Dictionary<int, List<Span<Color>>> ExtractSpans     { get; } = new Dictionary<int, List<Span<Color>>>();
+    private Dictionary<int, List<Span>>        ExtractSpansBase { get; } = new Dictionary<int, List<Span>>();
 
     private Span.PositionalComparer SpanComparer { get; }
 
@@ -81,6 +83,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
 
     #region Properties & Fields - Public
+
+    public HashSet<int> PagesToDispose = new HashSet<int>();
 
     public List<HtmlTag> HtmlTags { get; } = new List<HtmlTag>();
     public StringBuilder Html     { get; } = new StringBuilder();
@@ -135,7 +139,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
                                   out gapText);
 
           ret.Append(gapText);
-          
+
           shift += lengthDiff;
         }
 
@@ -230,17 +234,15 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
       return newTags;
     }
 
-    public HashSet<int> PagesToDispose = new HashSet<int>();
-
     public void Append(List<SelectInfo> selInfos)
     {
       foreach (var selInfo in selInfos)
         Append(selInfo,
-                Html);
+               Html);
     }
 
     private void Append(SelectInfo    selInfo,
-                         StringBuilder str)
+                        StringBuilder str)
     {
       if (selInfo.IsTextSelectionValid() == false)
         return;
@@ -266,47 +268,79 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         Span span = new Span(startIdx,
                              endIdx);
         Append(pageIdx,
-                span,
-                str);
+               span,
+               str);
 
         PagesToDispose.Add(pageIdx);
       }
     }
 
     private void Append(int           pageIdx,
-                         Span          span,
-                         StringBuilder str)
+                        Span          span,
+                        StringBuilder str)
     {
       PdfPage page    = Document.Pages[pageIdx];
       PdfText pdfText = page.Text;
 
+      // Get all text objects
+
+      TextObject GetTextObject(PdfTextObject textObj)
+      {
+        var bbox    = textObj.GetCharRect(0);
+        var absIdx = pdfText.GetCharIndexAtPos(bbox.left,
+                                         bbox.top,
+                                         1,
+                                         1);
+
+        return new TextObject(textObj,
+                              absIdx);
+      }
+
+      var textObjects = page.PageObjects
+                            .Where(o => o.ObjectType == PageObjectTypes.PDFPAGE_TEXT)
+                            .Select(o => GetTextObject((PdfTextObject)o))
+                            .OrderBy(t => t.StartIndex)
+                            .ToList();
+
+      // Some PDF documents are improperly formated and miss PdfTextObjects -- Fill the gaps
+
+      int lastEndIdx = textObjects.FirstOrDefault()?.EndIndex ?? 0;
+
+      for (int i = 1; i < textObjects.Count; i++)
+      {
+        var textObj = textObjects[i];
+
+        if (textObj.StartIndex <= lastEndIdx + 1) // This shouldn't be < -- But allow it nevertheless
+        {
+          lastEndIdx = textObj.EndIndex;
+          continue;
+        }
+
+        var gapTextObj = new TextObject(textObjects[i - 1],
+                                        lastEndIdx + 1,
+                                        textObj.StartIndex - lastEndIdx - 1);
+        textObjects.Insert(i++,
+                           gapTextObj);
+
+        lastEndIdx = textObj.EndIndex;
+      }
+
+      // Build the HTML tags
+
       int shift = str.Length;
 
-      foreach (var obj in page.PageObjects)
+      foreach (var textObj in textObjects)
       {
-        if (obj.ObjectType == PageObjectTypes.PDFPAGE_FORM)
-          continue; // TODO
-
-        else if (obj.ObjectType != PageObjectTypes.PDFPAGE_TEXT)
-          continue;
-
-        // Get absolute start idx
-        var textObj = (PdfTextObject)obj;
-        var bbox    = textObj.GetCharRect(0);
-        var absStartIdx = pdfText.GetCharIndexAtPos(bbox.left,
-                                                    bbox.top,
-                                                    1,
-                                                    1);
-
         // Check overlap
-        var objSpan = new Span(absStartIdx,
-                               absStartIdx + textObj.CharsCount - 1);
+        var objSpan = new Span(textObj.StartIndex,
+                               textObj.StartIndex + textObj.Length - 1);
 
         if (objSpan.Overlaps(span,
                              out var overlap) == false)
           continue;
 
-        int lookbackIdx = absStartIdx - 2;
+        // Look behind for line return, and extend span for inclusion -- Unlike PdfTextObjects, GetText includes \r\n
+        int lookbackIdx             = textObj.StartIndex - 2;
         int tagStartIdxExtendBehind = 0;
 
         if (lookbackIdx >= span.StartIdx
@@ -326,61 +360,105 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         // Generate extract tag
         if (OverlapsWithExtract(pageIdx,
                                 overlap,
-                                out var extractOverlap))
-        {
-          int extractStartIdx = shift + extractOverlap.StartIdx - span.StartIdx;
-          var extractSpan = new Span(extractStartIdx,
-                                     extractStartIdx + extractOverlap.Length - 1);
-          var extractTag = new HtmlTagSpan(extractSpan,
-                                           100);
-          extractTag.WithStyle(s => s.WithBackgroundColorColor(SMConst.Stylesheet.ExtractColor));
+                                out var extractOverlaps))
+          foreach (var extractOverlap in extractOverlaps)
+          {
+            int extractStartIdx = shift + extractOverlap.StartIdx - span.StartIdx;
+            var extractSpan = new Span(extractStartIdx,
+                                       extractStartIdx + extractOverlap.Length - 1);
+            var extractTag = new HtmlTagSpan(extractSpan,
+                                             100);
+            extractTag.WithStyle(s => s.WithBackgroundColorColor(extractOverlap.Object));
 
-          HtmlTags.Add(extractTag);
-        }
+            HtmlTags.Add(extractTag);
+          }
       }
 
       str.Append(pdfText.GetText(span.StartIdx,
                                  span.Length));
     }
 
-    private bool OverlapsWithExtract(int      pageIdx,
-                                     Span     span,
-                                     out Span overlap)
+    private bool OverlapsWithExtract(int                   pageIdx,
+                                     Span                  span,
+                                     out List<Span<Color>> overlaps)
     {
-      overlap = null;
+      overlaps = null;
       var spans = ExtractSpans.SafeGet(pageIdx);
 
       if (spans == null)
         return false;
 
-      int i = spans.BinarySearch(span,
-                                 SpanComparer);
+      // Find any overlap -- which might not be the first.
+      int i = ExtractSpansBase[pageIdx].BinarySearch(span,
+                                                     SpanComparer);
 
       if (i < 0 || i >= spans.Count)
         return false;
 
+      // Iterate backward to the first overlap
+      while (i > 0 && spans[i - 1].Overlaps(span,
+                                            out _))
+        i--;
+
+      // Ensure current span is overlapping
       if (spans[i++].Overlaps(span,
-                              out overlap) == false)
+                              out var overlap,
+                              SpanColorSelector) == false)
         return false;
+
+      // Iterate and build overlap list
+      overlaps = new List<Span<Color>>();
 
       for (;
         i < spans.Count && spans[i].Overlaps(span,
-                                             out var exOverlap);
+                                             out var exOverlap,
+                                             SpanColorSelector);
         i++)
-        overlap += exOverlap;
+      {
+        /*
+        bool sameColor = overlap.Object == exOverlap.Object;
+
+        if (sameColor && (overlap.Adjacent(exOverlap) || overlap.Overlaps(exOverlap, out _)))
+        {
+          overlap += exOverlap;
+        }
+
+        else
+        {
+          overlaps.Add(overlap);
+          overlap = exOverlap;
+        }*/
+        overlaps.Add(overlap);
+        overlap = exOverlap;
+      }
+
+      overlaps.Add(overlap);
 
       return true;
     }
 
+    private Span<Color> SpanColorSelector(int         startIdx,
+                                          int         endIdx,
+                                          Span<Color> span1,
+                                          Span        span2)
+    {
+      return new Span<Color>(span1.Object,
+                             startIdx,
+                             endIdx);
+    }
+
     private void GenerateExtractSpans()
     {
-      if (PdfElement.SMExtracts.Any() == false)
-        return;
-
-      Dictionary<int, List<Span>> pageSpanDict   = new Dictionary<int, List<Span>>();
+      Dictionary<int, List<Span<Color>>> pageSpanDict = new Dictionary<int, List<Span<Color>>>();
 
       foreach (var extract in PdfElement.SMExtracts)
         SplitExtractByPage(extract,
+                           SMConst.Stylesheet.ExtractColor,
+                           pageSpanDict);
+
+      foreach (var ignoreHighlight in PdfElement.IgnoreHighlights)
+        SplitExtractByPage(ignoreHighlight,
+                           SMConst.Stylesheet.IgnoreColor,
                            pageSpanDict);
 
       foreach (var pageSpan in pageSpanDict)
@@ -388,25 +466,45 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
                              pageSpan.Value
                                      .OrderBy(s => s.StartIdx)
                                      .ToList());
+
+      foreach (var extractSpanPair in ExtractSpans)
+        ExtractSpansBase[extractSpanPair.Key] = extractSpanPair.Value.Cast<Span>().ToList();
     }
 
-    private void GenerateExtractSpans(int        pageIdx,
-                                      List<Span> tmpSpans)
+    private void GenerateExtractSpans(int               pageIdx,
+                                      List<Span<Color>> tmpSpans)
     {
       var spans = ExtractSpans.SafeGet(pageIdx,
-                                       new List<Span>());
+                                       new List<Span<Color>>());
       var lastSpan = tmpSpans[0];
 
       // Consolidate extracts
       for (int i = 1; i < tmpSpans.Count; i++)
       {
-        var curSpan = tmpSpans[i];
+        var  curSpan   = tmpSpans[i];
+        bool sameColor = lastSpan.Object == curSpan.Object;
 
-        if (lastSpan.Adjacent(curSpan) || lastSpan.Overlaps(curSpan,
-                                                            out _))
+        if (sameColor && lastSpan.Adjacent(curSpan))
         {
-          lastSpan = lastSpan + curSpan;
+          lastSpan += curSpan;
           continue;
+        }
+
+        if (lastSpan.Overlaps(curSpan,
+                              out _))
+        {
+          if (sameColor)
+          {
+            lastSpan += curSpan;
+            continue;
+          }
+
+          if (lastSpan.IsWithin(curSpan))
+            continue;
+
+          curSpan = new Span<Color>(curSpan.Object,
+                                    lastSpan.EndIdx + 1,
+                                    curSpan.EndIdx);
         }
 
         spans.Add(lastSpan);
@@ -418,8 +516,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
       ExtractSpans[pageIdx] = spans;
     }
 
-    private void SplitExtractByPage(PDFTextExtract              extract,
-                                    Dictionary<int, List<Span>> pageSpanDict)
+    private void SplitExtractByPage(PDFTextExtract                     extract,
+                                    Color                              extractColor,
+                                    Dictionary<int, List<Span<Color>>> pageSpanDict)
     {
       for (int pageIdx = extract.StartPage; pageIdx <= extract.EndPage; pageIdx++)
       {
@@ -430,18 +529,19 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         int endIdx   = extract.EndPage == pageIdx ? extract.EndIndex : page.Text.CountChars;
 
         var spans = pageSpanDict.SafeGet(pageIdx,
-                                         new List<Span>());
-        spans.Add(new Span(startIdx,
-                           endIdx));
+                                         new List<Span<Color>>());
+        spans.Add(new Span<Color>(extractColor,
+                                  startIdx,
+                                  endIdx));
         pageSpanDict[pageIdx] = spans;
       }
     }
 
-    private HtmlStyle SetTextStyle(HtmlStyle     s,
-                                   PdfTextObject txt)
+    private HtmlStyle SetTextStyle(HtmlStyle  s,
+                                   TextObject txt)
     {
-      bool isItalic = txt.Font.Flags.HasFlag(FontFlags.PDFFONT_ITALIC);
-      bool hasWeight   = txt.Font.Weight >= (int)FontWeight.FW_MEDIUM || txt.Font.Weight <= (int)FontWeight.FW_LIGHT;
+      bool isItalic  = txt.Font.Flags.HasFlag(FontFlags.PDFFONT_ITALIC);
+      bool hasWeight = txt.Font.Weight >= (int)FontWeight.FW_MEDIUM || txt.Font.Weight <= (int)FontWeight.FW_LIGHT;
 
       HtmlStyle.TextTransform txtTransform = txt.Font.Flags.HasFlag(FontFlags.PDFFONT_ALLCAP)
         ? HtmlStyle.TextTransform.Capitalize
@@ -489,6 +589,50 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
 
 
+
+    private class TextObject
+    {
+      #region Constructors
+
+      public TextObject(PdfTextObject obj,
+                        int           absIdx)
+      {
+        
+        StartIndex = absIdx;
+        Length     = obj.CharsCount;
+        Font       = obj.Font;
+        FontSize   = obj.FontSize;
+        FillColor  = obj.FillColor;
+      }
+
+      public TextObject(TextObject obj,
+                        int        absIdx,
+                        int        length)
+      {
+        StartIndex = absIdx;
+        Length     = length;
+        Font       = obj.Font;
+        FontSize   = obj.FontSize;
+        FillColor = obj.FillColor;
+      }
+
+
+      #endregion
+
+
+
+
+      #region Properties & Fields - Public
+
+      public int     StartIndex { get; }
+      public int EndIndex => StartIndex + Length - 1;
+      public int Length { get; }
+      public float   FontSize   { get; }
+      public PdfFont Font       { get; }
+      public System.Drawing.Color FillColor { get; }
+
+      #endregion
+    }
 
     private class TagToken
     {

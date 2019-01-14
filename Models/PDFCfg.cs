@@ -57,7 +57,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [Field(Name = "Copy PDF files to collection")]
     public bool CopyDocumentToFS { get; set; } = true;
 
-    [Field(Name = "Default PDF Extract Priority")]
+    [Field(Name = "Default PDF Extract Priority (%)")]
     [Value(Must.BeGreaterThanOrEqualTo,
       0,
       StrictValidation = true)]
@@ -65,7 +65,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
       100,
       StrictValidation = true)]
     public double PDFExtractPriority { get; set; } = PDFConst.DefaultPDFExtractPriority;
-    [Field(Name = "Default SM Extract Priority")]
+    [Field(Name = "Default SM Extract Priority (%)")]
     [Value(Must.BeGreaterThanOrEqualTo,
       0,
       StrictValidation = true)]
@@ -73,6 +73,15 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
       100,
       StrictValidation = true)]
     public double SMExtractPriority { get; set; } = PDFConst.DefaultSMExtractPriority;
+    
+    [Field(Name = "Default Forced Schedule Interval (days)")]
+    [Value(Must.BeGreaterThanOrEqualTo,
+      1,
+      StrictValidation = true)]
+    [Value(Must.BeLessThanOrEqualTo,
+      0xFFF,
+      StrictValidation = true)]
+    public int LearnForcedScheduleInterval { get; set; } = 1;
 
     [Field(Name = "Default Image Stretch Type")]
     [SelectFrom(typeof(ImageStretchType),
@@ -123,7 +132,6 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
 
     #region Events
 
-    /// <inheritdoc />
     public event PropertyChangedEventHandler PropertyChanged;
 
     #endregion
