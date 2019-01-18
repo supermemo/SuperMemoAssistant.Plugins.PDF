@@ -34,10 +34,10 @@ using System;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
+using SuperMemoAssistant.Extensions;
+using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
-using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Services;
 

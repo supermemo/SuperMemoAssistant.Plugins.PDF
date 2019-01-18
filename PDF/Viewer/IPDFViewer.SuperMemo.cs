@@ -36,7 +36,9 @@ using System.Linq;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
+using SuperMemoAssistant.Interop.SuperMemo.Content.Contents;
 using SuperMemoAssistant.Interop.SuperMemo.Elements;
+using SuperMemoAssistant.Interop.SuperMemo.Elements.Builders;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Services;
@@ -54,7 +56,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       bool txtExtract  = false;
       var  imgExtracts = new List<PDFImageExtract>();
-      var  contents    = new List<ElementBuilder.IContent>();
+      var  contents    = new List<ContentBase>();
 
       var selImages = SelectedImages;
       var selImageAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Normal);
@@ -114,7 +116,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         string text = GetSelectedTextHtml();
 
-        contents.Add(new ElementBuilder.TextContent(true,
+        contents.Add(new TextContent(true,
                                                     text));
         txtExtract = true;
       }
@@ -123,7 +125,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         var text = string.Join("\r\n<br/>[...] ",
                                selTextAreas.Select(a => a.OcrText));
-        contents.Add(new ElementBuilder.TextContent(true,
+        contents.Add(new TextContent(true,
                                                     text));
       }
 
@@ -167,7 +169,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return ret;
     }
 
-    protected ElementBuilder.IContent CreateImageContent(Image           image,
+    protected ContentBase CreateImageContent(Image           image,
                                                          string          title)
     {
       if (image == null)
@@ -181,7 +183,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (imgRegistryId <= 0)
         return null;
 
-      return new ElementBuilder.ImageContent(imgRegistryId,
+      return new ImageContent(imgRegistryId,
                                              Config.ImageStretchType);
     }
 
@@ -199,7 +201,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       bool ret = Svc.SMA.Registry.Element.Add(
         new ElementBuilder(ElementType.Topic,
-                           new ElementBuilder.ImageContent(imgRegistryId))
+                           new ImageContent(imgRegistryId))
           .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
           .WithReference(r =>
                            PDFElement.ConfigureReferences(r)

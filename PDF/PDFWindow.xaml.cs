@@ -201,7 +201,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     public void OpenDocument([NotNull] PDFElement pdfElement)
     {
-      //if (WPFEx.IsWindowOpen<PDFWindow>() == false)
+      //if (WindowEx.IsWindowOpen<PDFWindow>() == false)
       if (Visibility != Visibility.Visible)
         Show();
 

@@ -44,9 +44,10 @@ using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using PropertyChanged;
 using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
+using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Interop.SuperMemo.Elements;
+using SuperMemoAssistant.Interop.SuperMemo.Elements.Builders;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Interop.SuperMemo.Registry.Members;
@@ -468,7 +469,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         title += $" ({StartPage + 1}:{StartIndex} -> {EndPage + 1}:{EndIndex})";
     }
 
-    public ElementBuilder.ElemReference ConfigureReferences(ElementBuilder.ElemReference r,
+    public References ConfigureReferences(References r,
                                                             string                       title = null)
     {
       string filePath = BinaryMember.GetFilePath("pdf");

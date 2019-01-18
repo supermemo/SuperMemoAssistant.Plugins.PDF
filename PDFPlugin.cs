@@ -34,7 +34,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Interop.Plugins;
-using SuperMemoAssistant.Interop.SuperMemo.Components.Controls;
+using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.PDF.PDF;

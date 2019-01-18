@@ -34,7 +34,7 @@ using System.ComponentModel;
 using System.Windows;
 using Forge.Forms.Annotations;
 using Newtonsoft.Json;
-using SuperMemoAssistant.Interop.SuperMemo.Components.Models;
+using SuperMemoAssistant.Interop.SuperMemo.Content.Models;
 using SuperMemoAssistant.Plugins.PDF.MathPix;
 using SuperMemoAssistant.Sys.ComponentModel;
 
@@ -84,9 +84,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     public int LearnForcedScheduleInterval { get; set; } = 1;
 
     [Field(Name = "Default Image Stretch Type")]
-    [SelectFrom(typeof(ImageStretchType),
+    [SelectFrom(typeof(ImageStretchMode),
       SelectionType = SelectionType.RadioButtonsInline)]
-    public ImageStretchType ImageStretchType { get; set; } = ImageStretchType.Proportional;
+    public ImageStretchMode ImageStretchType { get; set; } = ImageStretchMode.Proportional;
 
     public double      WindowTop    { get; set; } = 100;
     public double      WindowHeight { get; set; } = 600;

@@ -78,8 +78,8 @@
     <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll</HintPath>
     </Reference>
-    <Reference Include="JetBrains.Annotations, Version=2018.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\JetBrains.Annotations.2018.2.1\lib\net20\JetBrains.Annotations.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=2018.3.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\JetBrains.Annotations.2018.3.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
@@ -115,7 +115,7 @@
     </Reference>
     <Reference Include="ReachFramework" />
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Serilog.2.7.1\lib\net46\Serilog.dll</HintPath>
+      <HintPath>..\..\..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -175,7 +175,6 @@
     <Compile Include="Utils\Web\HtmlStyle.cs" />
     <Compile Include="Utils\Web\HtmlTag.cs" />
     <Compile Include="Utils\Web\HtmlTagSpan.cs" />
-    <Compile Include="Extensions\WPFEx.cs" />
     <Compile Include="PDF\Viewer\IPDFViewer.cs" />
     <Compile Include="PDF\PDFWindow.xaml.cs">
       <DependentUpon>PDFWindow.xaml</DependentUpon>
@@ -200,7 +199,7 @@
       <Name>Pdf.WpfPubl</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\libs\Process.NET\src\Process.NET\Process.NET.csproj">
-      <Project>{501257D3-F788-4A5D-B990-16C01FF71926}</Project>
+      <Project>{501257d3-f788-4a5d-b990-16c01ff71926}</Project>
       <Name>Process.NET</Name>
     </ProjectReference>
     <ProjectReference Include="..\SuperMemoAssistant.Plugins.Dictionary.Interop\SuperMemoAssistant.Plugins.Dictionary.Interop.csproj">
@@ -263,7 +262,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /R /Y $(TargetPath) C:\Users\Lila\AppData\Roaming\SuperMemoAssistant\Plugins\faecf9bb-9fd5-4fb1-a3a8-9f7caa57a1fe</PostBuildEvent>
+    <PostBuildEvent>xcopy /R /Y $(TargetPath) %25AppData%25\SuperMemoAssistant\Plugins\faecf9bb-9fd5-4fb1-a3a8-9f7caa57a1fe</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
