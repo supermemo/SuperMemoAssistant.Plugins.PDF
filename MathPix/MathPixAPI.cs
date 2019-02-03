@@ -104,7 +104,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
       client.Request.AddExtraHeader(HeaderAppKey,
                                     appKey);
                                     */
-        string imgBase64 = img.GetBase64(ImageFormat.Jpeg);
+        string imgBase64 = img.ToBase64(ImageFormat.Jpeg);
         var req = new Request
         {
           src = string.Format(BodyJsonValueFmt,

@@ -69,7 +69,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Properties & Fields - Public
 
-    public IDictionaryPlugin DictionaryPlugin => _dictionaryPlugin ?? (_dictionaryPlugin = Container.GetExportedValue<IDictionaryPlugin>());
+    public IDictionaryPlugin DictionaryPlugin => null; // TODO: _dictionaryPlugin ?? (_dictionaryPlugin = Container.GetExportedValue<IDictionaryPlugin>());
 
     #endregion
 

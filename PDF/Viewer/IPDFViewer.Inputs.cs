@@ -515,20 +515,20 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected bool ForwardKeysToSM(Keys keys,
                                    int  timeout = 100)
     {
-      var wdw = Svc.SMA.UI.ElementWindow.Window;
+      var handle = Svc.SMA.UI.ElementWindow.Handle;
 
-      if (wdw == null)
+      if (handle.ToInt32() == 0)
         return false;
 
       if (keys.Alt && keys.Ctrl == false && keys.Win == false)
         return Sys.IO.Devices.Keyboard.PostSysKeysAsync(
-          wdw.Handle,
+          handle,
           keys
         ).Wait(timeout);
 
       else
         return Sys.IO.Devices.Keyboard.PostKeysAsync(
-          wdw.Handle,
+          handle,
           keys
         ).Wait(timeout);
     }
