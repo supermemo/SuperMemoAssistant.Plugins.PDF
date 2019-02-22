@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/24 02:05
-// Modified On:  2019/01/14 17:18
+// Modified On:  2019/02/22 13:44
 // Modified By:  Alexis
 
 #endregion
@@ -84,7 +84,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
     #region Properties & Fields - Public
 
-    public HashSet<int> PagesToDispose = new HashSet<int>();
+    public HashSet<int> PagesToDispose { get; } = new HashSet<int>();
 
     public List<HtmlTag> HtmlTags { get; } = new List<HtmlTag>();
     public StringBuilder Html     { get; } = new StringBuilder();
@@ -286,11 +286,11 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
       TextObject GetTextObject(PdfTextObject textObj)
       {
-        var bbox    = textObj.GetCharRect(0);
+        var bbox = textObj.GetCharRect(0);
         var absIdx = pdfText.GetCharIndexAtPos(bbox.left,
-                                         bbox.top,
-                                         1,
-                                         1);
+                                               bbox.top,
+                                               1,
+                                               1);
 
         return new TextObject(textObj,
                               absIdx);
@@ -597,7 +597,6 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
       public TextObject(PdfTextObject obj,
                         int           absIdx)
       {
-        
         StartIndex = absIdx;
         Length     = obj.CharsCount;
         Font       = obj.Font;
@@ -613,9 +612,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         Length     = length;
         Font       = obj.Font;
         FontSize   = obj.FontSize;
-        FillColor = obj.FillColor;
+        FillColor  = obj.FillColor;
       }
-
 
       #endregion
 
@@ -624,12 +622,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
       #region Properties & Fields - Public
 
-      public int     StartIndex { get; }
-      public int EndIndex => StartIndex + Length - 1;
-      public int Length { get; }
-      public float   FontSize   { get; }
-      public PdfFont Font       { get; }
-      public System.Drawing.Color FillColor { get; }
+      public int                  StartIndex { get; }
+      public int                  EndIndex   => StartIndex + Length - 1;
+      public int                  Length     { get; }
+      public float                FontSize   { get; }
+      public PdfFont              Font       { get; }
+      public System.Drawing.Color FillColor  { get; }
 
       #endregion
     }

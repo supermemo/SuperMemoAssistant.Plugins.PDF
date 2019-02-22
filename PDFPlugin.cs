@@ -49,15 +49,6 @@ namespace SuperMemoAssistant.Plugins.PDF
   // ReSharper disable once ClassNeverInstantiated.Global
   public class PDFPlugin : SMAPluginBase<PDFPlugin>
   {
-    #region Properties & Fields - Non-Public
-
-    private IDictionaryPlugin _dictionaryPlugin = null;
-
-    #endregion
-
-
-
-
     #region Constructors
 
     public PDFPlugin() { }
@@ -69,7 +60,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Properties & Fields - Public
 
-    public IDictionaryPlugin DictionaryPlugin => null; // TODO: _dictionaryPlugin ?? (_dictionaryPlugin = Container.GetExportedValue<IDictionaryPlugin>());
+    public IDictionaryPlugin DictionaryPlugin => GetService<IDictionaryPlugin>();
 
     #endregion
 
@@ -88,7 +79,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Methods Impl
     
-    protected override void OnInit()
+    protected override void PluginInit()
     {
       PDFState.Instance.CaptureContext();
 

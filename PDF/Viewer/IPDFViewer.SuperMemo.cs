@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/23 17:37
+// Modified On:  2019/02/22 13:43
 // Modified By:  Alexis
 
 #endregion
@@ -37,7 +37,6 @@ using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Contents;
-using SuperMemoAssistant.Interop.SuperMemo.Elements;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Builders;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Plugins.PDF.Models;
@@ -58,9 +57,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var  imgExtracts = new List<PDFImageExtract>();
       var  contents    = new List<ContentBase>();
 
-      var selImages = SelectedImages;
+      var selImages     = SelectedImages;
       var selImageAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Normal);
-      var selTextAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Ocr).ToList();
+      var selTextAreas  = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Ocr).ToList();
 
       // Image extract
       foreach (var selImage in selImages)
@@ -117,7 +116,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         string text = GetSelectedTextHtml();
 
         contents.Add(new TextContent(true,
-                                                    text));
+                                     text));
         txtExtract = true;
       }
 
@@ -126,7 +125,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         var text = string.Join("\r\n<br/>[...] ",
                                selTextAreas.Select(a => a.OcrText));
         contents.Add(new TextContent(true,
-                                                    text));
+                                     text));
       }
 
       // Generate extract
@@ -153,13 +152,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           }
 
           if (txtExtract)
-          {
             foreach (var selInfo in SelectInfos)
             {
               PDFElement.SMExtracts.Add(selInfo);
               AddSMExtractHighlight(selInfo);
             }
-          }
 
           Save(false);
           DeselectAll();
@@ -169,8 +166,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return ret;
     }
 
-    protected ContentBase CreateImageContent(Image           image,
-                                                         string          title)
+    protected ContentBase CreateImageContent(Image  image,
+                                             string title)
     {
       if (image == null)
         return null;
@@ -184,7 +181,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         return null;
 
       return new ImageContent(imgRegistryId,
-                                             Config.ImageStretchType);
+                              Config.ImageStretchType);
     }
 
     protected bool CreateImageExtract(PDFImageExtract extract,
@@ -310,7 +307,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     }
 
 
-
     //
     // Highlights
 
@@ -377,7 +373,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                    IgnoreHighlightColor);
     }
 
-    protected void AddHighlight(PDFTextExtract extract, System.Windows.Media.Color highlightColor)
+    protected void AddHighlight(PDFTextExtract             extract,
+                                System.Windows.Media.Color highlightColor)
     {
       for (int pageIdx = extract.StartPage; pageIdx <= extract.EndPage; pageIdx++)
       {

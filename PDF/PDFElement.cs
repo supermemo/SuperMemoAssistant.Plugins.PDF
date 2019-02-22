@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2019/01/14 12:01
+// Modified On:  2019/02/22 13:43
 // Modified By:  Alexis
 
 #endregion
@@ -46,7 +46,6 @@ using PropertyChanged;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
-using SuperMemoAssistant.Interop.SuperMemo.Elements;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Builders;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
@@ -470,7 +469,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     }
 
     public References ConfigureReferences(References r,
-                                                            string                       title = null)
+                                          string     title = null)
     {
       string filePath = BinaryMember.GetFilePath("pdf");
 

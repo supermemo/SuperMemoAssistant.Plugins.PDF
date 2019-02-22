@@ -72,7 +72,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     /// <inheritdoc />
     public PDFState()
     {
-      Config = Svc<PDFPlugin>.Configuration.Load<PDFCfg>().Result ?? new PDFCfg();
+      Config = Svc.Configuration.Load<PDFCfg>().Result ?? new PDFCfg();
     }
 
     #endregion
@@ -189,7 +189,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     public void SaveConfig(bool sync = false)
     {
-      var task = Svc<PDFPlugin>.Configuration.Save(Config);
+      var task = Svc.Configuration.Save(Config);
 
       if (sync)
         task.Wait();

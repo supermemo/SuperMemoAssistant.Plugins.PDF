@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/26 15:34
-// Modified On:  2018/12/26 18:20
+// Created On:   2018/12/27 01:35
+// Modified On:  2019/02/22 13:42
 // Modified By:  Alexis
 
 #endregion
@@ -38,7 +38,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Plugins.PDF.Extensions;
+
 // ReSharper disable ClassNeverInstantiated.Global
 
 // ReSharper disable InconsistentNaming
@@ -73,9 +73,9 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
     #region Methods
 
     public static async Task<MathPixAPI> Ocr(string   appId,
-                                          string   appKey,
-                                          Metadata metadata,
-                                          Image    img)
+                                             string   appKey,
+                                             Metadata metadata,
+                                             Image    img)
     {
       using (HttpClient client = new HttpClient())
       {
@@ -160,9 +160,13 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
 
     protected class Response
     {
-      public string text {get;set;}
-      public string error {get;set;}
-      public double latex_confidence {get;set;}
+      #region Properties & Fields - Public
+
+      public string text             { get; set; }
+      public string error            { get; set; }
+      public double latex_confidence { get; set; }
+
+      #endregion
     }
 
 

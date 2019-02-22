@@ -35,6 +35,7 @@ using Patagames.Pdf;
 
 namespace SuperMemoAssistant.Plugins.PDF.Extensions
 {
+  // ReSharper disable once InconsistentNaming
   public static class FS_RECTFEx
   {
     #region Methods
@@ -98,6 +99,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
     #endregion
   }
 
+  // ReSharper disable once InconsistentNaming
   public class FS_RECTFXComparer : IComparer<FS_RECTF>
   {
     #region Methods Impl
@@ -112,6 +114,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
     #endregion
   }
 
+  // ReSharper disable once InconsistentNaming
   public class FS_RECTFYComparer : IComparer<FS_RECTF>
   {
     #region Methods Impl

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <title>TeX Preview</title>
@@ -16,6 +16,7 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"></script>
 
 <script>
+// ReSharper disable UseOfImplicitGlobalInFunctionScope
 var Preview = {
   delay: 150,        // delay after keystroke before updating
   preview: null,     // filled in by Init below
@@ -40,7 +41,7 @@ var Preview = {
     var buffer = this.preview, preview = this.buffer;
     this.buffer = buffer; this.preview = preview;
     buffer.style.visibility = "hidden"; buffer.style.position = "absolute";
-    preview.style.position = ""; preview.style.visibility = "";
+      preview.style.position = ""; preview.style.visibility = "";
   },
   //
   //  This gets called when a key is pressed in the textarea.

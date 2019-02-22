@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/23 17:09
-// Modified On:  2018/12/23 17:21
+// Modified On:  2019/02/22 13:43
 // Modified By:  Alexis
 
 #endregion
@@ -39,10 +39,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
   {
     #region Properties & Fields - Public
 
-    [JsonProperty(PropertyName = "EI")] public int EndIndex;
-    [JsonProperty(PropertyName = "EP")] public int EndPage;
-    [JsonProperty(PropertyName = "SI")] public int StartIndex;
-    [JsonProperty(PropertyName = "SP")] public int StartPage;
+    [JsonProperty(PropertyName = "EI")]
+    public int EndIndex { get; set; }
+    [JsonProperty(PropertyName = "EP")]
+    public int EndPage { get; set; }
+    [JsonProperty(PropertyName = "SI")]
+    public int StartIndex { get; set; }
+    [JsonProperty(PropertyName = "SP")]
+    public int StartPage { get; set; }
 
     [JsonProperty(PropertyName = "StartPage")]
     public int StartPageLegacy { set => StartPage = value; }
@@ -59,7 +63,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
 
 
     #region Methods
-    
+
     public bool IsTextSelectionValid()
     {
       return StartPage >= 0 && StartIndex >= 0
