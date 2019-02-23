@@ -33,6 +33,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
@@ -141,6 +142,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithReference(r => PDFElement.ConfigureReferences(r))
             .DoNotDisplay()
         );
+        
+        Window.GetWindow(this)?.Activate();
 
         if (ret)
         {
@@ -195,7 +198,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (imgRegistryId <= 0)
         return false;
-
+      
       bool ret = Svc.SMA.Registry.Element.Add(
         new ElementBuilder(ElementType.Topic,
                            new ImageContent(imgRegistryId))
@@ -205,6 +208,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                      .WithComment(title))
           .DoNotDisplay()
       );
+
+      Window.GetWindow(this)?.Activate();
 
       if (ret)
       {

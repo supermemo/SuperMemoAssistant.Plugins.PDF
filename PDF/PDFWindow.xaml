@@ -238,6 +238,7 @@
                     BorderBrush="Black" >
                 <dictUi:DictionaryControl Width="420"
                                           Height="370"
+                                          OnAfterExtract="DictionaryControl_OnAfterExtract"
                                           Entries="{Binding ElementName=DictionaryPopup, Path=DataContext, Mode=OneWay}" />
             </Border>
         </Popup>

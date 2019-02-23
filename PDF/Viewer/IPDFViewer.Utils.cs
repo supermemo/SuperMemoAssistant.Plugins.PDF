@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/31 14:41
+// Modified On:  2019/02/23 14:40
 // Modified By:  Alexis
 
 #endregion
@@ -33,7 +33,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -47,6 +46,7 @@ using SuperMemoAssistant.Plugins.PDF.MathPix;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Plugins.PDF.Utils.Web;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Sys.Remoting;
 
 // ReSharper disable ArrangeRedundantParentheses
 
@@ -75,12 +75,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (dict == null || dict.CredentialsAvailable == false || IsTextSelectionValid() == false)
         return;
-      
+
       string text = SelectedText?.Trim(' ',
                                        '\t',
                                        '\r',
                                        '\n');
-      
+
       if (string.IsNullOrWhiteSpace(text))
         return;
 
@@ -94,8 +94,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (spaceIdx == 0 || string.IsNullOrWhiteSpace(text))
         return;
       */
-      
-      CancellationTokenSource cts = new CancellationTokenSource();
 
       var pageIdx  = SelectInfo.StartPage;
       var startIdx = SelectInfo.StartIndex;
@@ -122,7 +120,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         return;
       }
 
-      var entryResultTask = LookupWordEntryAsync(cts,
+      var cts = new RemoteCancellationTokenSource();
+      var entryResultTask = LookupWordEntryAsync(cts.Token,
                                                  text,
                                                  dict);
 
@@ -138,12 +137,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       DictionaryPopup.IsOpen = true;
     }
 
-    public async Task<EntryResult> LookupWordEntryAsync(CancellationTokenSource cts,
+    public async Task<EntryResult> LookupWordEntryAsync(RemoteCancellationToken ct,
                                                         string                  word,
-                                                        IDictionaryPlugin       dict)
+                                                        IDictionaryService      dict)
     {
-      var lemmas = await dict.LookupLemma(cts.Token,
-                                          word);
+      var lemmas = await dict.LookupLemma(
+        ct,
+        word);
 
       if (lemmas?.Results == null
         || lemmas.Results.Any() == false
@@ -156,8 +156,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (string.IsNullOrWhiteSpace(word))
         return null;
 
-      return await dict.LookupEntry(cts.Token,
-                                    word);
+      return await dict.LookupEntry(
+        ct,
+        word);
     }
 
     public void ShowGoToPageDialog()

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/30 01:34
+// Modified On:  2019/02/23 14:56
 // Modified By:  Alexis
 
 #endregion
@@ -132,7 +132,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       e.Cancel = true;
       Hide();
-      
+
       IPDFViewer.CloseDocument();
       IPDFViewer.PDFElement = null;
 
@@ -432,11 +432,20 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       }
     }
 
-    #endregion
-
-    private void DictionaryPopup_Closed(object sender, EventArgs e)
+    private void DictionaryPopup_Closed(object    sender,
+                                        EventArgs e)
     {
       DictionaryPopup.DataContext = null;
     }
+
+    // ReSharper disable once UnusedParameter.Local
+    private bool DictionaryControl_OnAfterExtract(bool result)
+    {
+      Activate();
+
+      return true;
+    }
+
+    #endregion
   }
 }

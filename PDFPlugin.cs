@@ -39,9 +39,9 @@ using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.PDF.PDF;
 using SuperMemoAssistant.Services;
-using SuperMemoAssistant.Sys;
 using SuperMemoAssistant.Sys.ComponentModel;
 using SuperMemoAssistant.Sys.IO.Devices;
+using SuperMemoAssistant.Sys.Remoting;
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
@@ -51,7 +51,7 @@ namespace SuperMemoAssistant.Plugins.PDF
   {
     #region Constructors
 
-    public PDFPlugin() { }
+    public PDFPlugin() : base(DebuggerAttachStrategy.InDebugConfiguration) { }
 
     #endregion
 
@@ -60,7 +60,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     #region Properties & Fields - Public
 
-    public IDictionaryPlugin DictionaryPlugin => GetService<IDictionaryPlugin>();
+    public IDictionaryService DictionaryPlugin => GetService<IDictionaryService>();
 
     #endregion
 
