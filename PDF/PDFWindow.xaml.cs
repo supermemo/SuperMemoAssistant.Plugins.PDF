@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2019/02/23 14:56
+// Modified On:  2019/02/25 17:45
 // Modified By:  Alexis
 
 #endregion
@@ -33,7 +33,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -44,6 +43,7 @@ using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
+using SuperMemoAssistant.Sys.Threading;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
@@ -52,9 +52,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
   /// <summary>Interaction logic for PDFWindow.xaml</summary>
   partial class PDFWindow : Window
   {
+    #region Constants & Statics
+
+    protected const int ResizeSaveDelay = 500;
+
+    #endregion
+
+
+
+
     #region Properties & Fields - Non-Public
 
-    protected double LastSidePanelWidth { get; set; }
+    protected readonly DelayedTask _saveConfigDelayed;
+    protected          double      _lastSidePanelWidth;
 
     protected PDFCfg Config => PDFState.Instance.Config;
 
@@ -81,6 +91,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       if (double.IsNaN(Config.SidePanelWidth) == false)
         sidePanelColumn.Width = new GridLength(Config.SidePanelWidth);
+
+      _saveConfigDelayed = new DelayedTask(SaveConfig);
     }
 
     #endregion
@@ -93,8 +105,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     // ReSharper disable once CollectionNeverQueried.Global
     public ObservableCollection<PdfBookmark> Bookmarks { get; } = new ObservableCollection<PdfBookmark>();
 
-    public SynchronizationContext SyncContext { get; private set; }
-
     #endregion
 
 
@@ -106,29 +116,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     {
       base.OnInitialized(e);
 
-      SyncContext                =  SynchronizationContext.Current;
       IPDFViewer.DocumentLoaded  += IPDFViewer_OnDocumentLoaded;
       IPDFViewer.DocumentClosing += IPDFViewer_OnDocumentClosing;
+
+      SizeChanged += PDFWindow_SizeChanged;
     }
 
     protected override void OnClosing(CancelEventArgs e)
     {
-      if (WindowState == WindowState.Maximized)
-        PDFState.Instance.UpdateWindowPosition(RestoreBounds.Top,
-                                               RestoreBounds.Height,
-                                               RestoreBounds.Left,
-                                               RestoreBounds.Width,
-                                               WindowState);
-
-      else
-        PDFState.Instance.UpdateWindowPosition(Top,
-                                               Height,
-                                               Left,
-                                               Width,
-                                               WindowState);
-
-      Config.SidePanelWidth = LastSidePanelWidth;
-      PDFState.Instance.SaveConfig();
+      _saveConfigDelayed.Cancel();
+      SaveConfig();
 
       e.Cancel = true;
       Hide();
@@ -137,11 +134,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       IPDFViewer.PDFElement = null;
 
       base.OnClosing(e);
-    }
-
-    protected override void OnClosed(EventArgs e)
-    {
-      base.OnClosed(e);
     }
 
     protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
@@ -208,6 +200,26 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       IPDFViewer.LoadDocument(pdfElement);
     }
 
+    private void SaveConfig()
+    {
+      if (WindowState == WindowState.Maximized)
+        PDFState.Instance.UpdateWindowPosition(RestoreBounds.Top,
+                                               RestoreBounds.Height,
+                                               RestoreBounds.Left,
+                                               RestoreBounds.Width,
+                                               WindowState);
+
+      else
+        PDFState.Instance.UpdateWindowPosition(Top,
+                                               Height,
+                                               Left,
+                                               Width,
+                                               WindowState);
+
+      Config.SidePanelWidth = _lastSidePanelWidth;
+      PDFState.Instance.SaveConfig();
+    }
+
     public void CancelSave()
     {
       IPDFViewer?.CancelSave();
@@ -248,6 +260,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           e.Handled = true;
         }
       }
+    }
+
+    private void PDFWindow_SizeChanged(object               sender,
+                                       SizeChangedEventArgs e)
+    {
+      _saveConfigDelayed.Trigger(ResizeSaveDelay);
     }
 
     public void ShowOptionDialog()
@@ -381,7 +399,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       if (isVisible)
       {
         if (sidePanel.Visibility == Visibility.Hidden)
-          sidePanelColumn.Width = new GridLength(Math.Max(LastSidePanelWidth,
+          sidePanelColumn.Width = new GridLength(Math.Max(_lastSidePanelWidth,
                                                           250));
       }
 
@@ -389,7 +407,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       {
         if (sidePanel.Visibility == Visibility.Visible)
         {
-          LastSidePanelWidth = sidePanelColumn.ActualWidth;
+          _lastSidePanelWidth = sidePanelColumn.ActualWidth;
 
           sidePanelColumn.Width = new GridLength(0);
         }
@@ -406,12 +424,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           sidePanel.Visibility   = Visibility.Hidden;
           sidePanelColumn.Width  = new GridLength(0);
           btnBookmarks.IsChecked = false;
-          LastSidePanelWidth     = 0;
+          _lastSidePanelWidth    = 0;
         }
 
         else
         {
-          LastSidePanelWidth = sidePanelColumn.ActualWidth;
+          _lastSidePanelWidth = sidePanelColumn.ActualWidth;
         }
       }
 
@@ -422,7 +440,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           sidePanel.Visibility   = Visibility.Visible;
           btnBookmarks.IsChecked = true;
 
-          LastSidePanelWidth = sidePanelColumn.ActualWidth;
+          _lastSidePanelWidth = sidePanelColumn.ActualWidth;
         }
 
         else

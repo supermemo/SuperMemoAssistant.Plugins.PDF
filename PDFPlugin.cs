@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/08 19:02
-// Modified On:  2018/12/31 04:36
+// Modified On:  2019/02/25 17:45
 // Modified By:  Alexis
 
 #endregion
@@ -30,28 +30,25 @@
 
 
 
-using System.Collections.Generic;
 using System.Windows.Input;
 using Patagames.Pdf.Net;
-using SuperMemoAssistant.Interop.Plugins;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.PDF.PDF;
 using SuperMemoAssistant.Services;
-using SuperMemoAssistant.Sys.ComponentModel;
+using SuperMemoAssistant.Services.Sentry;
 using SuperMemoAssistant.Sys.IO.Devices;
 using SuperMemoAssistant.Sys.Remoting;
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
-  // ReSharper disable once UnusedMember.Global
   // ReSharper disable once ClassNeverInstantiated.Global
-  public class PDFPlugin : SMAPluginBase<PDFPlugin>
+  public class PDFPlugin : SentrySMAPluginBase<PDFPlugin>
   {
     #region Constructors
 
-    public PDFPlugin() : base(DebuggerAttachStrategy.InDebugConfiguration) { }
+    public PDFPlugin() : base(true, DebuggerAttachStrategy.Never) { }
 
     #endregion
 
@@ -78,15 +75,15 @@ namespace SuperMemoAssistant.Plugins.PDF
 
 
     #region Methods Impl
-    
+
     protected override void PluginInit()
     {
       PDFState.Instance.CaptureContext();
 
-      SettingsModels = new List<INotifyPropertyChangedEx>
-      {
-        PDFState.Instance.Config
-      };
+      //SettingsModels = new List<INotifyPropertyChangedEx>
+      //{
+      //  PDFState.Instance.Config
+      //};
 
       if (!PdfCommon.IsInitialize)
         PdfCommon.Initialize(PDFLicense.LicenseKey);
@@ -101,11 +98,6 @@ namespace SuperMemoAssistant.Plugins.PDF
                    Key.I,
                    "PDF: Open file"),
         PDFState.Instance.OpenFile);
-    }
-
-    public override void SettingsSaved(object cfgObject)
-    {
-      PDFState.Instance.SaveConfig(true);
     }
 
     #endregion
@@ -124,5 +116,13 @@ namespace SuperMemoAssistant.Plugins.PDF
     }
 
     #endregion
+
+
+
+
+    //public override void SettingsSaved(object cfgObject)
+    //{
+    //  PDFState.Instance.SaveConfig(true);
+    //}
   }
 }

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:45
-// Modified On:  2019/01/01 14:26
+// Modified On:  2019/02/23 23:19
 // Modified By:  Alexis
 
 #endregion
@@ -73,7 +73,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
       100,
       StrictValidation = true)]
     public double SMExtractPriority { get; set; } = PDFConst.DefaultSMExtractPriority;
-    
+
     [Field(Name = "Default Forced Schedule Interval (days)")]
     [Value(Must.BeGreaterThanOrEqualTo,
       1,
@@ -108,7 +108,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
 
 
     #region Properties Impl - Public
-    
+
     // ReSharper disable once UnassignedGetOnlyAutoProperty
     [JsonIgnore]
     public bool IsChanged { get; set; }
