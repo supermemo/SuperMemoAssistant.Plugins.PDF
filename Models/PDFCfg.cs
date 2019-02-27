@@ -41,7 +41,7 @@ using SuperMemoAssistant.Sys.ComponentModel;
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
   [Form(Mode = DefaultFields.None)]
-  [Title("Settings",
+  [Title("PDF Settings",
     IsVisible = "{Env DialogHostContext}")]
   [DialogAction("cancel",
     "Cancel",

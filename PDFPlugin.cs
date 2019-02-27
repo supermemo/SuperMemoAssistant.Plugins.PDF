@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/08 19:02
-// Modified On:  2019/02/25 17:45
+// Modified On:  2019/02/26 02:27
 // Modified By:  Alexis
 
 #endregion
@@ -30,11 +30,13 @@
 
 
 
+using System.Windows;
 using System.Windows.Input;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
+using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Plugins.PDF.PDF;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Services.Sentry;
@@ -68,6 +70,8 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     /// <inheritdoc />
     public override string Name => "PDF";
+    
+    public override bool HasSettings => true;
 
     #endregion
 
@@ -79,11 +83,6 @@ namespace SuperMemoAssistant.Plugins.PDF
     protected override void PluginInit()
     {
       PDFState.Instance.CaptureContext();
-
-      //SettingsModels = new List<INotifyPropertyChangedEx>
-      //{
-      //  PDFState.Instance.Config
-      //};
 
       if (!PdfCommon.IsInitialize)
         PdfCommon.Initialize(PDFLicense.LicenseKey);
@@ -98,6 +97,22 @@ namespace SuperMemoAssistant.Plugins.PDF
                    Key.I,
                    "PDF: Open file"),
         PDFState.Instance.OpenFile);
+    }
+
+    public override void ShowSettings()
+    {
+      Application.Current.Dispatcher.Invoke(
+        () =>
+        {
+          Forge.Forms.Show.Window(500).For<PDFCfg>(PDFState.Instance.Config).Wait();
+
+          if (PDFState.Instance.Config.IsChanged)
+          {
+            PDFState.Instance.SaveConfig(true);
+            PDFState.Instance.Config.IsChanged = false;
+          }
+        }
+      );
     }
 
     #endregion
@@ -116,13 +131,5 @@ namespace SuperMemoAssistant.Plugins.PDF
     }
 
     #endregion
-
-
-
-
-    //public override void SettingsSaved(object cfgObject)
-    //{
-    //  PDFState.Instance.SaveConfig(true);
-    //}
   }
 }
