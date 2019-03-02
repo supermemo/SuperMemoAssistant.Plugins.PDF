@@ -138,6 +138,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           new ElementBuilder(ElementType.Topic,
                              contents.ToArray())
             .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
+            .WithLayout(Config.Layout)
             .WithPriority(Config.SMExtractPriority)
             .WithReference(r => PDFElement.ConfigureReferences(r))
             .DoNotDisplay()
@@ -185,42 +186,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       return new ImageContent(imgRegistryId,
                               Config.ImageStretchType);
-    }
-
-    protected bool CreateImageExtract(PDFImageExtract extract,
-                                      Image           image,
-                                      string          title)
-    {
-      int imgRegistryId = Svc.SMA.Registry.Image.AddMember(
-        new ImageWrapper(image),
-        title
-      );
-
-      if (imgRegistryId <= 0)
-        return false;
-      
-      bool ret = Svc.SMA.Registry.Element.Add(
-        new ElementBuilder(ElementType.Topic,
-                           new ImageContent(imgRegistryId))
-          .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
-          .WithReference(r =>
-                           PDFElement.ConfigureReferences(r)
-                                     .WithComment(title))
-          .DoNotDisplay()
-      );
-
-      Window.GetWindow(this)?.Activate();
-
-      if (ret)
-      {
-        PDFElement.SMImgExtracts.Add(extract);
-        Save(false);
-
-        AddImgExtractHighlight(extract.PageIndex,
-                               extract.BoundingBox);
-      }
-
-      return ret;
     }
 
     // PDF Extracts

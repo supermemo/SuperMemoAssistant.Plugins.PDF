@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2019/02/25 17:45
+// Modified On:  2019/03/01 00:37
 // Modified By:  Alexis
 
 #endregion
@@ -39,11 +39,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using JetBrains.Annotations;
 using Microsoft.Win32;
-using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
+using SuperMemoAssistant.Services.IO.HotKeys;
+using SuperMemoAssistant.Sys.IO.Devices;
 using SuperMemoAssistant.Sys.Threading;
+using Keyboard = System.Windows.Input.Keyboard;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
@@ -202,22 +204,27 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     private void SaveConfig()
     {
-      if (WindowState == WindowState.Maximized)
-        PDFState.Instance.UpdateWindowPosition(RestoreBounds.Top,
-                                               RestoreBounds.Height,
-                                               RestoreBounds.Left,
-                                               RestoreBounds.Width,
-                                               WindowState);
+      Dispatcher.Invoke(
+        () =>
+        {
+          if (WindowState == WindowState.Maximized)
+            PDFState.Instance.UpdateWindowPosition(RestoreBounds.Top,
+                                                   RestoreBounds.Height,
+                                                   RestoreBounds.Left,
+                                                   RestoreBounds.Width,
+                                                   WindowState);
 
-      else
-        PDFState.Instance.UpdateWindowPosition(Top,
-                                               Height,
-                                               Left,
-                                               Width,
-                                               WindowState);
+          else
+            PDFState.Instance.UpdateWindowPosition(Top,
+                                                   Height,
+                                                   Left,
+                                                   Width,
+                                                   WindowState);
 
-      Config.SidePanelWidth = _lastSidePanelWidth;
-      PDFState.Instance.SaveConfig();
+          Config.SidePanelWidth = _lastSidePanelWidth;
+          PDFState.Instance.SaveConfig();
+        }
+      );
     }
 
     public void CancelSave()
@@ -229,36 +236,36 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                                 KeyEventArgs e)
     {
       var kbMod = GetKeyboardModifiers();
+      var kbData = HotKeyManager.Instance.Match(
+        new HotKey(
+          kbMod == KeyModifiers.Alt ? e.SystemKey : e.Key,
+          kbMod
+        )
+      );
 
-      if (kbMod == KeyboardModifiers.ControlKey
-        && e.Key == Key.B)
+      switch (kbData?.Id)
       {
-        btnBookmarks.IsChecked = !btnBookmarks.IsChecked;
-        tvBookmarks.Focus();
-        e.Handled = true;
-      }
+        case "UIShowOptions":
+          ShowOptionDialog();
+          e.Handled = true;
+          break;
 
-      else if (kbMod == KeyboardModifiers.ControlKey
-        && e.Key == Key.O)
-      {
-        ShowOptionDialog();
-        e.Handled = true;
-      }
+        case "UIToggleBookmarks":
+          btnBookmarks.IsChecked = !btnBookmarks.IsChecked;
+          tvBookmarks.Focus();
+          e.Handled = true;
+          break;
 
-      else if (kbMod == KeyboardModifiers.AltKey)
-      {
-        if (e.SystemKey == Key.C)
-        {
+        case "UIFocusViewer":
           IPDFViewer.Focus();
           e.Handled = true;
-        }
+          break;
 
-        else if (e.SystemKey == Key.B)
-        {
+        case "UIFocusBookmarks":
           btnBookmarks.IsChecked = true;
           tvBookmarks.Focus();
           e.Handled = true;
-        }
+          break;
       }
     }
 
@@ -350,7 +357,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         e.Handled = true;
       }
 
-      else if (kbMod == (KeyboardModifiers.ControlKey | KeyboardModifiers.AltKey)
+      else if (kbMod == (KeyModifiers.Ctrl | KeyModifiers.Alt)
         && e.Key == Key.X)
       {
         TvBookmark_MenuItem_PDFExtract(sender,
@@ -372,18 +379,18 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       tvBookmarks.CollapseAll();
     }
 
-    protected KeyboardModifiers GetKeyboardModifiers()
+    protected KeyModifiers GetKeyboardModifiers()
     {
-      KeyboardModifiers mod = (KeyboardModifiers)0;
+      KeyModifiers mod = KeyModifiers.None;
 
       if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-        mod |= KeyboardModifiers.ControlKey;
+        mod |= KeyModifiers.Ctrl;
       if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
-        mod |= KeyboardModifiers.ShiftKey;
+        mod |= KeyModifiers.Shift;
       if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
-        mod |= KeyboardModifiers.AltKey;
+        mod |= KeyModifiers.Alt;
       if (Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin))
-        mod |= KeyboardModifiers.MetaKey;
+        mod |= KeyModifiers.Win;
 
       return mod;
     }

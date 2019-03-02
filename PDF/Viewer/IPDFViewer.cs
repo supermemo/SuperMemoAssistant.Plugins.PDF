@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:46
-// Modified On:  2018/12/31 04:22
+// Modified On:  2019/02/28 23:35
 // Modified By:  Alexis
 
 #endregion
@@ -32,8 +32,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using JetBrains.Annotations;
@@ -42,6 +40,7 @@ using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
+using SuperMemoAssistant.Sys.Threading;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
@@ -72,14 +71,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     private int _ignoreChanges = 0;
 
+    protected DelayedTask _saveTask;
+
 
     protected PDFCfg                                 Config                 => PDFState.Instance.Config;
     protected Dictionary<int, List<HighlightInfo>>   ExtractHighlights      { get; } = new Dictionary<int, List<HighlightInfo>>();
     protected Dictionary<int, List<PDFImageExtract>> ImageExtractHighlights { get; } = new Dictionary<int, List<PDFImageExtract>>();
-
-    protected DateTime LastChange { get; set; } = DateTime.Now;
-    protected object   SaveLock   { get; set; } = new object();
-    protected Task     SaveTask   { get; set; }
 
     #endregion
 
@@ -91,6 +88,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     public IPDFViewer()
     {
       _smoothSelection = true;
+      _saveTask        = new DelayedTask(SaveDelayed);
     }
 
     #endregion
@@ -299,47 +297,26 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected void Save(bool delayed)
     {
-      LastChange = DateTime.Now;
+      if (delayed)
+      {
+        _saveTask.Trigger(400);
+      }
 
-      lock (SaveLock)
-        if (SaveTask != null)
-        {
-          if (delayed)
-            return;
-
-          SaveTask = null;
-          PDFElement.Save();
-        }
-
-        else if (delayed)
-        {
-          SaveTask = Task.Factory.StartNew(SaveDelayed,
-                                           TaskCreationOptions.LongRunning);
-        }
-
-        else
-        {
-          PDFElement.Save();
-        }
+      else
+      {
+        _saveTask.Cancel();
+        PDFElement.Save();
+      }
     }
 
     public void CancelSave()
     {
-      lock (SaveLock)
-        SaveTask = null;
+      _saveTask.Cancel();
     }
 
     protected void SaveDelayed()
     {
-      while ((DateTime.Now - LastChange).TotalMilliseconds <= 400)
-        Thread.Sleep(50);
-
-      lock (SaveLock)
-        if (SaveTask != null)
-        {
-          PDFElement.Save();
-          SaveTask = null;
-        }
+      PDFElement.Save();
     }
 
     public void ShowLoadingIndicator()

@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/10 14:45
-// Modified On:  2019/02/23 23:19
+// Modified On:  2019/03/02 00:41
 // Modified By:  Alexis
 
 #endregion
@@ -30,12 +30,14 @@
 
 
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using Forge.Forms.Annotations;
 using Newtonsoft.Json;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Models;
 using SuperMemoAssistant.Plugins.PDF.MathPix;
+using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Sys.ComponentModel;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
@@ -56,6 +58,10 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
 
     [Field(Name = "Copy PDF files to collection")]
     public bool CopyDocumentToFS { get; set; } = true;
+
+    [Field(Name                                    = "Layout")]
+    [SelectFrom("{Binding Layouts}", SelectionType = SelectionType.ComboBox)]
+    public string Layout { get; set; }
 
     [Field(Name = "Default PDF Extract Priority (%)")]
     [Value(Must.BeGreaterThanOrEqualTo,
@@ -101,6 +107,13 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [Field(Name = "MathPix App Key")]
     public string MathPixAppKey { get;                set; } = null;
     public MathPixAPI.Metadata MathPixMetadata { get; set; } = null;
+
+
+    //
+    // Helpers
+    
+    [JsonIgnore]
+    public IEnumerable<string> Layouts => Svc.SMA.Layouts;
 
     #endregion
 

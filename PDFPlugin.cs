@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/06/08 19:02
-// Modified On:  2019/02/26 02:27
+// Modified On:  2019/03/01 18:44
 // Modified By:  Alexis
 
 #endregion
@@ -31,22 +31,22 @@
 
 
 using System.Windows;
-using System.Windows.Input;
 using Patagames.Pdf.Net;
+using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
 using SuperMemoAssistant.Interop.SuperMemo.Core;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
-using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Plugins.PDF.PDF;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Services.IO.HotKeys;
 using SuperMemoAssistant.Services.Sentry;
-using SuperMemoAssistant.Sys.IO.Devices;
+using SuperMemoAssistant.Services.UI.Configuration;
 using SuperMemoAssistant.Sys.Remoting;
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
   // ReSharper disable once ClassNeverInstantiated.Global
-  public class PDFPlugin : SentrySMAPluginBase<PDFPlugin>
+  public partial class PDFPlugin : SentrySMAPluginBase<PDFPlugin>
   {
     #region Constructors
 
@@ -70,7 +70,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     /// <inheritdoc />
     public override string Name => "PDF";
-    
+
     public override bool HasSettings => true;
 
     #endregion
@@ -89,29 +89,14 @@ namespace SuperMemoAssistant.Plugins.PDF
 
       Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
 
-      Svc.KeyboardHotKey.RegisterHotKey(
-        new HotKey(true,
-                   true,
-                   false,
-                   false,
-                   Key.I,
-                   "PDF: Open file"),
-        PDFState.Instance.OpenFile);
+      RegisterHotKeys();
     }
 
+    /// <inheritdoc />
     public override void ShowSettings()
     {
       Application.Current.Dispatcher.Invoke(
-        () =>
-        {
-          Forge.Forms.Show.Window(500).For<PDFCfg>(PDFState.Instance.Config).Wait();
-
-          if (PDFState.Instance.Config.IsChanged)
-          {
-            PDFState.Instance.SaveConfig(true);
-            PDFState.Instance.Config.IsChanged = false;
-          }
-        }
+        () => new ConfigurationWindow(HotKeyManager.Instance, PDFState.Instance.Config).ShowAndActivate()
       );
     }
 

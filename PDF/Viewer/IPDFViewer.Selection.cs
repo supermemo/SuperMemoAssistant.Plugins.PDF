@@ -42,6 +42,7 @@ using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Sys.Drawing;
+using SuperMemoAssistant.Sys.IO.Devices;
 
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 
@@ -92,17 +93,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                               int   pageIndex)
     {
       var keyMod = GetKeyboardModifiers();
+      bool ctrl = keyMod.HasFlag(KeyModifiers.Ctrl);
+      bool shift = keyMod.HasFlag(KeyModifiers.Shift);
 
-      if ((keyMod & KeyboardModifiers.ShiftKey) == KeyboardModifiers.ShiftKey)
+      if (shift)
       {
         ExtendSelection(pagePoint,
                         pageIndex,
-                        (keyMod & KeyboardModifiers.ControlKey) == KeyboardModifiers.ControlKey);
+                        ctrl);
       }
 
       else
       {
-        if ((keyMod & KeyboardModifiers.ControlKey) == KeyboardModifiers.ControlKey)
+        if (ctrl)
           if (IsTextSelectionValid(out var selInfo))
           {
             SelectInfoList.Add(selInfo);
@@ -127,9 +130,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected override void ProcessMouseDoubleClickForSelectTextTool(Point pagePoint,
                                                                      int   pageIndex)
     {
-      var keyMod = GetKeyboardModifiers();
+      var  keyMod = GetKeyboardModifiers();
+      bool ctrl   = keyMod.HasFlag(KeyModifiers.Ctrl);
 
-      if (keyMod == KeyboardModifiers.ControlKey)
+      if (ctrl)
         if (IsTextSelectionValid(out var selInfo))
           SelectInfoList.Add(selInfo);
 
@@ -238,7 +242,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         if (pageIndex >= 0)
         {
-          if (CurrentSelectionTool == SelectionType.Page && kbMod == KeyboardModifiers.ShiftKey)
+          if (CurrentSelectionTool == SelectionType.Page && kbMod == KeyModifiers.Shift)
           {
             SelectedPages.EndPage = pageIndex;
 
@@ -294,7 +298,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                     pagePoint.X,
                                                     pagePoint.Y);
 
-                if ((kbMod & KeyboardModifiers.AltKey) == KeyboardModifiers.AltKey)
+                if (kbMod.HasFlag(KeyModifiers.Alt))
                   SelectedArea.Type = PDFAreaSelection.AreaType.Ocr;
 
                 CurrentSelectionTool = SelectionType.Area;
