@@ -47,7 +47,7 @@ using SuperMemoAssistant.Sys.Remoting;
 namespace SuperMemoAssistant.Plugins.PDF
 {
   // ReSharper disable once ClassNeverInstantiated.Global
-  public partial class PDFPlugin : SentrySMAPluginBase<PDFPlugin>
+  public class PDFPlugin : SentrySMAPluginBase<PDFPlugin>
   {
     #region Constructors
 
@@ -90,7 +90,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
       Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
 
-      RegisterHotKeys();
+      PDFHotKeys.RegisterHotKeys();
     }
 
     /// <inheritdoc />

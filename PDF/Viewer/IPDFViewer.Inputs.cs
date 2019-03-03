@@ -86,17 +86,17 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         //
         // Extracts
 
-        case "ExtractPDF":
+        case PDFHotKeys.ExtractPDF:
           CreatePDFExtract();
           e.Handled = true;
           break;
 
-        case "ExtractSM":
+        case PDFHotKeys.ExtractSM:
           CreateSMExtract();
           e.Handled = true;
           break;
 
-        case "MarkIgnore":
+        case PDFHotKeys.MarkIgnore:
           CreateIgnoreHighlight();
           e.Handled = true;
           break;
@@ -104,12 +104,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         //
         // PDF features
 
-        case "ShowDictionary":
+        case PDFHotKeys.ShowDictionary:
           ShowDictionaryPopup();
           e.Handled = true;
           break;
 
-        case "GoToPage":
+        case PDFHotKeys.GoToPage:
           ShowGoToPageDialog();
           e.Handled = true;
           break;
@@ -117,35 +117,35 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         //
         // Learn
 
-        case "SMLearn":
+        case PDFHotKeys.SMLearn:
           ForwardKeysToSM(new HotKey(Key.L, KeyModifiers.Ctrl));
           e.Handled = true;
           break;
 
-        case "LearnAndReschedule":
+        case PDFHotKeys.LearnAndReschedule:
           Svc.SMA.UI.ElementWindow.ForceRepetitionAndResume(
             Config.LearnForcedScheduleInterval,
             false);
           e.Handled = true;
           break;
 
-        case "SMReschedule":
+        case PDFHotKeys.SMReschedule:
           ForwardKeysToSM(new HotKey(Key.J, KeyModifiers.Ctrl));
           e.Handled = true;
           break;
 
-        case "SMLaterToday":
+        case PDFHotKeys.SMLaterToday:
           ForwardKeysToSM(new HotKey(Key.J, KeyModifiers.CtrlShift));
           e.Handled = true;
           break;
 
-        case "SMDone":
+        case PDFHotKeys.SMDone:
           Svc.SMA.UI.ElementWindow.ActivateWindow();
           Svc.SMA.UI.ElementWindow.Done();
           e.Handled = true;
           break;
 
-        case "SMDelete":
+        case PDFHotKeys.SMDelete:
           Svc.SMA.UI.ElementWindow.ActivateWindow();
           Svc.SMA.UI.ElementWindow.Delete();
           e.Handled = true;
@@ -154,17 +154,17 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         //
         // SM Navigation
 
-        case "SMPrevious":
+        case PDFHotKeys.SMPrevious:
           ForwardKeysToSM(new HotKey(Key.Left, KeyModifiers.Ctrl));
           e.Handled = true;
           break;
 
-        case "SMNext":
+        case PDFHotKeys.SMNext:
           ForwardKeysToSM(new HotKey(Key.Right, KeyModifiers.Ctrl));
           e.Handled = true;
           break;
 
-        case "SMParent":
+        case PDFHotKeys.SMParent:
           var parent = Svc.SMA.UI.ElementWindow.CurrentElement?.Parent;
 
           if (parent != null)
@@ -173,7 +173,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           e.Handled = true;
           break;
 
-        case "SMChild":
+        case PDFHotKeys.SMChild:
           var child = Svc.SMA.UI.ElementWindow.CurrentElement?.FirstChild;
 
           if (child != null)
@@ -182,7 +182,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           e.Handled = true;
           break;
 
-        case "SMPrevSibling":
+        case PDFHotKeys.SMPrevSibling:
           var prevSibling = Svc.SMA.UI.ElementWindow.CurrentElement?.PrevSibling;
 
           if (prevSibling != null)
@@ -191,7 +191,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           e.Handled = true;
           break;
 
-        case "SMNextSibling":
+        case PDFHotKeys.SMNextSibling:
           var nextSibling = Svc.SMA.UI.ElementWindow.CurrentElement?.NextSibling;
 
           if (nextSibling != null)

@@ -169,12 +169,12 @@
     <Compile Include="Extensions\SelectInfoEx.cs" />
     <Compile Include="Models\PDFAreaSelection.cs" />
     <Compile Include="Models\PDFCfg.cs" />
+    <Compile Include="PDFHotKeys.cs" />
     <Compile Include="PDFLicense.cs" />
     <Compile Include="PDF\PDFElement.cs" />
     <Compile Include="Models\PDFImageExtract.cs" />
     <Compile Include="Models\PDFPageSelection.cs" />
     <Compile Include="PDF\PDFState.cs" />
-    <Compile Include="PDFPlugin.HotKeys.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

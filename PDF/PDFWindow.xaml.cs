@@ -245,23 +245,23 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       switch (kbData?.Id)
       {
-        case "UIShowOptions":
+        case PDFHotKeys.UIShowOptions:
           ShowOptionDialog();
           e.Handled = true;
           break;
 
-        case "UIToggleBookmarks":
+        case PDFHotKeys.UIToggleBookmarks:
           btnBookmarks.IsChecked = !btnBookmarks.IsChecked;
           tvBookmarks.Focus();
           e.Handled = true;
           break;
 
-        case "UIFocusViewer":
+        case PDFHotKeys.UIFocusViewer:
           IPDFViewer.Focus();
           e.Handled = true;
           break;
 
-        case "UIFocusBookmarks":
+        case PDFHotKeys.UIFocusBookmarks:
           btnBookmarks.IsChecked = true;
           tvBookmarks.Focus();
           e.Handled = true;
