@@ -33,6 +33,7 @@
 using System.Windows.Input;
 using SuperMemoAssistant.Plugins.PDF.PDF;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Services.IO.Keyboard;
 using SuperMemoAssistant.Sys.IO.Devices;
 
 namespace SuperMemoAssistant.Plugins.PDF
@@ -51,6 +52,7 @@ namespace SuperMemoAssistant.Plugins.PDF
          .RegisterGlobal(
            "OpenFile",
            "(Global) Add PDF",
+           HotKeyScope.SM,
            new HotKey(Key.I, KeyModifiers.CtrlAlt),
            PDFState.Instance.OpenFile
          )

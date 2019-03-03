@@ -82,7 +82,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     #region Properties & Fields - Public
 
-    public PDFCfg Config { get; private set; }
+    public PDFCfg Config { get; }
 
     #endregion
 
@@ -128,35 +128,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         null);
     }
 
-    public void CloseElement()
-    {
-      try
-      {
-        if (LastElement != null && LastElement.IsChanged)
-        {
-          // TODO: Display warning + Save to temp file
-          //var res = LastElement.Save();
-        }
-      }
-      finally
-      {
-        LastElement = null;
-      }
-    }
-
-    public void OpenElement(PDFElement pdfElem)
-    {
-      if (pdfElem == null)
-        return;
-
-      LastElement = pdfElem;
-
-      EnsurePdfWindow();
-
-      PdfWindow.OpenDocument(pdfElem);
-      PdfWindow.ForceActivate();
-    }
-
     public void OpenFile()
     {
       SyncContext.Post(
@@ -172,6 +143,35 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         },
         null
       );
+    }
+
+    private void CloseElement()
+    {
+      try
+      {
+        if (LastElement != null && LastElement.IsChanged)
+        {
+          // TODO: Display warning + Save to temp file
+          //var res = LastElement.Save();
+        }
+      }
+      finally
+      {
+        LastElement = null;
+      }
+    }
+
+    private void OpenElement(PDFElement pdfElem)
+    {
+      if (pdfElem == null)
+        return;
+
+      LastElement = pdfElem;
+
+      EnsurePdfWindow();
+
+      PdfWindow.OpenDocument(pdfElem);
+      PdfWindow.ForceActivate();
     }
 
     public void UpdateWindowPosition(double      top,
@@ -203,24 +203,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       CreatePdfWindow(null);
     }
 
-    private void SetTopMost(bool topmost,
-                            bool send = false)
-    {
-      if (send)
-        SyncContext.Send(SetTopMost,
-                         topmost);
-
-      else
-        SyncContext.Post(SetTopMost,
-                         topmost);
-    }
-
-    private void SetTopMost(object o)
-    {
-      if (PdfWindow != null)
-        PdfWindow.Topmost = (bool)o;
-    }
-
     private void EnsurePdfWindow()
     {
       if (PdfWindow == null)
@@ -231,7 +213,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     private void CreatePdfWindow(object _)
     {
       PdfWindow = new PDFWindow();
-
       PdfWindow.Closed += PdfWindow_Closed;
     }
 

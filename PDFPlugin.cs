@@ -31,6 +31,7 @@
 
 
 using System.Windows;
+using Anotar.Serilog;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
@@ -106,7 +107,8 @@ namespace SuperMemoAssistant.Plugins.PDF
 
 
     #region Methods
-
+    
+    [LogToErrorOnException]
     public void OnElementChanged(SMDisplayedElementChangedArgs e)
     {
       IControlHtml ctrlHtml = Svc.SMA.UI.ElementWindow.ControlGroup.GetFirstHtmlControl();
