@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/27 01:35
-// Modified On:  2019/02/22 13:42
+// Created On:   2019/03/02 18:29
+// Modified On:  2019/04/11 00:31
 // Modified By:  Alexis
 
 #endregion
@@ -79,16 +79,11 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
     {
       using (HttpClient client = new HttpClient())
       {
-        client.DefaultRequestHeaders.Add("User-Agent",
-                                         "Mozilla/5.0");
-        client.DefaultRequestHeaders.Add("AcceptLanguage",
-                                         "en-GB,*");
-        client.DefaultRequestHeaders.Add("AcceptEncoding",
-                                         "gzip, deflate");
-        client.DefaultRequestHeaders.Add(HeaderAppId,
-                                         appId);
-        client.DefaultRequestHeaders.Add(HeaderAppKey,
-                                         appKey);
+        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+        client.DefaultRequestHeaders.Add("AcceptLanguage", "en-GB,*");
+        client.DefaultRequestHeaders.Add("AcceptEncoding", "gzip, deflate");
+        client.DefaultRequestHeaders.Add(HeaderAppId, appId);
+        client.DefaultRequestHeaders.Add(HeaderAppKey, appKey);
         /*
       {
         Request =
@@ -113,10 +108,13 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
         };
 
         var httpReq = new HttpRequestMessage(HttpMethod.Post,
-                                             Url);
-        httpReq.Content = new StringContent(JsonConvert.SerializeObject(req),
-                                            Encoding.UTF8,
-                                            "application/json");
+                                             Url)
+        {
+          Content = new StringContent(JsonConvert.SerializeObject(req),
+                                      Encoding.UTF8,
+                                      "application/json")
+        };
+
         var resp = await client.SendAsync(httpReq);
 
         if (resp == null || resp.StatusCode != System.Net.HttpStatusCode.OK)

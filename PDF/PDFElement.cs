@@ -38,6 +38,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Anotar.Serilog;
+using Forge.Forms.Annotations;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Patagames.Pdf.Net;
@@ -55,6 +56,7 @@ using SuperMemoAssistant.Services;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
+  [Form(Mode = DefaultFields.None)]
   public class PDFElement : INotifyPropertyChanged
   {
     #region Constructors
@@ -111,14 +113,39 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     public int ReadPage { get; set; }
     [JsonProperty(PropertyName = "RPt")]
     public Point ReadPoint { get; set; }
-
+    
+    [Field(Name = "Extract format")]
+    [SelectFrom(typeof(ExtractFormat),
+      SelectionType = SelectionType.ComboBox)]
     [JsonProperty(PropertyName = "EF")]
     public ExtractFormat ExtractFormat { get; set; } = ExtractFormat.HtmlRichText;
 
+    [Field(Name = "PDF Extract Priority (%)")]
+    [Value(Must.BeGreaterThanOrEqualTo,
+      0,
+      StrictValidation = true)]
+    [Value(Must.BeLessThanOrEqualTo,
+      100,
+      StrictValidation = true)]
+    public double PDFExtractPriority { get; set; }
+    [Field(Name = "SM Extract Priority (%)")]
+    [Value(Must.BeGreaterThanOrEqualTo,
+      0,
+      StrictValidation = true)]
+    [Value(Must.BeLessThanOrEqualTo,
+      100,
+      StrictValidation = true)]
+    public double SMExtractPriority { get; set; }
+
     [JsonProperty(PropertyName = "VM")]
-    public ViewModes ViewMode { get; set; } = PDFConst.DefaultViewMode;
+    public ViewModes ViewMode { get; set; }
+    
+    [Field(Name = "Page margin")]
     [JsonProperty(PropertyName = "PM")]
     public int PageMargin { get; set; } = PDFConst.DefaultPageMargin;
+    [JsonProperty(PropertyName = "PME")]
+    public bool PageMarginEnabled { get; set; } = true;
+
     [JsonProperty(PropertyName = "Z")]
     public float Zoom { get; set; } = PDFConst.DefaultZoom;
 
@@ -233,9 +260,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       int       pageMargin      = PDFConst.DefaultPageMargin,
       float     zoom            = PDFConst.DefaultZoom,
       bool      shouldDisplay   = true,
-      string    title           = null)
+      string    subtitle           = null)
     {
       PDFElement pdfEl;
+      string     title;
       string     author;
       string     creationDate;
       string     filePath;
@@ -265,11 +293,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         pdfEl.GetInfos(out string pdfTitle,
                        out author,
                        out creationDate);
-
-        if (string.IsNullOrWhiteSpace(title))
-          title = null;
-
-        title = title ?? pdfTitle ?? binMem.Name;
+      
+        title = pdfEl.ConfigureTitle(pdfTitle, subtitle);
       }
       catch (Exception ex)
       {
@@ -292,7 +317,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         new ElementBuilder(ElementType.Topic,
                            elementHtml)
           .WithParent(parentElement)
-          .WithTitle(title)
+          .WithTitle(subtitle ?? title)
           .WithPriority(PDFState.Instance.Config.PDFExtractPriority)
           .WithReference(
             r => r.WithTitle(title)
@@ -464,23 +489,29 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                out authors,
                out date);
 
+      title = title ?? BinaryMember.Name;
+
       if (StartPage >= 0 && EndPage >= 0)
         title += $" ({StartPage + 1}:{StartIndex} -> {EndPage + 1}:{EndIndex})";
     }
 
+    public string ConfigureTitle(string title, string subtitle = null)
+    {
+      return string.IsNullOrWhiteSpace(subtitle)
+        ? title
+        : $"{subtitle} - {subtitle}";
+    }
+
     public References ConfigureReferences(References r,
-                                          string     title = null)
+                                          string     subtitle = null)
     {
       string filePath = BinaryMember.GetFilePath("pdf");
 
       GetInfos(out string pdfTitle,
                out string author,
                out string creationDate);
-
-      if (string.IsNullOrWhiteSpace(title))
-        title = null;
-
-      title = title ?? pdfTitle ?? BinaryMember.Name;
+      
+      var title = ConfigureTitle(pdfTitle, subtitle);
 
       return r.WithTitle(title)
               .WithAuthor(author)

@@ -60,6 +60,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                                               30,
                                                                               30);
     protected static readonly Color SMExtractColor = SMConst.Stylesheet.ExtractColor;
+    protected static readonly Color SMExtractTransparentColor = SMConst.Stylesheet.ExtractTransparentColor;
     protected static readonly Color PDFExtractColor = Color.FromArgb(90,
                                                                      255,
                                                                      106,
@@ -71,8 +72,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                                                              SMExtractColor.G,
                                                                                              SMExtractColor.B)),
                                                           1.0f);
-
-    protected static Brush ExtractFillBrush      { get; } = new SolidColorBrush(SMExtractColor);
+    
+    protected static Brush ExtractFillBrush { get; } = new SolidColorBrush(SMExtractColor);
+    protected static Brush ExtractTransparentFillBrush { get; } = new SolidColorBrush(SMExtractTransparentColor);
     protected static Brush OutOfExtractFillBrush { get; } = new SolidColorBrush(OutOfExtractExtractColor);
 
     protected static Pen ImageHighlightPen { get; } = new Pen(new SolidColorBrush(Color.FromRgb(77,
@@ -212,7 +214,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         DrawImageHighlight(drawingContext,
                            imageExtract,
                            ImageHighlightPen,
-                           ExtractFillBrush
+                           ExtractTransparentFillBrush
         );
     }
 

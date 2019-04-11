@@ -51,7 +51,7 @@ namespace SuperMemoAssistant.Plugins.PDF
   {
     #region Constructors
 
-    public PDFPlugin() : base(true, DebuggerAttachStrategy.Never) { }
+    public PDFPlugin() : base(DebuggerAttachStrategy.Never) { }
 
     #endregion
 

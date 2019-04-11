@@ -464,9 +464,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     }
 
     // ReSharper disable once UnusedParameter.Local
-    private bool DictionaryControl_OnAfterExtract(bool result)
+    private bool DictionaryControl_OnAfterExtract(bool success)
     {
       Activate();
+
+      if (success)
+        DictionaryPopup.IsOpen = false;
 
       return true;
     }

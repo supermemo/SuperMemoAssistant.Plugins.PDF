@@ -131,6 +131,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       DeselectText();
 
       ExtractHighlights.Clear();
+      ImageExtractHighlights.Clear();
       RemoveHighlightFromText();
 
       PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);

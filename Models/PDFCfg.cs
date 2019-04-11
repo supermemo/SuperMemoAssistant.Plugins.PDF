@@ -35,6 +35,7 @@ using System.ComponentModel;
 using System.Windows;
 using Forge.Forms.Annotations;
 using Newtonsoft.Json;
+using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Models;
 using SuperMemoAssistant.Plugins.PDF.MathPix;
 using SuperMemoAssistant.Services;
@@ -93,6 +94,20 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [SelectFrom(typeof(ImageStretchMode),
       SelectionType = SelectionType.RadioButtonsInline)]
     public ImageStretchMode ImageStretchType { get; set; } = ImageStretchMode.Proportional;
+
+    [Field(Name = "Default view mode")]
+    [SelectFrom(typeof(ViewModes),
+      SelectionType = SelectionType.ComboBox)]
+    public ViewModes DefaultViewMode { get; set; } = PDFConst.DefaultViewMode;
+    
+    [Field(Name = "Default page margin")]
+    [Value(Must.BeGreaterThanOrEqualTo,
+      0,
+      StrictValidation = true)]
+    [Value(Must.BeLessThanOrEqualTo,
+      20,
+      StrictValidation = true)]
+    public int DefaultPageMargin { get; set; } = PDFConst.DefaultPageMargin;
 
     public double      WindowTop    { get; set; } = 100;
     public double      WindowHeight { get; set; } = 600;

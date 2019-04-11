@@ -208,6 +208,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
       {
         var itTag = oldTags[i];
 
+        if (itTag.Span.StartIdx < curTag.Span.StartIdx)
+        {
+          if (itTag.Span.EndIdx < curTag.Span.StartIdx)
+            continue;
+
+          itTag.Span = new Span(curTag.Span.StartIdx, itTag.Span.EndIdx);
+        }
+
         if (curTag.MergeIfNextTagOverlaps(itTag,
                                           out var mergedTags))
         {

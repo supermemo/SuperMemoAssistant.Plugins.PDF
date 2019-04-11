@@ -181,7 +181,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var mpWdw = new TeXEditorWindow(tex);
 
       if (mpWdw.ShowDialog() ?? false)
+      {
         SelectedArea.OcrText = mpWdw.Text;
+      }
 
       else
         SelectedArea = null;
