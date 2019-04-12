@@ -142,7 +142,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithPriority(Config.SMExtractPriority)
             .WithReference(r => PDFElement.ConfigureReferences(r))
             .DoNotDisplay()
-        );
+        ).Count == 0;
         
         Window.GetWindow(this)?.Activate();
 
