@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/11 19:49
-// Modified On:  2018/12/11 21:45
+// Created On:   2019/04/14 20:45
+// Modified On:  2019/04/15 00:00
 // Modified By:  Alexis
 
 #endregion
@@ -30,7 +30,11 @@
 
 
 
+using System.Collections.Generic;
+using System.Linq;
 using Patagames.Pdf.Net;
+using Patagames.Pdf.Net.Controls.Wpf;
+using SuperMemoAssistant.Extensions;
 
 namespace SuperMemoAssistant.Plugins.PDF.Extensions
 {
@@ -38,16 +42,89 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
   {
     #region Methods
 
-    public static PdfBookmark GetNextBookmark(this PdfBookmark bookmark,
-                                              PdfDocument      document)
+    public static string ToHierarchyString(this PdfBookmark bookmark)
     {
+      List<PdfBookmark> bookmarkHierarchy = new List<PdfBookmark>();
+
+      do
+      {
+        bookmarkHierarchy.Add(bookmark);
+      } while ((bookmark = bookmark.Parent) != null);
+
+      bookmarkHierarchy.Reverse();
+
+      return StringEx.Join("::", bookmarkHierarchy.Select(b => b.Title));
+    }
+
+    public static SelectInfo? GetSelection(this PdfBookmark bookmark,
+                                           PdfDocument      document)
+    {
+      PdfDestination destination = bookmark.Action?.Destination ?? bookmark.Destination;
+
+      if (destination == null)
+        return null;
+
+      int firstPage = destination.PageIndex;
+      int lastPage  = document.Pages.Count - 1;
+
+      PdfBookmark nextBookmark = bookmark.GetNextBookmark(document);
+
+      if (nextBookmark != null)
+      {
+        PdfDestination nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
+
+        lastPage = nextDestination.PageIndex - 1 > firstPage
+          ? nextDestination.PageIndex - 1
+          : firstPage;
+      }
+
+      return new SelectInfo
+      {
+        StartPage  = firstPage,
+        EndPage    = lastPage,
+        StartIndex = 0,
+        EndIndex   = document.Pages[lastPage].Text.CountChars,
+      };
+    }
+
+    public static bool Contains(this PdfBookmark bookmark, PdfDocument document, int pageIdx)
+    {
+      PdfDestination destination = bookmark.Action?.Destination ?? bookmark.Destination;
+
+      if (destination == null)
+        return false;
+
+      var nextBookmark = bookmark.GetNextBookmark(document);
+      int firstPage    = destination.PageIndex;
+
+      if (nextBookmark == null)
+        return pageIdx >= firstPage;
+
+      PdfDestination nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
+      int lastPage = nextDestination.PageIndex - 1 > firstPage
+        ? nextDestination.PageIndex - 1
+        : firstPage;
+
+      return pageIdx >= firstPage && pageIdx <= lastPage;
+    }
+
+    public static PdfBookmark GetNextBookmark(this PdfBookmark bookmark,
+                                              PdfDocument      document,
+                                              bool             descend = false)
+    {
+      if (descend)
+      {
+        var descendant = bookmark.GetFirstChild();
+
+        if (descendant != null)
+          return descendant;
+      }
+
       int nextChildIdx = bookmark.GetNextIterableParent(out PdfBookmark parent);
 
-      parent = nextChildIdx < 0
+      return nextChildIdx < 0
         ? parent.GetNextSibling(document.Bookmarks)
         : parent.Childs[nextChildIdx];
-
-      return parent;
     }
 
     public static int GetNextIterableParent(this PdfBookmark bookmark,
@@ -72,6 +149,11 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
       nextOrTopParent = bookmark;
 
       return -1;
+    }
+
+    public static PdfBookmark GetFirstChild(this PdfBookmark bookmark)
+    {
+      return bookmark.Childs.FirstOrDefault();
     }
 
     public static PdfBookmark GetLeftMostDescendant(this PdfBookmark bookmark)

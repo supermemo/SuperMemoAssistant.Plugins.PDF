@@ -38,6 +38,7 @@ using System.Windows;
 using System.Windows.Input;
 using Anotar.Serilog;
 using Forge.Forms;
+using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
@@ -239,6 +240,15 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
 
       return null;
+    }
+
+    public PdfBookmark FindBookmark(int pageIdx)
+    {
+      var allBookmarks = Document.Bookmarks
+                                 .Traverse(Document)
+                                 .Where(b => b.Contains(Document, pageIdx));
+
+      return allBookmarks.Last();
     }
 
     public string GetSelectedTextHtml()

@@ -257,33 +257,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     public void ExtractBookmark(PdfBookmark bookmark)
     {
-      PdfDestination destination = bookmark.Action?.Destination ?? bookmark.Destination;
+      var selInfo = bookmark.GetSelection(Document);
 
-      if (destination == null)
+      if (selInfo == null)
         return;
 
-      int firstPage = destination.PageIndex;
-      int lastPage  = Document.Pages.Count - 1;
-
-      PdfBookmark nextBookmark = bookmark.GetNextBookmark(Document);
-
-      if (nextBookmark != null)
-      {
-        PdfDestination nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
-
-        if (nextDestination.PageIndex - 1 > firstPage)
-          lastPage = nextDestination.PageIndex - 1;
-      }
-
-      var selInfo = new SelectInfo
-      {
-        StartPage  = firstPage,
-        EndPage    = lastPage,
-        StartIndex = 0,
-        EndIndex   = Document.Pages[lastPage].Text.CountChars,
-      };
-
-      CreatePDFExtract(selInfo,
+      CreatePDFExtract(selInfo.Value,
                        bookmark.Title);
     }
 

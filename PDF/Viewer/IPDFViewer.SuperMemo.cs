@@ -40,6 +40,7 @@ using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Content.Contents;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Builders;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
+using SuperMemoAssistant.Plugins.PDF.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Sys.Drawing;
@@ -61,6 +62,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var selImages     = SelectedImages;
       var selImageAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Normal);
       var selTextAreas  = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Ocr).ToList();
+      var pageIndices = new HashSet<int>();
 
       // Image extract
       foreach (var selImage in selImages)
@@ -81,6 +83,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         {
           imgExtracts.Add(imgExtract);
           contents.Add(content);
+
+          pageIndices.Add(selImage.PageIndex);
         }
       }
 
@@ -95,9 +99,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         };
 
         var (lt, rb) = selArea.NormalizedPoints();
-        var img = RenderArea(imgExtract.PageIndex,
-                             lt,
-                             rb);
+        var img = RenderArea(imgExtract.PageIndex, lt, rb);
 
         var imgRegistryTitle = TitleOrFileName + $": {selArea}";
 
@@ -108,6 +110,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         {
           imgExtracts.Add(imgExtract);
           contents.Add(content);
+
+          pageIndices.Add(selArea.PageIndex);
         }
       }
 
@@ -119,6 +123,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         contents.Add(new TextContent(true,
                                      text));
         txtExtract = true;
+
+        foreach (var selInfo in SelectInfos)
+          for (int p = selInfo.StartPage; p <= selInfo.EndPage; p++)
+            pageIndices.Add(p);
       }
 
       if (selTextAreas.Any())
@@ -127,6 +135,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                selTextAreas.Select(a => a.OcrText));
         contents.Add(new TextContent(true,
                                      text));
+
+        foreach (var selArea in selTextAreas)
+          pageIndices.Add(selArea.PageIndex);
       }
 
       // Generate extract
@@ -134,13 +145,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         Save(false);
 
+        var bookmarks = pageIndices.Select(FindBookmark)
+                                   .Where(b => b != null)
+                                   .Select(b => $"({b.ToHierarchyString()})");
+        var bookmarksStr = StringEx.Join(" ; ", bookmarks);
+
         ret = Svc.SMA.Registry.Element.Add(
           new ElementBuilder(ElementType.Topic,
                              contents.ToArray())
             .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
             .WithLayout(Config.Layout)
             .WithPriority(Config.SMExtractPriority)
-            .WithReference(r => PDFElement.ConfigureReferences(r))
+            .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
+            .WithForcedGeneratedTitle()
             .DoNotDisplay()
         ).Count == 0;
         

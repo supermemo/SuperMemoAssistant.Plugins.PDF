@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:46
-// Modified On:  2019/02/22 13:43
+// Created On:   2019/03/02 18:29
+// Modified On:  2019/04/14 23:03
 // Modified By:  Alexis
 
 #endregion
@@ -33,6 +33,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -113,7 +114,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     public int ReadPage { get; set; }
     [JsonProperty(PropertyName = "RPt")]
     public Point ReadPoint { get; set; }
-    
+
     [Field(Name = "Extract format")]
     [SelectFrom(typeof(ExtractFormat),
       SelectionType = SelectionType.ComboBox)]
@@ -139,8 +140,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     [JsonProperty(PropertyName = "VM")]
     public ViewModes ViewMode { get; set; }
-    
-    [Field(Name = "Page margin")]
+
+    [Field(Name                = "Page margin")]
     [JsonProperty(PropertyName = "PM")]
     public int PageMargin { get; set; } = PDFConst.DefaultPageMargin;
     [JsonProperty(PropertyName = "PME")]
@@ -260,7 +261,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       int       pageMargin      = PDFConst.DefaultPageMargin,
       float     zoom            = PDFConst.DefaultZoom,
       bool      shouldDisplay   = true,
-      string    subtitle           = null)
+      string    subtitle        = null)
     {
       PDFElement pdfEl;
       string     title;
@@ -293,7 +294,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         pdfEl.GetInfos(out string pdfTitle,
                        out author,
                        out creationDate);
-      
+
         title = pdfEl.ConfigureTitle(pdfTitle, subtitle);
       }
       catch (Exception ex)
@@ -474,6 +475,17 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         title   = pdfDoc.Title;
         authors = pdfDoc.Author;
         date    = pdfDoc.CreationDate;
+
+        if (string.IsNullOrWhiteSpace(date) == false)
+        {
+          var match = Regex.Match(date, "D\\:([0-9]{14})\\+[0-9]{2}'[0-9]{2}'");
+
+          if (match.Success)
+          {
+            if (DateTime.TryParseExact(match.Groups[1].Value, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dateTime))
+              date = dateTime.ToString(CultureInfo.InvariantCulture);
+          }
+        }
       }
 
       if (string.IsNullOrWhiteSpace(title))
@@ -502,18 +514,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         : $"{subtitle} - {subtitle}";
     }
 
-    public References ConfigureReferences(References r,
-                                          string     subtitle = null)
+    public References ConfigureSMReferences(References r,
+                                            string     subtitle = null,
+                                            string     bookmarks = null)
     {
       string filePath = BinaryMember.GetFilePath("pdf");
 
       GetInfos(out string pdfTitle,
                out string author,
                out string creationDate);
-      
+
       var title = ConfigureTitle(pdfTitle, subtitle);
 
-      return r.WithTitle(title)
+      return r.WithTitle(title + (bookmarks != null ? $" -- {bookmarks}" : string.Empty))
               .WithAuthor(author)
               .WithDate(creationDate)
               .WithSource("PDF")
