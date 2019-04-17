@@ -147,10 +147,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         var bookmarks = pageIndices.Select(FindBookmark)
                                    .Where(b => b != null)
+                                   .Distinct()
                                    .Select(b => $"({b.ToHierarchyString()})");
         var bookmarksStr = StringEx.Join(" ; ", bookmarks);
 
         ret = Svc.SMA.Registry.Element.Add(
+          out _,
+          ElemCreationFlags.CreateSubfolders,
           new ElementBuilder(ElementType.Topic,
                              contents.ToArray())
             .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
@@ -159,7 +162,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
             .WithForcedGeneratedTitle()
             .DoNotDisplay()
-        ).Count == 0;
+        );
         
         Window.GetWindow(this)?.Activate();
 

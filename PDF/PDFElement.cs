@@ -331,7 +331,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       if (shouldDisplay == false)
         elemBuilder = elemBuilder.DoNotDisplay();
 
-      return Svc.SMA.Registry.Element.Add(elemBuilder).Count == 0
+      return Svc.SMA.Registry.Element.Add(out _, ElemCreationFlags.CreateSubfolders, elemBuilder)
         ? CreationResult.Ok
         : CreationResult.FailCannotCreateElement;
     }
