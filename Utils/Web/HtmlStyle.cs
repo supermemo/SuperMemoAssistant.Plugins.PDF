@@ -61,6 +61,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
     public override string ToString()
     {
+      if (Properties.Any() == false)
+        return string.Empty;
+     
       string props = string.Join(";",
                                  Properties.Select(vp => $"{vp.Key}:{vp.Value}"));
 

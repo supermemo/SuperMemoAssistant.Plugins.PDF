@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/24 02:05
-// Modified On:  2019/02/22 13:44
+// Created On:   2019/03/02 18:29
+// Modified On:  2019/04/18 15:04
 // Modified By:  Alexis
 
 #endregion
@@ -187,16 +187,24 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
     private List<HtmlTag> ConsolidateHtmlTags(List<HtmlTag> htmlTags)
     {
-      var groupedTags      = htmlTags.GroupBy(k => k.Tag);
-      var consolidatedTags = groupedTags.Select(ConsolidateHtmlTags);
+      var consolidateSuccess = false;
+      var tags = htmlTags.GroupBy(k => k.Tag).Select(tg => tg.ToList());
 
-      return consolidatedTags.SelectMany(t => t)
-                             .ToList();
+      do
+      {
+        tags = tags.Select(tg => ConsolidateHtmlTags(tg.ToList(), out consolidateSuccess))
+                   .ToList();
+        // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
+      } while (consolidateSuccess);
+
+      return tags.SelectMany(t => t)
+                 .ToList();
     }
 
-    private List<HtmlTag> ConsolidateHtmlTags(IGrouping<string, HtmlTag> tagGrouping)
+    private List<HtmlTag> ConsolidateHtmlTags(List<HtmlTag> oriTags, out bool consolidateSuccess)
     {
-      var oldTags = tagGrouping.OrderBy(t => t.Span.StartIdx).ToList();
+      var oldTags = oriTags.OrderBy(t => t.Span.StartIdx).ToList();
+      consolidateSuccess = false;
 
       if (oldTags.Count == 0)
         return oldTags;
@@ -213,7 +221,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
           if (itTag.Span.EndIdx < curTag.Span.StartIdx)
             continue;
 
-          itTag.Span = new Span(curTag.Span.StartIdx, itTag.Span.EndIdx);
+          itTag.Span         = new Span(curTag.Span.StartIdx, itTag.Span.EndIdx);
+          consolidateSuccess = true;
         }
 
         if (curTag.MergeIfNextTagOverlaps(itTag,
@@ -222,6 +231,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
           curTag = mergedTags.First();
           oldTags.InsertRange(i + 1,
                               mergedTags.Skip(1));
+          consolidateSuccess = true;
         }
 
         else if (curTag.MergeIfAdjacentAndEquivalent(itTag,
@@ -233,7 +243,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
         else
         {
-          curTag = mergedTag;
+          curTag             = mergedTag;
+          consolidateSuccess = true;
         }
       }
 

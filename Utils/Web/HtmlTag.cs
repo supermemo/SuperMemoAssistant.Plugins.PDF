@@ -87,7 +87,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
                                  Properties.Select(kvp => $"{kvp.Key}=\"{kvp.Value}\""));
 
       if (Properties.ContainsKey("style") == false)
-        props = string.IsNullOrWhiteSpace(props) ? Style.ToString() : $" {Style}";
+        props = string.IsNullOrWhiteSpace(props) ? Style.ToString() : $"{props} {Style}";
 
       return $"<{Tag} {props}>";
     }

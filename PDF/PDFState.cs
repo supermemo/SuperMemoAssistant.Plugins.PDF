@@ -99,13 +99,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       if (newElem == null)
         return;
 
-      if (LastElement?.ElementId == newElem.Id
-        || newElem.Type != ElementType.Topic)
+      if (LastElement?.ElementId == newElem.Id)
         return;
 
-      string html = ctrlHtml?.Text ?? string.Empty;
-      PDFElement pdfEl = PDFElement.TryReadElement(html,
-                                                   newElem.Id);
+      var html = ctrlHtml?.Text ?? string.Empty;
+      var pdfEl = newElem.Type == ElementType.Topic
+        ? PDFElement.TryReadElement(html, newElem.Id)
+        : null;
 
       bool noNewElem  = pdfEl == null;
       bool noLastElem = LastElement == null || (Svc.SMA.Registry.Element[LastElement.ElementId]?.Deleted ?? true);
