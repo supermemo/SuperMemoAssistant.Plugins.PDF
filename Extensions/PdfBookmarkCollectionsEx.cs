@@ -49,6 +49,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
     {
       var bookmark = bookmarks.FirstOrDefault();
 
+      if (bookmark == null)
+        yield break;
+
       do
       {
         yield return bookmark;

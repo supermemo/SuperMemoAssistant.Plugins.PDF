@@ -248,7 +248,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                  .Traverse(Document)
                                  .Where(b => b.Contains(Document, pageIdx));
 
-      return allBookmarks.Last();
+      return allBookmarks.LastOrDefault();
     }
 
     public string GetSelectedTextHtml()
