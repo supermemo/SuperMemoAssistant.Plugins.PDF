@@ -88,7 +88,7 @@ namespace SuperMemoAssistant.Plugins.PDF
       if (!PdfCommon.IsInitialize)
         PdfCommon.Initialize(PDFLicense.LicenseKey);
 
-      Svc.SMA.UI.ElementWindow.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
+      Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
 
       PDFHotKeys.RegisterHotKeys();
     }
@@ -111,7 +111,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     [LogToErrorOnException]
     public void OnElementChanged(SMDisplayedElementChangedArgs e)
     {
-      IControlHtml ctrlHtml = Svc.SMA.UI.ElementWindow.ControlGroup.GetFirstHtmlControl();
+      IControlHtml ctrlHtml = Svc.SM.UI.ElementWdw.ControlGroup.GetFirstHtmlControl();
 
       PDFState.Instance.OnElementChanged(e.NewElement,
                                          ctrlHtml);

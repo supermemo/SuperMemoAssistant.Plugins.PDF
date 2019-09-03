@@ -151,12 +151,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                    .Select(b => $"({b.ToHierarchyString()})");
         var bookmarksStr = StringEx.Join(" ; ", bookmarks);
 
-        ret = Svc.SMA.Registry.Element.Add(
+        ret = Svc.SM.Registry.Element.Add(
           out _,
           ElemCreationFlags.CreateSubfolders,
           new ElementBuilder(ElementType.Topic,
                              contents.ToArray())
-            .WithParent(Svc.SMA.Registry.Element[PDFElement.ElementId])
+            .WithParent(Svc.SM.Registry.Element[PDFElement.ElementId])
             .WithLayout(Config.Layout)
             .WithPriority(Config.SMExtractPriority)
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
@@ -196,7 +196,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (image == null)
         return null;
 
-      int imgRegistryId = Svc.SMA.Registry.Image.AddMember(
+      int imgRegistryId = Svc.SM.Registry.Image.AddMember(
         new ImageWrapper(image),
         title
       );

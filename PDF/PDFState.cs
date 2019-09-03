@@ -108,7 +108,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         : null;
 
       bool noNewElem  = pdfEl == null;
-      bool noLastElem = LastElement == null || (Svc.SMA.Registry.Element[LastElement.ElementId]?.Deleted ?? true);
+      bool noLastElem = LastElement == null || (Svc.SM.Registry.Element[LastElement.ElementId]?.Deleted ?? true);
 
       if (noNewElem && noLastElem)
         return;

@@ -168,7 +168,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     [JsonIgnore]
     [DoNotNotify]
-    public IBinary BinaryMember => Svc.SMA.Registry.Binary?[BinaryMemberId];
+    public IBinary BinaryMember => Svc.SM.Registry.Binary?[BinaryMemberId];
 
     #endregion
 
@@ -196,7 +196,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       try
       {
         var fileName = Path.GetFileName(filePath);
-        var binMems = Svc.SMA.Registry.Binary.FindByName(new Regex(Regex.Escape(fileName) + ".*",
+        var binMems = Svc.SM.Registry.Binary.FindByName(new Regex(Regex.Escape(fileName) + ".*",
                                                                    RegexOptions.IgnoreCase)).ToList();
 
         if (binMems.Any())
@@ -218,13 +218,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
         if (binMem == null)
         {
-          int binMemId = Svc.SMA.Registry.Binary.AddMember(filePath,
+          int binMemId = Svc.SM.Registry.Binary.AddMember(filePath,
                                                            fileName);
 
           if (binMemId < 0)
             return CreationResult.FailBinaryRegistryInsertionFailed;
 
-          binMem = Svc.SMA.Registry.Binary[binMemId];
+          binMem = Svc.SM.Registry.Binary[binMemId];
         }
       }
       catch (Exception ex)
@@ -311,7 +311,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       IElement parentElement =
         parentElementId > 0
-          ? Svc.SMA.Registry.Element[parentElementId]
+          ? Svc.SM.Registry.Element[parentElementId]
           : null;
 
       var elemBuilder =
@@ -325,13 +325,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                   .WithAuthor(author)
                   .WithDate(creationDate)
                   .WithSource("PDF")
-                  .WithLink(Svc.SMA.Collection.MakeRelative(filePath))
+                  .WithLink(Svc.SM.Collection.MakeRelative(filePath))
           );
 
       if (shouldDisplay == false)
         elemBuilder = elemBuilder.DoNotDisplay();
 
-      return Svc.SMA.Registry.Element.Add(out _, ElemCreationFlags.CreateSubfolders, elemBuilder)
+      return Svc.SM.Registry.Element.Add(out _, ElemCreationFlags.CreateSubfolders, elemBuilder)
         ? CreationResult.Ok
         : CreationResult.FailCannotCreateElement;
     }
@@ -360,7 +360,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
           // TODO: Remove element Id test when better element transition is implemented
           // Double check
-          if (Svc.SMA.UI.ElementWindow.CurrentElementId != elementId || File.Exists(pdfEl.FilePath) == false)
+          if (Svc.SM.UI.ElementWdw.CurrentElementId != elementId || File.Exists(pdfEl.FilePath) == false)
             return null;
         }
 
@@ -382,11 +382,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       try
       {
-        bool saveToControl = Svc.SMA.UI.ElementWindow.CurrentElementId == ElementId;
+        bool saveToControl = Svc.SM.UI.ElementWdw.CurrentElementId == ElementId;
 
         if (saveToControl)
         {
-          IControlHtml ctrlHtml = Svc.SMA.UI.ElementWindow.ControlGroup.GetFirstHtmlControl();
+          IControlHtml ctrlHtml = Svc.SM.UI.ElementWdw.ControlGroup.GetFirstHtmlControl();
 
           ctrlHtml.Text = UpdateHtml(ctrlHtml.Text);
 
@@ -398,7 +398,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           return SaveResult.Fail;
 
           /*
-            var elem = Svc.SMA.Registry.Element[ElementId];
+            var elem = Svc.SM.Registry.Element[ElementId];
   
             if (elem == null || elem.Deleted)
               return SaveResult.FailDeleted;
@@ -530,7 +530,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
               .WithAuthor(author)
               .WithDate(creationDate)
               .WithSource("PDF")
-              .WithLink(Svc.SMA.Collection.MakeRelative(filePath));
+              .WithLink(Svc.SM.Collection.MakeRelative(filePath));
     }
 
     private void OnCollectionChanged(object                                                          sender,

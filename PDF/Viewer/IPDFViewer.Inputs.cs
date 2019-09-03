@@ -123,7 +123,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           break;
 
         case PDFHotKeys.LearnAndReschedule:
-          Svc.SMA.UI.ElementWindow.ForceRepetitionAndResume(
+          Svc.SM.UI.ElementWdw.ForceRepetitionAndResume(
             Config.LearnForcedScheduleInterval,
             false);
           e.Handled = true;
@@ -140,14 +140,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           break;
 
         case PDFHotKeys.SMDone:
-          Svc.SMA.UI.ElementWindow.ActivateWindow();
-          Svc.SMA.UI.ElementWindow.Done();
+          Svc.SM.UI.ElementWdw.ActivateWindow();
+          Svc.SM.UI.ElementWdw.Done();
           e.Handled = true;
           break;
 
         case PDFHotKeys.SMDelete:
-          Svc.SMA.UI.ElementWindow.ActivateWindow();
-          Svc.SMA.UI.ElementWindow.Delete();
+          Svc.SM.UI.ElementWdw.ActivateWindow();
+          Svc.SM.UI.ElementWdw.Delete();
           e.Handled = true;
           break;
 
@@ -165,37 +165,37 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           break;
 
         case PDFHotKeys.SMParent:
-          var parent = Svc.SMA.UI.ElementWindow.CurrentElement?.Parent;
+          var parent = Svc.SM.UI.ElementWdw.CurrentElement?.Parent;
 
           if (parent != null)
-            Svc.SMA.UI.ElementWindow.GoToElement(parent.Id);
+            Svc.SM.UI.ElementWdw.GoToElement(parent.Id);
 
           e.Handled = true;
           break;
 
         case PDFHotKeys.SMChild:
-          var child = Svc.SMA.UI.ElementWindow.CurrentElement?.FirstChild;
+          var child = Svc.SM.UI.ElementWdw.CurrentElement?.FirstChild;
 
           if (child != null)
-            Svc.SMA.UI.ElementWindow.GoToElement(child.Id);
+            Svc.SM.UI.ElementWdw.GoToElement(child.Id);
 
           e.Handled = true;
           break;
 
         case PDFHotKeys.SMPrevSibling:
-          var prevSibling = Svc.SMA.UI.ElementWindow.CurrentElement?.PrevSibling;
+          var prevSibling = Svc.SM.UI.ElementWdw.CurrentElement?.PrevSibling;
 
           if (prevSibling != null)
-            Svc.SMA.UI.ElementWindow.GoToElement(prevSibling.Id);
+            Svc.SM.UI.ElementWdw.GoToElement(prevSibling.Id);
 
           e.Handled = true;
           break;
 
         case PDFHotKeys.SMNextSibling:
-          var nextSibling = Svc.SMA.UI.ElementWindow.CurrentElement?.NextSibling;
+          var nextSibling = Svc.SM.UI.ElementWdw.CurrentElement?.NextSibling;
 
           if (nextSibling != null)
-            Svc.SMA.UI.ElementWindow.GoToElement(nextSibling.Id);
+            Svc.SM.UI.ElementWdw.GoToElement(nextSibling.Id);
 
           e.Handled = true;
           break;
@@ -490,7 +490,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected bool ForwardKeysToSM(HotKey hotKey,
                                    int  timeout = 100)
     {
-      var handle = Svc.SMA.UI.ElementWindow.Handle;
+      var handle = Svc.SM.UI.ElementWdw.Handle;
 
       if (handle.ToInt32() == 0)
         return false;
