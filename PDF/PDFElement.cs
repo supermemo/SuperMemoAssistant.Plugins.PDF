@@ -532,7 +532,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
               .WithSource("PDF")
               .WithLink(Svc.SM.Collection.MakeRelative(filePath));
     }
-
+    
+    [SuppressPropertyChangedWarnings]
     private void OnCollectionChanged(object                                                          sender,
                                      System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
