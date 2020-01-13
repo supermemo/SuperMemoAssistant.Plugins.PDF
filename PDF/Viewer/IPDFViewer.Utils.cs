@@ -356,7 +356,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                    double pageOffsetPercent = -0.10)
     {
       if (pageIndex < 0 || pageIndex > Document.Pages.Count || charIndex < 0)
-        return default(Point);
+        return default;
 
       var res = GetCharPoint(pageIndex,
                              charIndex);
@@ -373,7 +373,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                  int charIndex)
     {
       if (pageIndex < 0 || pageIndex > Document.Pages.Count || charIndex < 0)
-        return default(Point);
+        return default;
 
       var page          = Document.Pages[pageIndex];
       int pageCharCount = page.Text.CountChars;
@@ -385,7 +385,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                      1);
 
       if (ti.Rects == null || ti.Rects.Count == 0)
-        return default(Point);
+        return default;
 
       return new Point(ti.Rects[0].left,
                        ti.Rects[0].top);

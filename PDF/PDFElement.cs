@@ -70,7 +70,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       StartIndex       = -1;
       EndIndex         = -1;
       ReadPage         = 0;
-      ReadPoint        = default(Point);
+      ReadPoint        = default;
       PDFExtracts      = new ObservableCollection<PDFTextExtract>();
       SMExtracts       = new ObservableCollection<PDFTextExtract>();
       SMImgExtracts    = new ObservableCollection<PDFImageExtract>();
@@ -185,7 +185,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       int              endIdx          = -1,
       int              parentElementId = -1,
       int              readPage        = 0,
-      Point            readPoint       = default(Point),
+      Point            readPoint       = default,
       ViewModes        viewMode        = PDFConst.DefaultViewMode,
       int              pageMargin      = PDFConst.DefaultPageMargin,
       float            zoom            = PDFConst.DefaultZoom,
@@ -256,7 +256,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       int       endIdx          = -1,
       int       parentElementId = -1,
       int       readPage        = 0,
-      Point     readPoint       = default(Point),
+      Point     readPoint       = default,
       ViewModes viewMode        = PDFConst.DefaultViewMode,
       int       pageMargin      = PDFConst.DefaultPageMargin,
       float     zoom            = PDFConst.DefaultZoom,
