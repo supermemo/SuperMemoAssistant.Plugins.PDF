@@ -34,7 +34,6 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls.Primitives;
-using JetBrains.Annotations;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
@@ -242,7 +241,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Methods
 
-    public void LoadDocument([NotNull] PDFElement pdfElement)
+    public void LoadDocument(PDFElement pdfElement)
     {
       bool isNewPdf = !PDFElement?.FilePath.Equals(pdfElement.FilePath) ?? true;
 

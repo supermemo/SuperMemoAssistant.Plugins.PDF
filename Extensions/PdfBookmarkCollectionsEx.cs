@@ -32,7 +32,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using Patagames.Pdf.Net;
 
 namespace SuperMemoAssistant.Plugins.PDF.Extensions
@@ -45,7 +44,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
     /// <param name="bookmarks"></param>
     /// <param name="doc"></param>
     /// <returns></returns>
-    public static IEnumerable<PdfBookmark> Traverse([NotNull] this PdfBookmarkCollections bookmarks, PdfDocument doc)
+    public static IEnumerable<PdfBookmark> Traverse(this PdfBookmarkCollections bookmarks, PdfDocument doc)
     {
       var bookmark = bookmarks.FirstOrDefault();
 

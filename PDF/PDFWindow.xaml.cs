@@ -37,7 +37,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using JetBrains.Annotations;
 using Microsoft.Win32;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
@@ -193,7 +192,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         : null;
     }
 
-    public void OpenDocument([NotNull] PDFElement pdfElement)
+    public void OpenDocument(PDFElement pdfElement)
     {
       //if (WindowEx.IsWindowOpen<PDFWindow>() == false)
       if (Visibility != Visibility.Visible)

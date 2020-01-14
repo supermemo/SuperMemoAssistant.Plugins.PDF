@@ -40,7 +40,6 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using Anotar.Serilog;
 using Forge.Forms.Annotations;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
@@ -178,7 +177,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     #region Methods
 
     public static CreationResult Create(
-      [NotNull] string filePath,
+      string filePath,
       int              startPage       = -1,
       int              endPage         = -1,
       int              startIdx        = -1,
@@ -196,6 +195,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       try
       {
         var fileName = Path.GetFileName(filePath);
+
+        if (fileName is null)
+        {
+          LogTo.Warning($"Path.GetFileName(filePath) returned null for filePath '{filePath}'.");
+          return CreationResult.FailUnknown;
+        }
+
         var binMems = Svc.SM.Registry.Binary.FindByName(new Regex(Regex.Escape(fileName) + ".*",
                                                                    RegexOptions.IgnoreCase)).ToList();
 
@@ -203,13 +209,33 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         {
           var oriPdfFileInfo = new FileInfo(filePath);
 
+          if (oriPdfFileInfo.Exists == false)
+          {
+            LogTo.Warning($"New PDF file '{filePath}' doesn't exist.");
+            return CreationResult.FailUnknown;
+          }
+
           foreach (var itBinMem in binMems)
           {
             var smPdfFilePath = itBinMem.GetFilePath("pdf");
             var smPdfFileInfo = new FileInfo(smPdfFilePath);
 
-            if (smPdfFileInfo.Length != oriPdfFileInfo.Length)
+            if (smPdfFileInfo.Exists == false)
+            {
+              LogTo.Warning($"PDF file '{smPdfFilePath}' associated with Binary member id {itBinMem.Id} is missing.");
               continue;
+            }
+
+            try
+            {
+              if (smPdfFileInfo.Length != oriPdfFileInfo.Length)
+                continue;
+            }
+            catch (FileNotFoundException ex)
+            {
+              LogTo.Warning(ex, $"PDF file '{smPdfFilePath}' or '{filePath}' has gone missing. Weird.");
+              continue;
+            }
 
             binMem = itBinMem;
             break;
