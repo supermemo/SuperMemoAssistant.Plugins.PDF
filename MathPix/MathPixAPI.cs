@@ -84,21 +84,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
         client.DefaultRequestHeaders.Add("AcceptEncoding", "gzip, deflate");
         client.DefaultRequestHeaders.Add(HeaderAppId, appId);
         client.DefaultRequestHeaders.Add(HeaderAppKey, appKey);
-        /*
-      {
-        Request =
-        {
-          UserAgent      = "Mozilla/5.0",
-          AcceptLanguage = "en-GB,*",
-          AcceptEncoding = "gzip, deflate",
-          KeepAlive      = true
-        }
-      };
-      client.Request.AddExtraHeader(HeaderAppId,
-                                    appId);
-      client.Request.AddExtraHeader(HeaderAppKey,
-                                    appKey);
-                                    */
+
         string imgBase64 = img.ToBase64(ImageFormat.Jpeg);
         var req = new Request
         {
@@ -161,6 +147,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
       #region Properties & Fields - Public
 
       public string text             { get; set; }
+      public string latex_styled     { get; set; }
       public string error            { get; set; }
       public double latex_confidence { get; set; }
 

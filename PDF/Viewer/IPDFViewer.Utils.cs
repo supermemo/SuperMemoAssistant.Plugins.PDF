@@ -142,9 +142,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                         string                  word,
                                                         IDictionaryService      dict)
     {
-      var lemmas = await dict.LookupLemma(
-        ct,
-        word);
+      var lemmas = await dict.LookupLemma(ct, word, (Config.PDFDictionary ?? dict.DefaultDictionary).GetLanguageId());
 
       if (lemmas?.Results == null
         || lemmas.Results.Any() == false
@@ -157,9 +155,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (string.IsNullOrWhiteSpace(word))
         return null;
 
-      return await dict.LookupEntry(
-        ct,
-        word);
+      return await dict.LookupEntry(ct, word, dict.DefaultDictionary.GetLanguageId());
     }
 
     public void ShowGoToPageDialog()
