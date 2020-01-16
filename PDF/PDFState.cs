@@ -69,7 +69,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     #region Constructors
 
-    /// <inheritdoc />
     public PDFState()
     {
       Config = Svc.Configuration.Load<PDFCfg>().Result ?? new PDFCfg();

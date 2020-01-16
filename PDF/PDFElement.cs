@@ -177,7 +177,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     #region Methods
 
     public static CreationResult Create(
-      string filePath,
+      string           filePath,
       int              startPage       = -1,
       int              endPage         = -1,
       int              startIdx        = -1,
@@ -196,7 +196,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       {
         var fileName = Path.GetFileName(filePath);
 
-        if (fileName is null)
+        if (string.IsNullOrWhiteSpace(fileName))
         {
           LogTo.Warning($"Path.GetFileName(filePath) returned null for filePath '{filePath}'.");
           return CreationResult.FailUnknown;
