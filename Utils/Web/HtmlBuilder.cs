@@ -253,11 +253,26 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
       return newTags;
     }
 
+    public void Append(string content)
+    {
+      if (Html.Length > 0)
+        Html.Append("\r\n[...] ");
+
+      var tag = new HtmlTagSpan(new Span(Html.Length, Html.Length + content.Length - 1));
+
+      HtmlTags.Add(tag);
+      Html.Append(content);
+    }
+
     public void Append(List<SelectInfo> selInfos)
     {
       foreach (var selInfo in selInfos)
-        Append(selInfo,
-               Html);
+        Append(selInfo);
+    }
+
+    public void Append(SelectInfo selInfo)
+    {
+      Append(selInfo, Html);
     }
 
     private void Append(SelectInfo    selInfo,
@@ -284,11 +299,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         else
           endIdx = Document.Pages[pageIdx].Text.CountChars - 1;
 
-        Span span = new Span(startIdx,
-                             endIdx);
-        Append(pageIdx,
-               span,
-               str);
+        Span span = new Span(startIdx, endIdx);
+        Append(pageIdx, span, str);
 
         PagesToDispose.Add(pageIdx);
       }
@@ -311,8 +323,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
                                                1,
                                                1);
 
-        return new TextObject(textObj,
-                              absIdx);
+        return new TextObject(textObj, absIdx);
       }
 
       var textObjects = page.PageObjects
@@ -321,7 +332,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
                             .OrderBy(t => t.StartIndex)
                             .ToList();
 
-      // Some PDF documents are improperly formated and miss PdfTextObjects -- Fill the gaps
+      // Some PDF documents are improperly formatted and miss PdfTextObjects -- Fill the gaps
 
       int lastEndIdx = textObjects.FirstOrDefault()?.EndIndex ?? 0;
 
@@ -338,8 +349,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         var gapTextObj = new TextObject(textObjects[i - 1],
                                         lastEndIdx + 1,
                                         textObj.StartIndex - lastEndIdx - 1);
-        textObjects.Insert(i++,
-                           gapTextObj);
+        textObjects.Insert(i++, gapTextObj);
 
         lastEndIdx = textObj.EndIndex;
       }
@@ -372,8 +382,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
         var tag = new HtmlTagSpan(new Span(relStartIdx + tagStartIdxExtendBehind,
                                            relStartIdx + overlap.Length - 1))
-          .WithStyle(s => SetTextStyle(s,
-                                       textObj));
+          .WithStyle(s => SetTextStyle(s, textObj));
         HtmlTags.Add(tag);
 
         // Generate extract tag
@@ -385,8 +394,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
             int extractStartIdx = shift + extractOverlap.StartIdx - span.StartIdx;
             var extractSpan = new Span(extractStartIdx,
                                        extractStartIdx + extractOverlap.Length - 1);
-            var extractTag = new HtmlTagSpan(extractSpan,
-                                             100);
+            var extractTag = new HtmlTagSpan(extractSpan, 100);
             extractTag.WithStyle(s => s.WithBackgroundColorColor(extractOverlap.Object));
 
             HtmlTags.Add(extractTag);
@@ -620,7 +628,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         Length     = obj.CharsCount;
         Font       = obj.Font;
         FontSize   = obj.FontSize;
-        FillColor  = obj.FillColor;
+        FillColor  = obj.FillColor.ToColor();
       }
 
       public TextObject(TextObject obj,

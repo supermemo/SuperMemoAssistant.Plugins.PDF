@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:46
-// Modified On:  2019/01/14 12:06
+// Created On:   2019/09/03 18:15
+// Modified On:  2020/01/17 10:28
 // Modified By:  Alexis
 
 #endregion
@@ -59,7 +59,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                                               180,
                                                                               30,
                                                                               30);
-    protected static readonly Color SMExtractColor = SMConst.Stylesheet.ExtractColor;
+    protected static readonly Color SMExtractColor            = SMConst.Stylesheet.ExtractColor;
     protected static readonly Color SMExtractTransparentColor = SMConst.Stylesheet.ExtractTransparentColor;
     protected static readonly Color PDFExtractColor = Color.FromArgb(90,
                                                                      255,
@@ -72,10 +72,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                                                              SMExtractColor.G,
                                                                                              SMExtractColor.B)),
                                                           1.0f);
-    
-    protected static Brush ExtractFillBrush { get; } = new SolidColorBrush(SMExtractColor);
+
+    protected static Brush ExtractFillBrush            { get; } = new SolidColorBrush(SMExtractColor);
     protected static Brush ExtractTransparentFillBrush { get; } = new SolidColorBrush(SMExtractTransparentColor);
-    protected static Brush OutOfExtractFillBrush { get; } = new SolidColorBrush(OutOfExtractExtractColor);
+    protected static Brush OutOfExtractFillBrush       { get; } = new SolidColorBrush(OutOfExtractExtractColor);
 
     protected static Pen ImageHighlightPen { get; } = new Pen(new SolidColorBrush(Color.FromRgb(77,
                                                                                                 97,
@@ -197,8 +197,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       foreach (var selArea in SelectedAreas)
         if (selArea.PageIndex == pageIndex)
         {
-          var deviceRec = PageToDeviceRect(selArea.Normalized(),
-                                           pageIndex);
+          var deviceRec = PageToDeviceDoubleRect(selArea.Normalized(), pageIndex);
 
           drawingContext.DrawRectangle(ImageHighlightFillBrush,
                                        AreaBorderPen,
@@ -223,8 +222,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                       Pen             pen,
                                       Brush           brush)
     {
-      var deviceRec = PageToDeviceRect(extract.BoundingBox,
-                                       extract.PageIndex);
+      var deviceRec = PageToDeviceDoubleRect(extract.BoundingBox, extract.PageIndex);
 
       drawingContext.DrawRectangle(brush,
                                    pen,
@@ -254,10 +252,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                        0,
                        scaledPageWidth,
                        scaledPageHeight,
-                       System.Drawing.Color.FromArgb(PageBackColor.A,
-                                                     PageBackColor.R,
-                                                     PageBackColor.G,
-                                                     PageBackColor.B));
+                       new FS_COLOR(PageBackColor.A,
+                                    PageBackColor.R,
+                                    PageBackColor.G,
+                                    PageBackColor.B));
 
           //Render part of page into bitmap;
           page.Render(bmp,
@@ -271,20 +269,20 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           fullRender = new Bitmap(bmp.Image);
         }
 
-        var pt1 = page.PageToDevice(0,
-                                    0,
-                                    scaledPageWidth,
-                                    scaledPageHeight,
-                                    page.Rotation,
-                                    (float)lt.X,
-                                    (float)lt.Y);
-        var pt2 = page.PageToDevice(0,
-                                    0,
-                                    scaledPageWidth,
-                                    scaledPageHeight,
-                                    page.Rotation,
-                                    (float)rb.X,
-                                    (float)rb.Y);
+        var pt1 = page.PageToDeviceEx(0,
+                                      0,
+                                      scaledPageWidth,
+                                      scaledPageHeight,
+                                      page.Rotation,
+                                      (float)lt.X,
+                                      (float)lt.Y);
+        var pt2 = page.PageToDeviceEx(0,
+                                      0,
+                                      scaledPageWidth,
+                                      scaledPageHeight,
+                                      page.Rotation,
+                                      (float)rb.X,
+                                      (float)rb.Y);
 
         if (pt1.X > pt2.X)
         {
@@ -346,26 +344,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return rects;
     }
 
-    protected Rect PageToDeviceRect(Rectangle rc,
-                                    int       pageIndex)
+    protected Rect PageToDeviceDoubleRect(FS_RECTF rc,
+                                          int      pageIndex)
     {
-      var pt1 = PageToDevice(rc.Left,
-                             rc.Top,
-                             pageIndex);
-      var pt2 = PageToDevice(rc.Right,
-                             rc.Bottom,
-                             pageIndex);
-      int x = pt1.X < pt2.X ? pt1.X : pt2.X; // * Helpers.Dpi / 72;
-      int y = pt1.Y < pt2.Y ? pt1.Y : pt2.Y; // * Helpers.Dpi / 72;
-      int w = pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X; // * Helpers.Dpi / 72;
-      int h = pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y; // * Helpers.Dpi / 72;
-      return new Rect( /*Helpers.PixelsToUnits(*/x /*)*/,
-                                                 /*Helpers.PixelsToUnits(*/
-                                                 y /*)*/,
-                                                 /*Helpers.PixelsToUnits(*/
-                                                 w /*)*/,
-                                                 /*Helpers.PixelsToUnits(*/
-                                                 h /*)*/);
+      var pt1 = PageToDevice(rc.left, rc.top, pageIndex);
+      var pt2 = PageToDevice(rc.right, rc.bottom, pageIndex);
+      int x   = Helpers.UnitsToPixels(pt1.X < pt2.X ? pt1.X : pt2.X);
+      int y   = Helpers.UnitsToPixels(pt1.Y < pt2.Y ? pt1.Y : pt2.Y);
+      int w   = Helpers.UnitsToPixels(pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X);
+      int h   = Helpers.UnitsToPixels(pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y);
+      return new Rect(x, y, w, h);
     }
 
     protected static DrawingBrush CreateHatchedBrush()

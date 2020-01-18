@@ -40,19 +40,27 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
   {
     #region Methods
 
+    public static bool Contains(this FS_RECTF rect,
+                                float         x,
+                                float         y)
+    {
+      return rect.left <= x && x <= rect.right
+        && rect.bottom <= y && y <= rect.top;
+    }
+
     /// <summary>
     ///   Checks whether rect1 and rect2 are next to each other, or intersecting along X.
     ///   Assumes <paramref name="rect1" /> before <paramref name="rect2" />.
     /// </summary>
     /// <param name="rect1"></param>
     /// <param name="rect2"></param>
-    /// <param name="tolerence">Tolerence for gauging distance</param>
+    /// <param name="tolerance">Tolerence for gauging distance</param>
     /// <returns></returns>
     public static bool IsAdjacentAlongXWith(this FS_RECTF rect1,
                                             FS_RECTF      rect2,
-                                            float         tolerence)
+                                            float         tolerance)
     {
-      return rect1.right + tolerence >= rect2.left;
+      return rect1.right + tolerance >= rect2.left;
     }
 
     /// <summary>

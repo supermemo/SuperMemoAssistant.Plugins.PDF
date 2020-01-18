@@ -70,7 +70,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     private int _ignoreChanges = 0;
 
-    protected DelayedTask _saveTask;
+    protected readonly DelayedTask _saveTask;
 
 
     protected PDFCfg                                 Config                 => PDFState.Instance.Config;
@@ -86,7 +86,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     public IPDFViewer()
     {
-      _smoothSelection = true;
+      _smoothSelection = SmoothSelection.ByCharacter;
       _saveTask        = new DelayedTask(SaveDelayed);
     }
 
@@ -135,8 +135,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);
       PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
-      PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex,
-                                                                   e.BoundingBox));
+      PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
       PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
 
       GenerateOutOfExtractHighlights();

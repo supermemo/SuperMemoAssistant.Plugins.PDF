@@ -32,6 +32,7 @@
 
 using System.Drawing;
 using Newtonsoft.Json;
+using Patagames.Pdf;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
@@ -43,8 +44,25 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     public int       PageIndex   { get; set; }
     [JsonProperty(PropertyName = "OI")]
     public int       ObjectIndex { get; set; }
+    
+    [JsonProperty(PropertyName = "BB2")]
+    public FS_RECTF BoundingBox {get;set;}
+
     [JsonProperty(PropertyName = "BB")]
-    public Rectangle BoundingBox { get; set; }
+    public Rectangle BoundingBoxLegacy
+    {
+      set => BoundingBox = new FS_RECTF(
+        value.Left,
+        value.Top,
+        value.Right,
+        value.Bottom);
+    }
+
+    public bool ShouldSerializeLegacyBoundingBox()
+    {
+      return false;
+    }
+
 
     #endregion
 

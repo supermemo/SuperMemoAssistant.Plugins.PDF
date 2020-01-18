@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows;
+using Patagames.Pdf;
 using Patagames.Pdf.Net;
 using Patagames.Pdf.Net.Controls.Wpf;
 using SuperMemoAssistant.Extensions;
@@ -116,12 +117,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
 
       // Text extract
-      if (string.IsNullOrWhiteSpace(SelectedText) == false)
-      {
-        string text = GetSelectedTextHtml();
+      var hasTextSelection = string.IsNullOrWhiteSpace(SelectedText) == false;
+      var hasTextOcr = selTextAreas.Any();
 
-        contents.Add(new TextContent(true,
-                                     text));
+      if (hasTextSelection)
+      {
         txtExtract = true;
 
         foreach (var selInfo in SelectInfos)
@@ -129,15 +129,21 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             pageIndices.Add(p);
       }
 
-      if (selTextAreas.Any())
+      if (hasTextOcr)
       {
-        var text = string.Join("\r\n<br/>[...] ",
-                               selTextAreas.Select(a => a.OcrText));
-        contents.Add(new TextContent(true,
-                                     text));
+        //var text = string.Join("\r\n<br/>[...] ",
+        //                       selTextAreas.Select(a => a.OcrText));
+        //contents.Add(new TextContent(true, text));
 
         foreach (var selArea in selTextAreas)
           pageIndices.Add(selArea.PageIndex);
+      }
+
+      if (hasTextSelection || hasTextOcr)
+      {
+        string text = GetSelectedTextHtml();
+
+        contents.Add(new TextContent(true, text));
       }
 
       // Generate extract
@@ -306,8 +312,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                    SMExtractColor);
     }
 
-    private void AddImgExtractHighlight(int       pageIndex,
-                                        Rectangle boundingBox)
+    private void AddImgExtractHighlight(int      pageIndex,
+                                        FS_RECTF boundingBox)
     {
       var pageHighlights = ImageExtractHighlights
         .SafeGet(pageIndex,

@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:45
-// Modified On:  2018/12/30 01:51
+// Created On:   2019/09/03 18:15
+// Modified On:  2020/01/17 10:20
 // Modified By:  Alexis
 
 #endregion
@@ -31,11 +31,12 @@
 
 
 using System;
-using System.Drawing;
+using Patagames.Pdf;
+using SuperMemoAssistant.Plugins.PDF.Utils.Web;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
-  public class PDFAreaSelection
+  public class PDFAreaSelection : ITextContent
   {
     #region Constructors
 
@@ -79,6 +80,16 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
       return $"area extract page {PageIndex}";
     }
 
+    /// <inheritdoc />
+    public void Append(HtmlBuilder builder)
+    {
+      if (Type != AreaType.Ocr)
+        throw new NotSupportedException("Append called on a non OCR area");
+
+      if (IsValid())
+        builder.Append(OcrText);
+    }
+
     #endregion
 
 
@@ -86,21 +97,17 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
 
     #region Methods
 
-    public Rectangle Normalized()
+    public FS_RECTF Normalized()
     {
-      double x1 = Math.Min(X1,
-                           X2);
-      double x2 = Math.Max(X1,
-                           X2);
-      double y1 = Math.Min(Y1,
-                           Y2);
-      double y2 = Math.Max(Y1,
-                           Y2);
+      double x1 = Math.Min(X1, X2);
+      double x2 = Math.Max(X1, X2);
+      double y1 = Math.Min(Y1, Y2);
+      double y2 = Math.Max(Y1, Y2);
 
-      return new Rectangle((int)x1,
-                           (int)y1,
-                           (int)(x2 - x1),
-                           (int)(y2 - y1));
+      return new FS_RECTF(x1,
+                          y1,
+                          x2,
+                          y2);
     }
 
     public (System.Windows.Point, System.Windows.Point) NormalizedPoints()
@@ -119,7 +126,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
               new System.Windows.Point(x2,
                                        y2));
     }
-    
+
     public bool IsValid()
     {
       return Type == AreaType.Normal
