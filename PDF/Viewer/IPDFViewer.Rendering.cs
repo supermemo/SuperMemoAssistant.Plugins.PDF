@@ -306,10 +306,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           fullRender.PixelFormat
         );
       }
+      catch (OutOfMemoryException ex)
+      {
+        LogTo.Warning(ex, $"Ran out of memory while rendering PDF area: page {pageIndex}, {lt}:{rb}");
+        return null;
+      }
       catch (Exception ex)
       {
-        LogTo.Error(ex,
-                    $"Failed to render PDF area: page {pageIndex}, {lt}:{rb}");
+        LogTo.Error(ex, $"Failed to render PDF area: page {pageIndex}, {lt}:{rb}");
         return null;
       }
     }
