@@ -518,7 +518,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
         mod |= KeyModifiers.Alt;
       if (Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin))
-        mod |= KeyModifiers.Win;
+        mod |= KeyModifiers.Meta;
 
       return mod;
     }
