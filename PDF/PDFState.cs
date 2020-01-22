@@ -205,8 +205,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     private void EnsurePdfWindow()
     {
       if (PdfWindow == null)
-        SyncContext.Send(CreatePdfWindow,
-                         null);
+        SyncContext.Send(CreatePdfWindow, null);
     }
 
     private void CreatePdfWindow(object _)

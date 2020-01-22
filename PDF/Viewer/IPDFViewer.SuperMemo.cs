@@ -77,8 +77,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         var imgObj           = (PdfImageObject)Document.Pages[selImage.PageIndex].PageObjects[selImage.ObjectIndex];
         var imgRegistryTitle = TitleOrFileName + $": {selImage}";
 
-        var content = CreateImageContent(imgObj.Bitmap.Image,
-                                         imgRegistryTitle);
+        var content = CreateImageContent(imgObj.Bitmap.Image, imgRegistryTitle);
 
         if (content != null)
         {
@@ -174,6 +173,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         if (ret)
         {
+          SelectInfo lastSelInfo = default;
+
           foreach (var imgExtract in imgExtracts)
           {
             PDFElement.SMImgExtracts.Add(imgExtract);
@@ -182,14 +183,24 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           }
 
           if (txtExtract)
+          {
             foreach (var selInfo in SelectInfos)
             {
               PDFElement.SMExtracts.Add(selInfo);
               AddSMExtractHighlight(selInfo);
             }
 
+            lastSelInfo = SelectInfo;
+          }
+
           Save(false);
           DeselectAll();
+
+          if (txtExtract)
+          {
+            _selectInfo.StartPage = _selectInfo.EndPage = lastSelInfo.StartPage;
+            _selectInfo.StartIndex = _selectInfo.EndIndex = lastSelInfo.StartIndex;
+          }
         }
       }
 
