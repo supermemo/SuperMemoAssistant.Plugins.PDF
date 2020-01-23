@@ -52,6 +52,7 @@ Incremental PDF for SuperMemo
 ### View Modes
 
 ![View Modes](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/PDF-ViewModes.png)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsupermemo%2FSuperMemoAssistant.Plugins.PDF.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsupermemo%2FSuperMemoAssistant.Plugins.PDF?ref=badge_shield)
 
 - 1: Toggle inter-page margin
 - 2: Single page mode
@@ -59,3 +60,7 @@ Incremental PDF for SuperMemo
 - 4: Continuous horizontal page mode
 - 5: Grid mode
 - 6: Book mode
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsupermemo%2FSuperMemoAssistant.Plugins.PDF.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsupermemo%2FSuperMemoAssistant.Plugins.PDF?ref=badge_large)
