@@ -113,8 +113,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     {
       IControlHtml ctrlHtml = Svc.SM.UI.ElementWdw.ControlGroup.GetFirstHtmlControl();
 
-      PDFState.Instance.OnElementChanged(e.NewElement,
-                                         ctrlHtml);
+      PDFState.Instance.OnElementChanged(e.NewElement, ctrlHtml);
     }
 
     #endregion
