@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -21,8 +21,7 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:46
-// Modified On:  2019/02/22 13:43
+// Modified On:  2020/01/29 12:37
 // Modified By:  Alexis
 
 #endregion
@@ -63,7 +62,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var selImages     = SelectedImages;
       var selImageAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Normal);
       var selTextAreas  = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Ocr).ToList();
-      var pageIndices = new HashSet<int>();
+      var pageIndices   = new HashSet<int>();
 
       // Image extract
       foreach (var selImage in selImages)
@@ -117,7 +116,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       // Text extract
       var hasTextSelection = string.IsNullOrWhiteSpace(SelectedText) == false;
-      var hasTextOcr = selTextAreas.Any();
+      var hasTextOcr       = selTextAreas.Any();
 
       if (hasTextSelection)
       {
@@ -155,20 +154,22 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                    .Distinct()
                                    .Select(b => $"({b.ToHierarchyString()})");
         var bookmarksStr = StringEx.Join(" ; ", bookmarks);
+        var parentEl     = Svc.SM.Registry.Element[PDFElement.ElementId];
 
         ret = Svc.SM.Registry.Element.Add(
           out _,
           ElemCreationFlags.CreateSubfolders,
           new ElementBuilder(ElementType.Topic,
                              contents.ToArray())
-            .WithParent(Svc.SM.Registry.Element[PDFElement.ElementId])
+            .WithParent(parentEl)
+            .WithConcept(parentEl.Concept)
             .WithLayout(Config.Layout)
             .WithPriority(Config.SMExtractPriority)
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
             .WithForcedGeneratedTitle()
             .DoNotDisplay()
         );
-        
+
         Window.GetWindow(this)?.Activate();
 
         if (ret)
@@ -198,7 +199,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
           if (txtExtract)
           {
-            _selectInfo.StartPage = _selectInfo.EndPage = lastSelInfo.StartPage;
+            _selectInfo.StartPage  = _selectInfo.EndPage  = lastSelInfo.StartPage;
             _selectInfo.StartIndex = _selectInfo.EndIndex = lastSelInfo.StartIndex;
           }
         }
