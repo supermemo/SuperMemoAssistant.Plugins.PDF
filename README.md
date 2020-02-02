@@ -13,8 +13,6 @@
 
 You can now do all of this *and more*, right in SuperMemo. **[Get started now](https://www.supermemo.wiki/sma/) !**
 
-<br />
-
 ### Reading PDF in SuperMemo
 
 #### The PDF plugin unlocks the powers of SuperMemo for PDF files and books.
