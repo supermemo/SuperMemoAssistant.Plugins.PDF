@@ -1,6 +1,19 @@
-![Incremental PDF Plugin](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/SMA-Incremental-PDF.jpg)
+## SuperMemo Assistant PDF plugin
 
-## SuperMemoAssistant.Plugins.PDF
+#### What is it?
+
+**SuperMemo Assistant** supercharges your [*SuperMemo*](https://super-memo.com/supermemo18.html) with powerful features:
+
+<img src="https://www.supermemo.wiki/sma/content/images/icons/robot-128.png" align="right" />
+
+> - Do you want to incrementally read <strong>PDF</strong> files ?
+> - Would <strong>Chrome</strong> or <strong>Firefox</strong> be more convenient to import web articles ?
+> - Do you need **LaTeX** to display scientific formulas ?
+> - Or to quickly lookup word definitions from the **dictionary** ?
+
+You can now do all of this *and more*, right in SuperMemo !
+
+![Incremental PDF Plugin](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/SMA-Incremental-PDF.jpg)
 
 Incremental PDF for SuperMemo
 
