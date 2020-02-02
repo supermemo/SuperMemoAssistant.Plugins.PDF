@@ -2,7 +2,7 @@
 
 ### What is it?
 
-**SuperMemo Assistant** supercharges your [*SuperMemo*](https://super-memo.com/supermemo18.html) with powerful features:
+**[SuperMemo Assistant](https://www.supermemo.wiki/sma/)** supercharges your [*SuperMemo*](https://super-memo.com/supermemo18.html) with powerful features:
 
 <img src="https://www.supermemo.wiki/sma/content/images/icons/robot-128.png" align="right" />
 
