@@ -17,17 +17,15 @@ You can now do all of this *and more*, right in SuperMemo. **[Get started now](h
 
 ### Reading PDF in SuperMemo
 
-<hr />
+#### The PDF plugin unlocks the powers of SuperMemo for PDF files and books.
+
+> - Extract text, images & snapshots
+> - Built-in OCR (formulas & text)
+> - Built-in Dictionary
+> - Text format is preserved
+> - Multi-selection with <kbd>ctrl</kbd>
 
 ![Incremental PDF Plugin](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/SMA-Incremental-PDF.jpg)
-
-> **The PDF plugin unlocks the powers of SuperMemo for PDF files and books.**
-
-- Extract text, images & snapshots
-- Built-in OCR (formulas & text)
-- Built-in Dictionary
-- Text format is preserved
-- Multi-selection with <kbd>ctrl</kbd>
 
 ### Keyboard & Mouse controls
 
