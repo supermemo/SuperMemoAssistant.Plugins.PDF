@@ -1,6 +1,6 @@
-## SuperMemo Assistant PDF plugin
+## SuperMemo Assistant
 
-#### What is it?
+### What is it?
 
 **SuperMemo Assistant** supercharges your [*SuperMemo*](https://super-memo.com/supermemo18.html) with powerful features:
 
@@ -11,11 +11,17 @@
 > - Do you need **LaTeX** to display scientific formulas ?
 > - Or to quickly lookup word definitions from the **dictionary** ?
 
-You can now do all of this *and more*, right in SuperMemo !
+You can now do all of this *and more*, right in SuperMemo. **[Get started now](https://www.supermemo.wiki/sma/) !**
+
+<br />
+
+### Reading PDF in SuperMemo
+
+<hr />
 
 ![Incremental PDF Plugin](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/SMA-Incremental-PDF.jpg)
 
-Incremental PDF for SuperMemo
+The PDF plugin unlocks the powers of SuperMemo for PDF files and books.
 
 ### Keyboard & Mouse controls
 
