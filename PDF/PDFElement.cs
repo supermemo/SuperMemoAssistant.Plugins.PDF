@@ -36,6 +36,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Anotar.Serilog;
@@ -202,8 +203,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           return CreationResult.FailUnknown;
         }
 
-        var binMems = Svc.SM.Registry.Binary.FindByName(new Regex(Regex.Escape(fileName) + ".*",
-                                                                   RegexOptions.IgnoreCase)).ToList();
+        var binMems = Svc.SM.Registry.Binary.FindByName(
+          new Regex(Regex.Escape(fileName) + ".*", RegexOptions.IgnoreCase)).ToList();
 
         if (binMems.Any())
         {
@@ -245,7 +246,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         if (binMem == null)
         {
           int binMemId = Svc.SM.Registry.Binary.AddMember(filePath,
-                                                           fileName);
+                                                          fileName);
 
           if (binMemId < 0)
             return CreationResult.FailBinaryRegistryInsertionFailed;
@@ -253,10 +254,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           binMem = Svc.SM.Registry.Binary[binMemId];
         }
       }
+      catch (RemotingException)
+      {
+        return CreationResult.FailUnknown;
+      }
       catch (Exception ex)
       {
-        LogTo.Error(ex,
-                    "Exception thrown while creating new PDF element");
+        LogTo.Error(ex, "Exception thrown while creating new PDF element");
         return CreationResult.FailUnknown;
       }
 
@@ -325,8 +329,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       }
       catch (Exception ex)
       {
-        LogTo.Error(ex,
-                    "Exception thrown while creating new PDF element");
+        LogTo.Error(ex, "Exception thrown while creating new PDF element");
         return CreationResult.FailUnknown;
       }
 

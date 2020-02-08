@@ -102,8 +102,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         var imgRegistryTitle = TitleOrFileName + $": {selArea}";
 
-        var content = CreateImageContent(img,
-                                         imgRegistryTitle);
+        var content = CreateImageContent(img, imgRegistryTitle);
 
         if (content != null)
         {
@@ -179,8 +178,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           foreach (var imgExtract in imgExtracts)
           {
             PDFElement.SMImgExtracts.Add(imgExtract);
-            AddImgExtractHighlight(imgExtract.PageIndex,
-                                   imgExtract.BoundingBox);
+            AddImgExtractHighlight(imgExtract.PageIndex, imgExtract.BoundingBox);
           }
 
           if (txtExtract)
@@ -208,8 +206,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return ret;
     }
 
-    protected ContentBase CreateImageContent(Image  image,
-                                             string title)
+    protected ContentBase CreateImageContent(Image  image, string title)
     {
       if (image == null)
         return null;

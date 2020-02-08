@@ -33,8 +33,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using Anotar.Serilog;
 using Patagames.Pdf;
 using Patagames.Pdf.Enums;
 using Patagames.Pdf.Net;
@@ -119,8 +121,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var  keyMod = GetKeyboardModifiers();
       bool ctrl   = keyMod.HasFlag(KeyModifiers.Ctrl);
 
-      if (ctrl)
-        if (IsTextSelectionValid(out var selInfo))
+      if (ctrl && IsTextSelectionValid(out var selInfo))
           SelectInfoList.Add(selInfo);
 
       base.ProcessMouseDoubleClickForSelectTextTool(pagePoint, pageIndex);
@@ -398,7 +399,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           {
             SelectedTextList.Add(SelectedArea);
 
-            OcrSelectedArea().ContinueWith(
+            OcrSelectedArea()?.ContinueWith(
               mathPix =>
               {
                 if (mathPix?.Result == null)
@@ -613,55 +614,44 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected void CopySelectionToClipboard()
     {
-      /*
-      int selTypeCount = 0;
-
-      if (SelectedImage != null)
-        selTypeCount++;
-
-      if (SelectedArea != null)
-        selTypeCount++;
-
-      if (string.IsNullOrWhiteSpace(SelectedText) == false)
-        selTypeCount++;
-
-      if (selTypeCount > 0)
+      try
       {
-        CopyMultiSelectionToClipboard();
+        if (string.IsNullOrWhiteSpace(SelectedText) == false)
+          Clipboard.SetText(SelectedText, TextDataFormat.UnicodeText);
+
+        if (SelectedImage != null)
+        {
+          PdfImageObject imgObject = (PdfImageObject)Document
+                                                     .Pages[SelectedImage.PageIndex]
+                                                     .PageObjects[SelectedImage.ObjectIndex];
+
+          if (imgObject == null)
+            return;
+
+          ImageWrapper imageWrapper = new ImageWrapper(imgObject.Bitmap.Image);
+
+          Clipboard.SetImage(imageWrapper.ToBitmapImage());
+        }
+
+        else if (SelectedArea != null)
+        {
+          var (lt, rb) = SelectedArea.NormalizedPoints();
+          var img = RenderArea(SelectedArea.PageIndex,
+                               lt,
+                               rb);
+
+          if (img == null)
+            return;
+
+          ImageWrapper imageWrapper = new ImageWrapper(img);
+
+          Clipboard.SetImage(imageWrapper.ToBitmapImage());
+        }
       }
-
-      else*/
-      if (string.IsNullOrWhiteSpace(SelectedText) == false)
-        Clipboard.SetText(SelectedText,
-                          TextDataFormat.UnicodeText);
-
-      if (SelectedImage != null)
+      catch (COMException)
       {
-        PdfImageObject imgObject = (PdfImageObject)Document
-                                                   .Pages[SelectedImage.PageIndex]
-                                                   .PageObjects[SelectedImage.ObjectIndex];
-
-        if (imgObject == null)
-          return;
-
-        ImageWrapper imageWrapper = new ImageWrapper(imgObject.Bitmap.Image);
-
-        Clipboard.SetImage(imageWrapper.ToBitmapImage());
-      }
-
-      else if (SelectedArea != null)
-      {
-        var (lt, rb) = SelectedArea.NormalizedPoints();
-        var img = RenderArea(SelectedArea.PageIndex,
-                             lt,
-                             rb);
-
-        if (img == null)
-          return;
-
-        ImageWrapper imageWrapper = new ImageWrapper(img);
-
-        Clipboard.SetImage(imageWrapper.ToBitmapImage());
+        // TODO: fix System.Runtime.InteropServices.COMException: OpenClipboard Failed (Exception from HRESULT: 0x800401D0 (CLIPBRD_E_CANT_OPEN))
+        LogTo.Warning("Couldn't copy text selection to clipboard. Windows API threw an exception.");
       }
     }
 

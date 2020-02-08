@@ -368,21 +368,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         new GeometryDrawing(
           ImageHighlightFillBrush,
           null,
-          new RectangleGeometry(new Rect(0,
-                                         0,
-                                         8,
-                                         4))
+          new RectangleGeometry(new Rect(0, 0, 8, 4))
         );
 
       var dotsGeomGroup = new GeometryGroup();
-      dotsGeomGroup.Children.Add(new RectangleGeometry(new Rect(0,
-                                                                0,
-                                                                1,
-                                                                1)));
-      dotsGeomGroup.Children.Add(new RectangleGeometry(new Rect(4,
-                                                                2,
-                                                                1,
-                                                                1)));
+      dotsGeomGroup.Children.Add(new RectangleGeometry(new Rect(0, 0, 1, 1)));
+      dotsGeomGroup.Children.Add(new RectangleGeometry(new Rect(4, 2, 1, 1)));
 
       GeometryDrawing dots = new GeometryDrawing(Brushes.WhiteSmoke,
                                                  null,
@@ -394,10 +385,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       brush.Drawing       = drawingGroup;
       brush.ViewportUnits = BrushMappingMode.Absolute;
-      brush.Viewport = new Rect(0,
-                                0,
-                                8,
-                                4);
+      brush.Viewport = new Rect(0, 0, 8, 4);
       brush.TileMode = TileMode.Tile;
 
       return brush;

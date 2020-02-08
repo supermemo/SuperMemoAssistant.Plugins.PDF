@@ -30,6 +30,7 @@
 
 
 
+using System.Runtime.Remoting;
 using System.Windows;
 using Anotar.Serilog;
 using Patagames.Pdf.Net;
@@ -111,9 +112,13 @@ namespace SuperMemoAssistant.Plugins.PDF
     [LogToErrorOnException]
     public void OnElementChanged(SMDisplayedElementChangedArgs e)
     {
-      IControlHtml ctrlHtml = Svc.SM.UI.ElementWdw.ControlGroup.GetFirstHtmlControl();
+      try
+      {
+        IControlHtml ctrlHtml = Svc.SM.UI.ElementWdw.ControlGroup.GetFirstHtmlControl();
 
-      PDFState.Instance.OnElementChanged(e.NewElement, ctrlHtml);
+        PDFState.Instance.OnElementChanged(e.NewElement, ctrlHtml);
+      }
+      catch (RemotingException) { }
     }
 
     #endregion
