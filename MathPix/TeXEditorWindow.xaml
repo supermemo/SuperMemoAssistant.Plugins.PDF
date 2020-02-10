@@ -52,6 +52,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
 
             <Button Name="BtnReset"
@@ -61,15 +62,21 @@
                     Content="Reset"
                     Click="BtnReset_Click" />
 
-            <Button Name="BtnCancel"
+            <Button Name="BtnInsertTags"
                     Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Content="Insert Tags"
+                    Click="BtnInsertTags_Click" />
+          
+            <Button Name="BtnCancel"
+                    Grid.Column="2"
                     VerticalAlignment="Center"
                     Margin="6 0 6 0"
                     Content="Cancel"
                     Click="BtnCancel_Click" />
 
             <Button Name="BtnOk"
-                    Grid.Column="2"
+                    Grid.Column="3"
                     VerticalAlignment="Center"
                     Content="Ok"
                     Click="BtnOk_Click" />

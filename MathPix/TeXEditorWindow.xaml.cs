@@ -127,6 +127,11 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
       Close();
     }
 
+    private void BtnInsertTags_Click(object sender, RoutedEventArgs e)
+    {
+      TeXInput.SelectedText = "[/$][$]";
+    }
+
     private void TeXInput_TextChanged(object                                       sender,
                                       System.Windows.Controls.TextChangedEventArgs e)
     {
