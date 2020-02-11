@@ -99,6 +99,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
                 SelectionType = SelectionType.RadioButtonsInline)]
     public ImageStretchMode ImageStretchType { get; set; } = ImageStretchMode.Proportional;
 
+    [Field(Name = "Add HTML component to extracts containing only images?")]
+    public bool ImageExtractAddHtml { get; set; } = false;
+
     [Field(Name = "Default view mode")]
     [SelectFrom(typeof(ViewModes),
                 SelectionType = SelectionType.ComboBox)]

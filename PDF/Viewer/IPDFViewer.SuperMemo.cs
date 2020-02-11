@@ -142,6 +142,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         contents.Add(new TextContent(true, text));
       }
+      else if (Config.ImageExtractAddHtml)
+      {
+        string text = string.Empty;
+        contents.Add(new TextContent(true, text));
+      }
 
       // Generate extract
       if (contents.Count > 0)
