@@ -138,7 +138,14 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
 
     private void BtnInsertTags_Click(object sender, RoutedEventArgs e)
     {
-      TeXInput.SelectedText = "[/$][$]";
+      if (string.IsNullOrEmpty(TeXInput.SelectedText))
+      {
+        TeXInput.SelectedText = "[/$][$]";
+      }
+      else
+      {
+        TeXInput.SelectedText = $"[/$][$]{TeXInput.SelectedText}[/$][$]";
+      }
     }
 
     private void TeXInput_TextChanged(object                                       sender,
