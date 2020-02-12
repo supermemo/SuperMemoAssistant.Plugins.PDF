@@ -107,6 +107,15 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
                            new object[] { "Preview.Update();" });
       _ignoreTextChange = false;
     }
+    
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.KeyboardDevice.Modifiers == ModifierKeys.Alt
+          && e.SystemKey == Key.T)
+      {
+        BtnInsertTags_Click(sender, e);
+      }
+    }
 
     private void BtnReset_Click(object          sender,
                                 RoutedEventArgs e)
