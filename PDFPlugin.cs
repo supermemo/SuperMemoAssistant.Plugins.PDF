@@ -87,7 +87,10 @@ namespace SuperMemoAssistant.Plugins.PDF
       PDFState.Instance.CaptureContext();
 
       if (!PdfCommon.IsInitialize)
+      {
+        // TODO: Specify dll path depending on IsDevelopmentPlugin ?
         PdfCommon.Initialize(PDFLicense.LicenseKey);
+      }
 
       Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
 

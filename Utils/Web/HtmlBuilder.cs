@@ -53,7 +53,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
     private PdfDocument Document   { get; }
     private PDFElement  PdfElement { get; }
+    private PDFCfg Config { get; }
 
+    private string Ellipse => $"\r\n{Config.InterParagraphEllipse}";
 
     private Dictionary<int, List<Span<Color>>> ExtractSpans     { get; } = new Dictionary<int, List<Span<Color>>>();
     private Dictionary<int, List<Span>>        ExtractSpansBase { get; } = new Dictionary<int, List<Span>>();
@@ -68,10 +70,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
     #region Constructors
 
     public HtmlBuilder(PdfDocument document,
-                       PDFElement  pdfElement)
+                       PDFElement  pdfElement,
+                       PDFCfg pdfCfg)
     {
       Document   = document;
       PdfElement = pdfElement;
+      Config = pdfCfg;
 
       GenerateExtractSpans();
       SpanComparer = new Span.PositionalComparer();
@@ -256,7 +260,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
     public void Append(string content)
     {
       if (Html.Length > 0)
-        Html.Append("\r\n[...] ");
+        Html.Append(Ellipse);
 
       var tag = new HtmlTagSpan(new Span(Html.Length, Html.Length + content.Length - 1));
 
@@ -284,7 +288,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
       for (int pageIdx = selInfo.StartPage; pageIdx <= selInfo.EndPage; pageIdx++)
       {
         if (str.Length > 0)
-          str.Append("\r\n[...] ");
+          str.Append(Ellipse);
 
         int startIdx = 0;
 

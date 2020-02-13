@@ -128,10 +128,6 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (hasTextOcr)
       {
-        //var text = string.Join("\r\n<br/>[...] ",
-        //                       selTextAreas.Select(a => a.OcrText));
-        //contents.Add(new TextContent(true, text));
-
         foreach (var selArea in selTextAreas)
           pageIndices.Add(selArea.PageIndex);
       }

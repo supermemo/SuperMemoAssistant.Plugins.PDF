@@ -61,8 +61,10 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
   {
     #region Properties & Fields - Public
 
+#if false
     [Field(Name = "Copy PDF files to collection")]
     public bool CopyDocumentToFS { get; set; } = true;
+#endif
 
     [Field(Name                                    = "Layout")]
     [SelectFrom("{Binding Layouts}", SelectionType = SelectionType.ComboBox)]
@@ -93,6 +95,9 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
            0xFFF,
            StrictValidation = true)]
     public int LearnForcedScheduleInterval { get; set; } = 1;
+
+    [Field(Name = "Inter paragraph Ellipse")]
+    public string InterParagraphEllipse { get; set; } = PDFConst.DefaultInterParagraphEllipse;
 
     [Field(Name = "Default Image Stretch Type")]
     [SelectFrom(typeof(ImageStretchMode),
@@ -158,38 +163,38 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [JsonIgnore]
     public IReadOnlyDictionary<string, OxfordDictionary> MonolingualDictionaries => DictionaryConst.MonolingualDictionaries;
 
-    #endregion
+#endregion
 
 
 
 
-    #region Properties Impl - Public
+#region Properties Impl - Public
 
     // ReSharper disable once UnassignedGetOnlyAutoProperty
     [JsonIgnore]
     public bool IsChanged { get; set; }
 
-    #endregion
+#endregion
 
 
 
 
-    #region Methods Impl
+#region Methods Impl
 
     public override string ToString()
     {
       return "PDF";
     }
 
-    #endregion
+#endregion
 
 
 
 
-    #region Events
+#region Events
 
     public event PropertyChangedEventHandler PropertyChanged;
 
-    #endregion
+#endregion
   }
 }

@@ -167,8 +167,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         var selTexts = SelectInfos.Select(SelectionToText);
 
-        ret = string.Join("\r\n[...]",
-                          selTexts);
+        ret = string.Join($"\r\n{Config.InterParagraphEllipse}", selTexts);
       }
 
       SetValue(SelectedTextProperty, ret);

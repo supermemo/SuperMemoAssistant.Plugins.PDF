@@ -53,11 +53,11 @@ namespace SuperMemoAssistant.Plugins.PDF
     public static readonly Regex RE_Element = new Regex("<DIV id=pdf-element-data>([^<]+)</DIV>",
                                                         RegexOptions.IgnoreCase);
 
-
     public const ViewModes DefaultViewMode   = ViewModes.Vertical;
     public const int       DefaultPageMargin = 4;
     public const float     DefaultZoom       = 1.0f;
 
+    public const string DefaultInterParagraphEllipse = "[...] ";
 
     public const double DefaultSMExtractPriority  = 15.0;
     public const double DefaultPDFExtractPriority = 0.0;
