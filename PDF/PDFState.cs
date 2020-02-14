@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/10 14:46
-// Modified On:  2018/12/21 03:58
+// Created On:   2020/01/23 08:17
+// Modified On:  2020/02/13 20:51
 // Modified By:  Alexis
 
 #endregion
@@ -43,7 +43,7 @@ using SuperMemoAssistant.Services;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
-  public class PDFState
+  public sealed class PDFState
   {
     #region Constants & Statics
 
@@ -56,11 +56,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     #region Properties & Fields - Non-Public
 
-    protected PDFWindow PdfWindow { get; set; }
+    private SynchronizationContext SyncContext       { get; set; }
+    private SemaphoreSlim          OpenFileSemaphore { get; } = new SemaphoreSlim(1, 1);
 
-    protected SynchronizationContext SyncContext { get; set; }
-
-    protected PDFElement LastElement { get; set; }
+    private PDFWindow  PdfWindow   { get; set; }
+    private PDFElement LastElement { get; set; }
 
     #endregion
 
@@ -132,6 +132,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       SyncContext.Post(
         _ =>
         {
+          if (OpenFileSemaphore.Wait(0) == false)
+            return;
+
           if (PdfWindow == null)
             CreatePdfWindow(null);
 
@@ -139,6 +142,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
           if (filePath != null)
             PDFElement.Create(filePath);
+
+          OpenFileSemaphore.Release();
         },
         null
       );
@@ -210,15 +215,15 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     private void CreatePdfWindow(object _)
     {
-      PdfWindow = new PDFWindow();
-      PdfWindow.Closed += PdfWindow_Closed;
+      Application.Current.MainWindow =  PdfWindow = new PDFWindow();
+      PdfWindow.Closed               += PdfWindow_Closed;
     }
 
     private void PdfWindow_Closed(object    sender,
                                   EventArgs e)
     {
-      PdfWindow.Closed -= PdfWindow_Closed;
-      PdfWindow = null;
+      PdfWindow.Closed               -= PdfWindow_Closed;
+      Application.Current.MainWindow =  PdfWindow = null;
     }
 
     #endregion
