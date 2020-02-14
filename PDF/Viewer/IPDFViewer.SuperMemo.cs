@@ -64,6 +64,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var selTextAreas  = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Ocr).ToList();
       var pageIndices   = new HashSet<int>();
 
+      string extractTitle = null;
+
       // Image extract
       foreach (var selImage in selImages)
       {
@@ -142,8 +144,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         contents.Add(new TextContent(true, text));
       }
-      else if (Config.ImageExtractAddHtml)
+      else if (Config.ImageExtractAddHtml && imgExtracts.Count > 0)
       {
+        extractTitle = $"image extract: {imgExtracts.Count} image{(imgExtracts.Count == 1 ? "" : "s")} from ";
+        foreach(var pi in pageIndices)
+        {
+          extractTitle += $"p{pi}, ";
+        }
+        extractTitle = extractTitle.TrimEnd(", ");
         string text = string.Empty;
         contents.Add(new TextContent(true, text));
       }
@@ -170,7 +178,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithLayout(Config.Layout)
             .WithPriority(Config.SMExtractPriority)
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
-            .WithForcedGeneratedTitle()
+            .WithTitle(extractTitle)
             .DoNotDisplay()
         );
 
