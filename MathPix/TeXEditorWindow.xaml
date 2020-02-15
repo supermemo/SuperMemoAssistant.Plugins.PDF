@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
-        KeyDown="Window_Keydown"
         Title="TeX Editor" Height="550" Width="660">
     <mah:MetroWindow.Resources>
         <ResourceDictionary>
@@ -67,11 +66,7 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     Click="BtnInsertTags_Click">
-              <Button.Content>
-                <TextBlock>
-                  INSERT <Underline>T</Underline>AGS
-                </TextBlock>
-              </Button.Content>
+              <AccessText>INSERT _TAGS</AccessText>
             </Button>
 
           
