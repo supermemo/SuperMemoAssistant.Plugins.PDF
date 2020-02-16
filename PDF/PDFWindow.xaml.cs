@@ -184,10 +184,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       OpenFileDialog dlg = new OpenFileDialog
       {
         DefaultExt = ".pdf",
-        Filter     = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*"
+        Filter     = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*",
+        CheckFileExists = true
       };
 
-      return dlg.ShowDialog().GetValueOrDefault(false)
+      return dlg.ShowDialog(this).GetValueOrDefault(false)
         ? dlg.FileName
         : null;
     }
