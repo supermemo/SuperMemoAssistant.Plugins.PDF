@@ -225,7 +225,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     // PDF Extracts
 
-    protected bool CreatePDFExtract()
+    protected bool CreatePDFExtract(double priority = -1)
     {
       bool ret = false;
 
@@ -263,7 +263,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     }
 
     protected bool CreatePDFExtract(SelectInfo selInfo,
-                                    string     title = null)
+                                    string     title = null,
+                                    double priority = -1)
     {
       Save(false);
 
@@ -282,7 +283,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                    PDFElement.PageMargin,
                                    PDFElement.Zoom,
                                    false,
-                                   title) == PDFElement.CreationResult.Ok;
+                                   title,
+                                   priority) == PDFElement.CreationResult.Ok;
 
       if (ret)
       {

@@ -253,7 +253,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         OnDocumentLoaded(null);
     }
 
-    public void ExtractBookmark(PdfBookmark bookmark)
+    public void ExtractBookmark(PdfBookmark bookmark, double priority = -1)
     {
       var selInfo = bookmark.GetSelection(Document);
 
@@ -261,7 +261,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         return;
 
       CreatePDFExtract(selInfo.Value,
-                       bookmark.Title);
+                       bookmark.Title,
+                       priority);
     }
 
     public void ProcessBookmark(PdfBookmark bookmark)
