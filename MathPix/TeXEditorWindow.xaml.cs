@@ -107,7 +107,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
                            new object[] { "Preview.Update();" });
       _ignoreTextChange = false;
     }
-
+    
     private void BtnReset_Click(object          sender,
                                 RoutedEventArgs e)
     {
@@ -125,6 +125,18 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
     {
       DialogResult = true;
       Close();
+    }
+
+    private void BtnInsertTags_Click(object sender, RoutedEventArgs e)
+    {
+      if (string.IsNullOrEmpty(TeXInput.SelectedText))
+      {
+        TeXInput.SelectedText = "[/$][$]";
+      }
+      else
+      {
+        TeXInput.SelectedText = $"[/$][$]{TeXInput.SelectedText}[/$][$]";
+      }
     }
 
     private void TeXInput_TextChanged(object                                       sender,
