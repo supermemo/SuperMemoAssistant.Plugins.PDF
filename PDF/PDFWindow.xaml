@@ -153,6 +153,8 @@
                                             <Separator />
                                             <MenuItem Header="PDF Extract (Ctrl+Alt+X)"
                                                       Click="TvBookmark_MenuItem_PDFExtract" />
+                                            <MenuItem Header="PDF Extract with Priority (Ctrl+Shift+X)"
+                                                      Click="TvBookmark_MenuItem_PDFExtractWithPriority"/>
                                         </ContextMenu>
                                     </StackPanel.ContextMenu>
                                 </StackPanel>
