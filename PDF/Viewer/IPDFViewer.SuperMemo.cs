@@ -51,7 +51,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
   {
     #region Methods
 
-    protected bool CreateSMExtract()
+    protected bool CreateSMExtract(double priority = -1)
     {
       bool ret = false;
 
@@ -148,6 +148,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         Save(false);
 
+        if (priority < 0 || priority > 100)
+        {
+          priority = Config.SMExtractPriority;
+        }
+
         var bookmarks = pageIndices.Select(FindBookmark)
                                    .Where(b => b != null)
                                    .Distinct()
@@ -163,7 +168,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithParent(parentEl)
             .WithConcept(parentEl.Concept)
             .WithLayout(Config.Layout)
-            .WithPriority(Config.SMExtractPriority)
+            .WithPriority(priority)
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
             .WithForcedGeneratedTitle()
             .DoNotDisplay()
@@ -205,6 +210,25 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       return ret;
     }
+
+    protected async void CreateSMExtractWithPriority()
+    {
+
+      var result = await Show.Window()
+                         .For(new Prompt<double> { Title = "Extract Priority?", Value = -1 });
+      if (!result.Model.Confirmed)
+      {
+          return;
+      }
+
+      if (result.Model.Value < 0 || result.Model.Value > 100)
+      {
+          return;
+      }
+
+      CreateSMExtract(result.Model.Value);
+    }
+
 
     protected ContentBase CreateImageContent(Image  image, string title)
     {

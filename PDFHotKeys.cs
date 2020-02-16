@@ -63,15 +63,16 @@ namespace SuperMemoAssistant.Plugins.PDF
     public const string UIToggleBookmarks  = "UIToggleBookmarks";
     public const string UIFocusViewer      = "UIFocusViewer";
     public const string UIFocusBookmarks   = "UIFocusBookmarks";
+    public const string ExtractSMWithPriority = "ExtractSMWithPriority";
 
-    #endregion
+        #endregion
 
 
 
 
-    #region Methods
+        #region Methods
 
-    public static void RegisterHotKeys()
+        public static void RegisterHotKeys()
     {
       Svc.HotKeyManager
 
@@ -99,6 +100,12 @@ namespace SuperMemoAssistant.Plugins.PDF
                         "Mark text as ignored",
                         new HotKey(Key.I, KeyModifiers.CtrlShift)
          )
+         .RegisterLocal(ExtractSMWithPriority,
+                        "Create SM extract with priority",
+                        // Alt+Shift+X wasn't working
+                        new HotKey(Key.X, KeyModifiers.CtrlAltShift)
+         )
+
 
          //
          // PDF features
