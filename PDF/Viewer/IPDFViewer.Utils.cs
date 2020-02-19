@@ -249,7 +249,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     public string GetSelectedTextHtml()
     {
-      var htmlBuilder = new HtmlBuilder(Document, PDFElement);
+      var htmlBuilder = new HtmlBuilder(Document, PDFElement, Config);
 
       foreach (var t in SelectedTextList)
         t.Append(htmlBuilder);

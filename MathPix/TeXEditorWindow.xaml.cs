@@ -103,8 +103,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
       TeXInput.Text      = _latex;
 
       Document.getElementById("MathInput").innerHTML = _latex;
-      Browser.InvokeScript("eval",
-                           new object[] { "Preview.Update();" });
+      Browser.InvokeScript("eval", new object[] { "Preview.Update();" });
       _ignoreTextChange = false;
     }
     
