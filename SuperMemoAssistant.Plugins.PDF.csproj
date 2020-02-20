@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\packages\PropertyChanged.Fody.3.2.5\build\PropertyChanged.Fody.props" Condition="Exists('..\..\..\packages\PropertyChanged.Fody.3.2.5\build\PropertyChanged.Fody.props')" />
+  <Import Project="..\..\..\packages\PropertyChanged.Fody.3.2.6\build\PropertyChanged.Fody.props" Condition="Exists('..\..\..\packages\PropertyChanged.Fody.3.2.6\build\PropertyChanged.Fody.props')" />
   <Import Project="..\..\..\packages\LoadAssembliesOnStartup.Fody.4.3.0\build\LoadAssembliesOnStartup.Fody.props" Condition="Exists('..\..\..\packages\LoadAssembliesOnStartup.Fody.4.3.0\build\LoadAssembliesOnStartup.Fody.props')" />
   <Import Project="..\..\..\packages\Anotar.Serilog.Fody.5.1.0\build\Anotar.Serilog.Fody.props" Condition="Exists('..\..\..\packages\Anotar.Serilog.Fody.5.1.0\build\Anotar.Serilog.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -57,9 +57,6 @@
     <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll</HintPath>
     </Reference>
-    <Reference Include="DeviceId, Version=4.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\DeviceId.4.5.0\lib\net40\DeviceId.dll</HintPath>
-    </Reference>
     <Reference Include="FastMember, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\FastMember.1.5.0\lib\net461\FastMember.dll</HintPath>
     </Reference>
@@ -90,22 +87,10 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="PropertyChanged, Version=3.2.5.0, Culture=neutral, PublicKeyToken=ee3ee20bcf148ddd, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\PropertyChanged.Fody.3.2.5\lib\net40\PropertyChanged.dll</HintPath>
+    <Reference Include="PropertyChanged, Version=3.2.6.0, Culture=neutral, PublicKeyToken=ee3ee20bcf148ddd, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\PropertyChanged.Fody.3.2.6\lib\net40\PropertyChanged.dll</HintPath>
     </Reference>
     <Reference Include="ReachFramework" />
-    <Reference Include="Sentry, Version=2.0.1.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Sentry.2.0.1\lib\net461\Sentry.dll</HintPath>
-    </Reference>
-    <Reference Include="Sentry.PlatformAbstractions, Version=1.1.0.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Sentry.PlatformAbstractions.1.1.0\lib\net471\Sentry.PlatformAbstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Sentry.Protocol, Version=2.0.0.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Sentry.Protocol.2.0.0\lib\net46\Sentry.Protocol.dll</HintPath>
-    </Reference>
-    <Reference Include="Sentry.Serilog, Version=2.0.1.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Sentry.Serilog.2.0.1\lib\net461\Sentry.Serilog.dll</HintPath>
-    </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Serilog.2.9.0\lib\net46\Serilog.dll</HintPath>
     </Reference>
@@ -215,6 +200,10 @@
     <Compile Include="Converters\LessOrEqualConverter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Services\SuperMemoAssistant.Services.Sentry\SuperMemoAssistant.Services.Sentry.csproj">
+      <Project>{298d380e-e3c0-4d34-a128-8a9d0a4bf196}</Project>
+      <Name>SuperMemoAssistant.Services.Sentry</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Services\SuperMemoAssistant.Services.UI\SuperMemoAssistant.Services.UI.csproj">
       <Project>{7F7B4A1F-01E1-440E-89DB-08F7D1D5A128}</Project>
       <Name>SuperMemoAssistant.Services.UI</Name>
@@ -267,7 +256,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="..\..\Services\SuperMemoAssistant.Services.Sentry\SuperMemoAssistant.Services.Sentry.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /h /i /d /c /k /e /r /y "$(TargetDir)*" "%25LocalAppData%25\SuperMemoAssistant\Plugins\Development\$(ProjectName)"</PostBuildEvent>
@@ -279,7 +267,7 @@
     <Error Condition="!Exists('..\..\..\packages\Anotar.Serilog.Fody.5.1.0\build\Anotar.Serilog.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Anotar.Serilog.Fody.5.1.0\build\Anotar.Serilog.Fody.props'))" />
     <Error Condition="!Exists('..\..\..\packages\LoadAssembliesOnStartup.Fody.4.3.0\build\LoadAssembliesOnStartup.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\LoadAssembliesOnStartup.Fody.4.3.0\build\LoadAssembliesOnStartup.Fody.props'))" />
     <Error Condition="!Exists('..\..\..\packages\Fody.6.1.0\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Fody.6.1.0\build\Fody.targets'))" />
-    <Error Condition="!Exists('..\..\..\packages\PropertyChanged.Fody.3.2.5\build\PropertyChanged.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\PropertyChanged.Fody.3.2.5\build\PropertyChanged.Fody.props'))" />
+    <Error Condition="!Exists('..\..\..\packages\PropertyChanged.Fody.3.2.6\build\PropertyChanged.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\PropertyChanged.Fody.3.2.6\build\PropertyChanged.Fody.props'))" />
   </Target>
   <Import Project="..\..\..\packages\Fody.6.1.0\build\Fody.targets" Condition="Exists('..\..\..\packages\Fody.6.1.0\build\Fody.targets')" />
 </Project>
