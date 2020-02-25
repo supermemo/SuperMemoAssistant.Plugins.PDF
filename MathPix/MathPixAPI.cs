@@ -93,8 +93,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
           metadata = metadata
         };
 
-        var httpReq = new HttpRequestMessage(HttpMethod.Post,
-                                             Url)
+        var httpReq = new HttpRequestMessage(HttpMethod.Post, Url)
         {
           Content = new StringContent(JsonConvert.SerializeObject(req),
                                       Encoding.UTF8,
@@ -120,10 +119,8 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
 
           string text = mpResp.text;
 
-          text = text.Replace("\\(",
-                              "[$]")
-                     .Replace("\\)",
-                              "[/$]");
+          text = text.Replace("\\(", "[$]")
+                     .Replace("\\)", "[/$]");
 
           ret.Confidence = mpResp.latex_confidence;
           ret.Text       = text;

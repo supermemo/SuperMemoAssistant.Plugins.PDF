@@ -52,7 +52,7 @@ namespace SuperMemoAssistant.Plugins.PDF
   {
     #region Constructors
 
-    public PDFPlugin() : base(DebuggerAttachStrategy.Never) { }
+    public PDFPlugin() : base("https://a63c3dad9552434598dae869d2026696@sentry.io/1362046") { }
 
     #endregion
 
