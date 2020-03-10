@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <version>0.0.0.0</version>
+    <authors>Alexis</authors>
+    <owners>SuperMemo</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/supermemo/SuperMemoAssistant</projectUrl>
+    <iconUrl>https://github.com/supermemo/Documentation/raw/master/docs/sma/content/images/icons/robot.ico</iconUrl>
+
+    <id>SuperMemoAssistant.Plugins.PDF</id>
+    <title>SuperMemo Assistant PDF plugin</title>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>.</description>
+    <tags>SuperMemo SuperMemoAssistant Plugin Plugins PDF</tags>
+    <copyright></copyright>
+	
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="PresentationFramework" />
+      <frameworkAssembly assemblyName="PresentationCore" />
+      <frameworkAssembly assemblyName="System.Runtime.Remoting" />
+      <frameworkAssembly assemblyName="System.Xaml" />
+      <frameworkAssembly assemblyName="WindowsBase" />
+    </frameworkAssemblies>
+
+    <dependencies>
+      <group targetFramework="net472">
+        <dependency id="Newtonsoft.Json" version="12.0.3" />
+        <dependency id="Serilog" version="2.9.0" />
+        <dependency id="SuperMemoAssistant.Services.Sentry" version="1.0.1.5" />
+        <dependency id="SuperMemoAssistant.Services.UI" version="2.0.3.3" />
+      </group>
+    </dependencies>
+  </metadata>
+
+  <files>
+    <file src="SuperMemoAssistant.Services.UI.dll" target="lib\net472" />
+  </files>
+</package>
