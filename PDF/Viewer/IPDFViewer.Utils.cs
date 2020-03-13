@@ -168,7 +168,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
               if (task == null || task.Result.Model.Confirmed == false)
                 return;
 
-              ScrollToPage(task.Result.Model.Value);
+              Dispatcher.Invoke(() => ScrollToPage(task.Result.Model.Value));
             }
           );
     }

@@ -50,11 +50,12 @@ using SuperMemoAssistant.Sys.IO.Devices;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  /// <inheritdoc/>
   public partial class IPDFViewer
   {
     #region Constants & Statics
 
-    protected const float TextSelectionSmoothTolerence = 6.0f;
+    protected const float TextSelectionSmoothTolerance = 6.0f;
 
     #endregion
 
@@ -133,6 +134,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected override int GetCharIndexAtPos(int   pageIdx,
                                              Point pagePoint)
     {
+      if (pageIdx < 0 || pageIdx >= Document.Pages.Count)
+      {
+        LogTo.Error($"Invalid pageIdx {pageIdx}");
+        return -1;
+      }
+
       return Document.Pages[pageIdx].Text.GetCharIndexAtPos(
         (int)pagePoint.X,
         (int)pagePoint.Y,
@@ -217,6 +224,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return handled;
     }
 
+    /// <summary>
+    /// Handles mouse down events (left click, right click, ...) when a document is loaded
+    /// </summary>
+    /// <param name="e">The mouse event</param>
+    /// <param name="pageIndex">The page index on which the mouse event was captured, or -1 if outside a page</param>
+    /// <param name="pagePoint">The point in the page where the mouse event occured, or default value</param>
+    /// <returns>Whether the event was processed</returns>
     protected bool OnMouseDownProcessSelection(MouseButtonEventArgs e,
                                                int                  pageIndex,
                                                Point                pagePoint)
@@ -224,8 +238,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       bool handled    = false;
       bool invalidate = false;
 
+      if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
+        return false;
+
       var                    kbMod = GetKeyboardModifiers();
-      MouseDownSelectionType selType;
+      MouseDownSelectionType selType = MouseDownSelectionType.None;
       PdfPageObject          pageObj = null;
 
       if (e.LeftButton == MouseButtonState.Pressed && e.RightButton == MouseButtonState.Pressed
@@ -272,8 +289,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                 && o.BoundingBox.Contains((float)pagePoint.X,
                                                           (float)pagePoint.Y));
 
-          // (Image or Area) Left click: if not over text
-          selType = MouseDownSelectionType.Image;
+          // (Image) Left click: if not over text
+          if (pageObj != null)
+            selType = MouseDownSelectionType.Image;
         }
 
         // (Text) Left click: if over text
@@ -587,6 +605,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         SelectedArea = null;
         SelectedAreaList.Clear();
+        CurrentSelectionTool = SelectionType.None;
         InvalidateVisual();
       }
     }
@@ -680,6 +699,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected enum MouseDownSelectionType
     {
+      None,
       Text,
       ExtendPage,
       Image,

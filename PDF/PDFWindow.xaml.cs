@@ -277,17 +277,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     public void ShowOptionDialog()
     {
-      Forge.Forms.Show.Window()
-           .For<PDFCfg>(Config)
-           .ContinueWith(
-             task =>
-             {
-               if (task == null || "save".Equals(task.Result.Action) == false)
-                 return;
+      Config.ShowWindow()
+            .ContinueWith(
+              task =>
+              {
+                if (task == null || "save".Equals(task.Result.Action) == false)
+                  return;
 
-               PDFState.Instance.SaveConfig();
-             }
-           );
+                PDFState.Instance.SaveConfig();
+              }
+            );
     }
 
     private void TvBookmarks_PreviewMouseRightButtonDown(object               sender,

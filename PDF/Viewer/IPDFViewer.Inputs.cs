@@ -155,12 +155,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         // SM Navigation
 
         case PDFHotKeys.SMPrevious:
-          ForwardKeysToSM(new HotKey(Key.Left, KeyModifiers.Ctrl));
+          ForwardKeysToSM(new HotKey(Key.Left, KeyModifiers.Alt));
           e.Handled = true;
           break;
 
         case PDFHotKeys.SMNext:
-          ForwardKeysToSM(new HotKey(Key.Right, KeyModifiers.Ctrl));
+          ForwardKeysToSM(new HotKey(Key.Right, KeyModifiers.Alt));
           e.Handled = true;
           break;
 

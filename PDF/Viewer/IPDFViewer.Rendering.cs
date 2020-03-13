@@ -328,10 +328,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         for (int j = i + 1;
              j < rects.Count && curRect.IsAdjacentAlongYWith(rects[j],
-                                                             TextSelectionSmoothTolerence);
+                                                             TextSelectionSmoothTolerance);
              j++)
           if (curRect.IsAlongsideXWith(rects[j],
-                                       TextSelectionSmoothTolerence))
+                                       TextSelectionSmoothTolerance))
           {
             var itRect = rects[j];
 

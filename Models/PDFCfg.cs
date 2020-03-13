@@ -43,6 +43,7 @@ using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
 using SuperMemoAssistant.Plugins.PDF.MathPix;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Services.UI.Configuration;
 using SuperMemoAssistant.Sys.ComponentModel;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
@@ -57,7 +58,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
                 "Save",
                 IsDefault = true,
                 Validates = true)]
-  public class PDFCfg : INotifyPropertyChangedEx
+  public class PDFCfg : CfgBase<PDFCfg>, INotifyPropertyChangedEx
   {
     #region Properties & Fields - Public
 
@@ -134,7 +135,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [SelectFrom("{Binding MonolingualDictionaries}", SelectionType = SelectionType.ComboBox)]
     public string PDFDictionaryStr
     {
-      get => PDFDictionary.ToString();
+      get => PDFDictionary?.ToString();
       set => PDFDictionary = MonolingualDictionaries.SafeGet(value);
     }
 
