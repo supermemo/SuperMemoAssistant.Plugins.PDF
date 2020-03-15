@@ -41,6 +41,8 @@ using Microsoft.Win32;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
+using System.Threading.Tasks;
+using Forge.Forms;
 using SuperMemoAssistant.Services.IO.HotKeys;
 using SuperMemoAssistant.Sys.IO.Devices;
 using SuperMemoAssistant.Sys.Threading;
@@ -342,6 +344,37 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       IPDFViewer.ExtractBookmark(bookmark);
     }
 
+    private async void TvBookmark_MenuItem_PDFExtractWithPriority(object sender,
+                                            RoutedEventArgs e)
+    {
+
+      var result = await Forge.Forms.Show.Window()
+        .For(new Prompt<double> { Title = "Bookmark Priority?", Value = Config.PDFExtractPriority });
+
+      if (!result.Model.Confirmed)
+      {
+        return;
+      }
+
+      double priority = result.Model.Value;
+
+      if (priority < 0 || priority > 100)
+      {
+        await Forge.Forms.Show.Window()
+                              .For(new Alert("Priority value must be between 0 and 100."));
+        return;
+      }
+
+      PdfBookmark bookmark = (PdfBookmark)tvBookmarks.SelectedItem;
+      if (bookmark == null)
+      {
+        return;
+      }
+
+      IPDFViewer.ExtractBookmark(bookmark, priority);
+    }
+
+
     private void TvBookmarks_PreviewKeyDown(object       sender,
                                             KeyEventArgs e)
     {
@@ -362,6 +395,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         TvBookmark_MenuItem_PDFExtract(sender,
                                        null);
 
+        e.Handled = true;
+      }
+
+      else if (kbMod == (KeyModifiers.Ctrl | KeyModifiers.Shift)
+        && e.Key == Key.X)
+      {
+        TvBookmark_MenuItem_PDFExtractWithPriority(sender,
+                                                   null);
         e.Handled = true;
       }
     }

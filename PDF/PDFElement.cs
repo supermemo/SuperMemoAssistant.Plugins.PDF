@@ -291,13 +291,21 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       int       pageMargin      = PDFConst.DefaultPageMargin,
       float     zoom            = PDFConst.DefaultZoom,
       bool      shouldDisplay   = true,
-      string    subtitle        = null)
+      string    subtitle        = null,
+      double    priority        = -1)
     {
       PDFElement pdfEl;
       string     title;
       string     author;
       string     creationDate;
       string     filePath;
+
+
+      if (priority < 0 || priority > 100)
+      {
+        LogTo.Error("Attempted to call PDFElement.Create with invalid priority value. Resorting to user's config PDF Extract Priority.");
+        priority = PDFState.Instance.Config.PDFExtractPriority;
+      }
 
       try
       {
@@ -348,7 +356,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                            elementHtml)
           .WithParent(parentElement)
           .WithTitle(subtitle ?? title)
-          .WithPriority(PDFState.Instance.Config.PDFExtractPriority)
+          .WithPriority(priority)
           .WithReference(
             r => r.WithTitle(title)
                   .WithAuthor(author)
