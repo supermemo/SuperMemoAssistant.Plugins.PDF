@@ -215,16 +215,18 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected async void CreateSMExtractWithPriority()
     {
 
+      // TODO: Create a better generic Prompt with: a) a description parameter, b) constraints parameters
       var result = await Show.Window()
-                         .For(new Prompt<double> { Title = "Extract Priority?", Value = -1 });
+                             .For(new Prompt<double> { Title = "Extract Priority?", Value = Config.SMExtractPriority });
       if (!result.Model.Confirmed)
       {
-          return;
+        return;
       }
 
       if (result.Model.Value < 0 || result.Model.Value > 100)
       {
-          return;
+        await Show.Window().For(new Alert("Priority must be a value between 0 and 100."));
+        return;
       }
 
       CreateSMExtract(result.Model.Value);
