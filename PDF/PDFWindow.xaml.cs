@@ -349,10 +349,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     {
 
       var result = await Forge.Forms.Show.Window()
-        .For(new Prompt<double> { Title = "Bookmark Priority?", Value = -1 });
+        .For(new Prompt<double> { Title = "Bookmark Priority?", Value = Config.PDFExtractPriority });
 
       if (!result.Model.Confirmed)
       {
+        return;
+      }
+
+      double priority = result.Model.Value;
+
+      if (priority < 0 || priority > 100)
+      {
+        await Forge.Forms.Show.Window()
+                              .For(new Alert("Priority value must be between 0 and 100."));
         return;
       }
 
@@ -362,7 +371,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         return;
       }
 
-      IPDFViewer.ExtractBookmark(bookmark, result.Model.Value);
+      IPDFViewer.ExtractBookmark(bookmark, priority);
     }
 
 

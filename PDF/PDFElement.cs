@@ -303,6 +303,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       if (priority < 0 || priority > 100)
       {
+        LogTo.Error("Attempted to call PDFElement.Create with invalid priority value. Resorting to user's config PDF Extract Priority.");
         priority = PDFState.Instance.Config.PDFExtractPriority;
       }
 

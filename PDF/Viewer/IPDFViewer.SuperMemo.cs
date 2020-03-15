@@ -225,7 +225,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     // PDF Extracts
 
-    protected bool CreatePDFExtract(double priority = -1)
+    protected bool CreatePDFExtract()
     {
       bool ret = false;
 
