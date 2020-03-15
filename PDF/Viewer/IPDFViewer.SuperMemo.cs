@@ -146,12 +146,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
       else if (Config.ImageExtractAddHtml && imgExtracts.Count > 0)
       {
-        extractTitle = $"image extract: {imgExtracts.Count} image{(imgExtracts.Count == 1 ? "" : "s")} from ";
-        foreach(var pi in pageIndices)
-        {
-          extractTitle += $"p{pi}, ";
-        }
-        extractTitle = extractTitle.TrimEnd(", ");
+        var parentEl = Svc.SM.Registry.Element[PDFElement.ElementId];
+        extractTitle = $"{parentEl.Title} -- Image extract: {imgExtracts.Count} image{(imgExtracts.Count == 1 ? "" : "s")} from ";
+        string pageString = "p" + string.Join(", p", pageIndices);
+        extractTitle = $"{extractTitle}{pageString}";
         string text = string.Empty;
         contents.Add(new TextContent(true, text));
       }
