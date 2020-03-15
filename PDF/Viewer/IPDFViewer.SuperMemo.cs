@@ -148,7 +148,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       {
         var parentEl = Svc.SM.Registry.Element[PDFElement.ElementId];
         extractTitle = $"{parentEl.Title} -- Image extract: {imgExtracts.Count} image{(imgExtracts.Count == 1 ? "" : "s")} from ";
-        string pageString = "p" + string.Join(", p", pageIndices);
+        string pageString = "p" + string.Join(", p", pageIndices.Select(p => p+1));
         extractTitle = $"{extractTitle}{pageString}";
         string text = string.Empty;
         contents.Add(new TextContent(true, text));
