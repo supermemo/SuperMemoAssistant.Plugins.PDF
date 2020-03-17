@@ -100,9 +100,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     /// <inheritdoc />
     public override void ShowSettings()
     {
-      Application.Current.Dispatcher.Invoke(
-        () => new ConfigurationWindow(HotKeyManager.Instance, PDFState.Instance.Config).ShowAndActivate()
-      );
+      ConfigurationWindow.ShowAndActivate(HotKeyManager.Instance, PDFState.Instance.Config);
     }
 
     #endregion

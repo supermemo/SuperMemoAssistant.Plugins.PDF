@@ -21,8 +21,7 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2019/09/03 18:15
-// Modified On:  2020/01/16 08:55
+// Modified On:  2020/03/13 14:32
 // Modified By:  Alexis
 
 #endregion
@@ -42,12 +41,17 @@ using SuperMemoAssistant.Interop.SuperMemo.Content.Models;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
 using SuperMemoAssistant.Plugins.PDF.MathPix;
+using SuperMemoAssistant.Plugins.PDF.PDF;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Services.UI.Configuration;
 using SuperMemoAssistant.Sys.ComponentModel;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
+  /// <summary>
+  ///   The main configuration file for the PDF plugin. Shared across all PDF. Some values
+  ///   can be overriden by <see cref="PDFElement" />
+  /// </summary>
   [Form(Mode = DefaultFields.None)]
   [Title("PDF Settings",
          IsVisible = "{Env DialogHostContext}")]
@@ -164,38 +168,38 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [JsonIgnore]
     public IReadOnlyDictionary<string, OxfordDictionary> MonolingualDictionaries => DictionaryConst.MonolingualDictionaries;
 
-#endregion
+    #endregion
 
 
 
 
-#region Properties Impl - Public
+    #region Properties Impl - Public
 
     // ReSharper disable once UnassignedGetOnlyAutoProperty
     [JsonIgnore]
     public bool IsChanged { get; set; }
 
-#endregion
+    #endregion
 
 
 
 
-#region Methods Impl
+    #region Methods Impl
 
     public override string ToString()
     {
       return "PDF";
     }
 
-#endregion
+    #endregion
 
 
 
 
-#region Events
+    #region Events
 
     public event PropertyChangedEventHandler PropertyChanged;
 
-#endregion
+    #endregion
   }
 }

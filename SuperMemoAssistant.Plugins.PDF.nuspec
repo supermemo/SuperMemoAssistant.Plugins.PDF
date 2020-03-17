@@ -37,7 +37,7 @@
         <dependency id="SuperMemoAssistant.Plugins.Dictionary.Interop" version="2.0.3.12" />
         <dependency id="SuperMemoAssistant.Plugins.PDF.WPF" version="4.7.5" />
         <dependency id="SuperMemoAssistant.Services.Sentry" version="1.0.1.14" />
-        <dependency id="SuperMemoAssistant.Services.UI" version="2.0.3.18" />
+        <dependency id="SuperMemoAssistant.Services.UI" version="2.0.3.20" />
       </group>
     </dependencies>
   </metadata>
