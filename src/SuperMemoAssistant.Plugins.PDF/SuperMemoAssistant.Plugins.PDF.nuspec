@@ -32,12 +32,12 @@
         <dependency id="FontAwesome5" version="2.0.4" />
         <dependency id="Newtonsoft.Json" version="12.0.3" />
         <dependency id="Serilog" version="2.9.0" />
-        <dependency id="SuperMemoAssistant.Interop" version="2.0.3.32" />
+        <dependency id="SuperMemoAssistant.Interop" version="2.0.4.6" />
         <dependency id="SuperMemoAssistant.mshtml" version="7.0.3300.1" />
         <dependency id="SuperMemoAssistant.Plugins.Dictionary.Interop" version="2.0.3.21" />
         <dependency id="SuperMemoAssistant.Plugins.PDF.WPF" version="4.7.5" />
         <dependency id="SuperMemoAssistant.Services.Sentry" version="1.0.1.14" />
-        <dependency id="SuperMemoAssistant.Services.UI" version="2.0.3.23" />
+        <dependency id="SuperMemoAssistant.Services.UI" version="2.0.3.26" />
       </group>
     </dependencies>
   </metadata>

@@ -140,7 +140,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     public string PDFDictionaryStr
     {
       get => PDFDictionary?.ToString();
-      set => PDFDictionary = MonolingualDictionaries.SafeGet(value);
+      set => PDFDictionary = MonolingualDictionaries.SafeRead(value);
     }
 
     // MathPix

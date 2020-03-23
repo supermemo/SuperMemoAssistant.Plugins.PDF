@@ -178,7 +178,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="MSBuild.Tools">
-      <Version>0.2.40</Version>
+      <Version>0.2.41</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -189,16 +189,16 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="PluginManager.Interop">
-      <Version>0.2.1.36</Version>
+      <Version>0.2.1.37</Version>
     </PackageReference>
     <PackageReference Include="PropertyChanged.Fody">
       <Version>3.2.6</Version>
     </PackageReference>
     <PackageReference Include="Sentry.Serilog">
-      <Version>2.1.0</Version>
+      <Version>2.1.1</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Interop">
-      <Version>2.0.3.32</Version>
+      <Version>2.0.4.7</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Plugins.Dictionary.Interop">
       <Version>2.0.3.21</Version>
@@ -210,7 +210,7 @@
       <Version>1.0.1.14</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Services.UI">
-      <Version>2.0.3.23</Version>
+      <Version>2.0.4.2</Version>
     </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager">
       <Version>4.7.0</Version>
@@ -229,12 +229,8 @@
     <PostBuildEvent>xcopy /h /i /c /k /e /r /y "$(TargetDir)*" "%25UserProfile%25\Documents\SuperMemoAssistant\Plugins\Development\$(ProjectName)"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="CopyPdfiumSdkFiles" AfterTargets="Build">
-    <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\icudt.dll"
-          DestinationFiles="$(TargetDir)icudt.dll"
-          SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\x86\pdfium.dll"
-          DestinationFiles="$(TargetDir)x86\pdfium.dll"
-          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\icudt.dll" DestinationFiles="$(TargetDir)icudt.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\x86\pdfium.dll" DestinationFiles="$(TargetDir)x86\pdfium.dll" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="NuPack" AfterTargets="Build;CopyPdfiumSdkFiles" Condition=" $(RunNuPack) == 'True' ">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
