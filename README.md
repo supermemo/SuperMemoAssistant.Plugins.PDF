@@ -27,7 +27,7 @@ You can now do all of this *and more*, right in SuperMemo. **[Get started now](h
 
 <br />
 
-![Incremental PDF Plugin](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/SMA-Incremental-PDF.jpg)
+![Incremental PDF Plugin](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/assets/images/screenshots/SMA-Incremental-PDF.jpg)
 
 ### Keyboard & Mouse controls
 
@@ -76,8 +76,7 @@ You can now do all of this *and more*, right in SuperMemo. **[Get started now](h
     
 ### View Modes
 
-![View Modes](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/Resources/PDF-ViewModes.png)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsupermemo%2FSuperMemoAssistant.Plugins.PDF.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsupermemo%2FSuperMemoAssistant.Plugins.PDF?ref=badge_shield)
+![View Modes](https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF/raw/master/assets/images/screenshots/PDF-ViewModes.png)
 
 - 1: Toggle inter-page margin
 - 2: Single page mode

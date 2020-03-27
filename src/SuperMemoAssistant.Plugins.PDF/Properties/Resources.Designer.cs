@@ -61,51 +61,11 @@ namespace SuperMemoAssistant.Plugins.PDF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap collapseAll {
-            get {
-                object obj = ResourceManager.GetObject("collapseAll", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap expandAll {
-            get {
-                object obj = ResourceManager.GetObject("expandAll", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap pageMargin {
-            get {
-                object obj = ResourceManager.GetObject("pageMargin", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Toggle inter-page margin.
         /// </summary>
         internal static string pageMarginText {
             get {
                 return ResourceManager.GetString("pageMarginText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap sideBarBookmark {
-            get {
-                object obj = ResourceManager.GetObject("sideBarBookmark", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }
