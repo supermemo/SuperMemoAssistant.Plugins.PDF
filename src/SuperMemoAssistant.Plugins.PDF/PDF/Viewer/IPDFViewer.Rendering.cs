@@ -59,7 +59,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                                                               180,
                                                                               30,
                                                                               30);
-    protected static readonly Color SMExtractColor            = SMConst.Stylesheet.ExtractColor;
+    protected static readonly Color SMExtractColor            = SMConst.Stylesheet.ExtractBackgroundColor;
     protected static readonly Color SMExtractTransparentColor = SMConst.Stylesheet.ExtractTransparentColor;
     protected static readonly Color PDFExtractColor = Color.FromArgb(90,
                                                                      255,

@@ -33,6 +33,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -88,8 +89,7 @@ namespace SuperMemoAssistant.Plugins.PDF.MathPix
         string imgBase64 = img.ToBase64(ImageFormat.Jpeg);
         var req = new Request
         {
-          src = string.Format(BodyJsonValueFmt,
-                              imgBase64),
+          src = string.Format(CultureInfo.InvariantCulture, BodyJsonValueFmt, imgBase64),
           metadata = metadata
         };
 

@@ -34,10 +34,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 using Microsoft.Win32;
 using Patagames.Pdf.Net;
@@ -233,7 +233,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                                                    WindowState);
 
           Config.SidePanelWidth = _lastSidePanelWidth;
-          PDFState.Instance.SaveConfig();
+          PDFState.Instance.SaveConfigAsync().RunAsync();
         }
       );
     }
@@ -295,8 +295,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                 if (task == null || "save".Equals(task.Result.Action) == false)
                   return;
 
-                PDFState.Instance.SaveConfig();
-              }
+                PDFState.Instance.SaveConfigAsync().RunAsync();
+              },
+              TaskScheduler.Default
             );
     }
 
@@ -416,8 +417,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       if (isVisible)
       {
         if (sidePanel.Visibility == Visibility.Hidden)
-          sidePanelColumn.Width = new GridLength(Math.Max(_lastSidePanelWidth,
-                                                          250));
+          sidePanelColumn.Width = new GridLength(Math.Max(_lastSidePanelWidth, 250));
       }
 
       else

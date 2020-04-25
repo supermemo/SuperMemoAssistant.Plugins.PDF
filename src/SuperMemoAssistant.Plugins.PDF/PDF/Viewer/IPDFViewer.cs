@@ -242,7 +242,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     public void LoadDocument(PDFElement pdfElement)
     {
-      bool isNewPdf = !PDFElement?.FilePath.Equals(pdfElement.FilePath) ?? true;
+      bool isNewPdf = !PDFElement?.FilePath.Equals(pdfElement.FilePath, StringComparison.InvariantCultureIgnoreCase) ?? true;
 
       PDFElement = pdfElement;
 

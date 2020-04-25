@@ -207,7 +207,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (image == null)
         return null;
 
-      int imgRegistryId = Svc.SM.Registry.Image.AddMember(
+      int imgRegistryId = Svc.SM.Registry.Image.Add(
         new ImageWrapper(image),
         title
       );

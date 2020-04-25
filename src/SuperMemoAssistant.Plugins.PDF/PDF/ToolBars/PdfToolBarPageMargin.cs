@@ -63,8 +63,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.ToolBars
     protected override void InitializeButtons()
     {
       var btn = CreateToggleButton("btnPageMargin",
-                                   Properties.Resources.pageMarginText,
-                                   Properties.Resources.pageMarginText,
+                                   "Toggle inter-page margin",
+                                   "Toggle inter-page margin",
                                    "pageMargin.png",
                                    btn_pageMarginClick,
                                    16,
@@ -134,14 +134,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.ToolBars
     {
       if (PdfViewer.PageMargin.Bottom > 0)
       {
-        LastThickness        = PdfViewer.PageMargin;
-        PdfViewer.PageMargin = new Thickness(0);
+        LastThickness = PdfViewer.PageMargin;
+
+        PdfViewer.SetCurrentValue(PdfViewer.PageMarginProperty, new Thickness(0));
       }
 
       else
       {
-        LastThickness        = LastThickness ?? new Thickness(PDFConst.DefaultPageMargin);
-        PdfViewer.PageMargin = LastThickness.Value;
+        LastThickness ??= new Thickness(PDFConst.DefaultPageMargin);
+
+        PdfViewer.SetCurrentValue(PdfViewer.PageMarginProperty, LastThickness.Value);
       }
     }
 

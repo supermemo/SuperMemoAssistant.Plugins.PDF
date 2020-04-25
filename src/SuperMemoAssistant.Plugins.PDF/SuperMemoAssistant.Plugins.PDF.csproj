@@ -1,13 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="SuperMemoAssistant.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <RootNamespace>SuperMemoAssistant.Plugins.PDF</RootNamespace>
     <Deterministic>true</Deterministic>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>2.0.4.6</AssemblyVersion>
-    <FileVersion>2.0.4.6</FileVersion>
-    <Version>2.0.4</Version>
+    <AssemblyVersion>2.0.5</AssemblyVersion>
+    <FileVersion>2.0.5</FileVersion>
+    <Version>2.0.5</Version>
+  </PropertyGroup>
+  <PropertyGroup Label="PackageInfo">
+    <RepositoryUrl>https://github.com/supermemo/SuperMemoAssistant.Plugins.PDF</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -46,6 +49,7 @@
   <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody">
       <Version>5.1.0</Version>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Extensions.System.IO">
       <Version>0.1.0.3</Version>
@@ -59,7 +63,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FontAwesome5">
-      <Version>2.0.4</Version>
+      <Version>2.0.5</Version>
     </PackageReference>
     <PackageReference Include="Forge.Forms">
       <Version>1.1.2</Version>
@@ -70,7 +74,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="MSBuild.Tools">
-      <Version>0.2.58</Version>
+      <Version>0.2.60</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -81,28 +85,29 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="PluginManager.Interop">
-      <Version>0.2.1.37</Version>
+      <Version>0.2.1.46</Version>
     </PackageReference>
     <PackageReference Include="PropertyChanged.Fody">
-      <Version>3.2.7</Version>
+      <Version>3.2.8</Version>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Sentry.Serilog">
       <Version>2.1.1</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Interop">
-      <Version>2.0.4.7</Version>
+      <Version>2.0.5-alpha-0</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Plugins.Dictionary.Interop">
-      <Version>2.0.3.21</Version>
+      <Version>2.0.5-alpha-0</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Plugins.PDF.WPF">
       <Version>4.7.5</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Services.Sentry">
-      <Version>1.0.1.14</Version>
+      <Version>2.0.5-alpha-0</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Services.UI">
-      <Version>2.0.4.6</Version>
+      <Version>2.0.5-alpha-0</Version>
     </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager">
       <Version>4.7.0</Version>
@@ -116,22 +121,11 @@
       <HintPath>$(PkgPdfium_Net_SDK)\lib\net472\Patagames.Pdf.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <PropertyGroup>
-    <PostBuildEvent>xcopy /h /i /c /k /e /r /y "$(TargetDir)*" "%25UserProfile%25\Documents\SuperMemoAssistant\Plugins\Development\$(ProjectName)"</PostBuildEvent>
-  </PropertyGroup>
   <Target Name="CopyPdfiumSdkFiles" AfterTargets="Build">
     <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\icudt.dll" DestinationFiles="$(TargetDir)icudt.dll" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\x86\pdfium.dll" DestinationFiles="$(TargetDir)x86\pdfium.dll" SkipUnchangedFiles="true" />
   </Target>
-  <Target Name="NuPack" AfterTargets="Build;CopyPdfiumSdkFiles" Condition=" $(RunNuPack) == 'True' ">
-    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
-      <Output TaskParameter="Assemblies" ItemName="myAssemblyInfo" />
-    </GetAssemblyIdentity>
-    <ItemGroup>
-      <!-- If your .NET version is <3.5 and you get build error, move this ItemGroup outside of Target -->
-      <NuGetExe Include="$(SolutionDir)tools\nuget.exe" />
-      <VersionNumber Include="@(myAssemblyInfo->'%(Version)')" />
-    </ItemGroup>
-    <Exec Command="&quot;%(NuGetExe.FullPath)&quot; pack $(AssemblyName).nuspec -Version @(VersionNumber) -Properties Configuration=$(Configuration) -OutputDirectory $(SolutionDir)releases\nupkg -BasePath $(OutDir)" />
+  <Target Name="CopyOutput" AfterTargets="CopyPdfiumSdkFiles">
+    <Exec Command="xcopy /h /i /c /k /e /r /y &quot;$(TargetDir)*&quot; &quot;%25UserProfile%25\SuperMemoAssistant\Plugins\Development\$(ProjectName)&quot;" />
   </Target>
 </Project>

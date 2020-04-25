@@ -80,7 +80,7 @@ namespace SuperMemoAssistant.Plugins.PDF
          .RegisterGlobal(
            "OpenFile",
            "(Global) Add PDF",
-           HotKeyScope.SM,
+           HotKeyScopes.SM,
            new HotKey(Key.I, KeyModifiers.CtrlAlt),
            PDFState.Instance.OpenFile
          )

@@ -46,8 +46,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Converters
                           object      parameter,
                           CultureInfo culture)
     {
-      int val1 = System.Convert.ToInt32(value);
-      int val2 = System.Convert.ToInt32(parameter);
+      int val1 = System.Convert.ToInt32(value, CultureInfo.InvariantCulture);
+      int val2 = System.Convert.ToInt32(parameter, CultureInfo.CurrentUICulture);
 
       return val1 <= val2;
     }

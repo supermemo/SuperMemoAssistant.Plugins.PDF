@@ -92,7 +92,7 @@ namespace SuperMemoAssistant.Plugins.PDF
         PdfCommon.Initialize(PDFLicense.LicenseKey);
       }
 
-      Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedArgs>(OnElementChanged);
+      Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(OnElementChanged);
 
       PDFHotKeys.RegisterHotKeys();
     }
@@ -111,7 +111,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     #region Methods
     
     [LogToErrorOnException]
-    public void OnElementChanged(SMDisplayedElementChangedArgs e)
+    public void OnElementChanged(SMDisplayedElementChangedEventArgs e)
     {
       try
       {

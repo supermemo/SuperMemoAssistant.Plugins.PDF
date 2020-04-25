@@ -484,7 +484,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 
       foreach (var extract in PdfElement.SMExtracts)
         SplitExtractByPage(extract,
-                           SMConst.Stylesheet.ExtractColor,
+                           SMConst.Stylesheet.ExtractBackgroundColor,
                            pageSpanDict);
 
       foreach (var ignoreHighlight in PdfElement.IgnoreHighlights)

@@ -234,7 +234,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
             }
             catch (FileNotFoundException ex)
             {
-              LogTo.Warning(ex, $"PDF file '{smPdfFilePath}' or '{filePath}' has gone missing. Weird.");
+              LogTo.Warning(ex, "PDF file '{SmPdfFilePath}' or '{FilePath}' has gone missing. Weird.", smPdfFilePath, filePath);
               continue;
             }
 
@@ -245,8 +245,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
         if (binMem == null)
         {
-          int binMemId = Svc.SM.Registry.Binary.AddMember(filePath,
-                                                          fileName);
+          int binMemId = Svc.SM.Registry.Binary.Add(filePath, fileName);
 
           if (binMemId < 0)
             return CreationResult.FailBinaryRegistryInsertionFailed;
@@ -333,7 +332,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         return CreationResult.FailUnknown;
       }
 
-      string elementHtml = string.Format(PDFConst.ElementFormat,
+      string elementHtml = string.Format(CultureInfo.InvariantCulture,
+                                         PDFConst.ElementFormat,
                                          title,
                                          binMem.Name,
                                          pdfEl.GetJsonB64());
@@ -476,7 +476,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     private string UpdateHtml(string html)
     {
-      string newElementDataDiv = string.Format(PDFConst.ElementDataFormat,
+      string newElementDataDiv = string.Format(CultureInfo.InvariantCulture,
+                                               PDFConst.ElementDataFormat,
                                                GetJsonB64());
 
       return PDFConst.RE_Element.Replace(html,

@@ -32,6 +32,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using SuperMemoAssistant.Extensions;
@@ -71,7 +72,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     public PDFState()
     {
-      Config = Svc.Configuration.Load<PDFCfg>().Result ?? new PDFCfg();
+      Config = Svc.Configuration.Load<PDFCfg>() ?? new PDFCfg();
     }
 
     #endregion
@@ -191,12 +192,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       Config.WindowState  = windowState;
     }
 
-    public void SaveConfig(bool sync = false)
+    public Task SaveConfigAsync()
     {
-      var task = Svc.Configuration.Save(Config);
-
-      if (sync)
-        task.Wait();
+      return Svc.Configuration.SaveAsync(Config);
     }
 
     public void CaptureContext()

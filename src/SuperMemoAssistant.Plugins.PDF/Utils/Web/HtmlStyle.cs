@@ -37,6 +37,8 @@ using SuperMemoAssistant.Extensions;
 
 namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
 {
+  using System.Globalization;
+
   public class HtmlStyle
   {
     #region Properties & Fields - Non-Public
@@ -153,7 +155,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
     public HtmlStyle WithFontWeight(int weight)
     {
       if (weight != 400)
-        this["font-weight"] = weight.ToString();
+        this["font-weight"] = weight.ToString(CultureInfo.InvariantCulture);
 
       else
         Properties.Remove("font-weight");
