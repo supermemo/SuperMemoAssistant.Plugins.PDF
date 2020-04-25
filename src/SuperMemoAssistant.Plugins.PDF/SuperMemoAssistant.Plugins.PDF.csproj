@@ -124,6 +124,10 @@
   <Target Name="CopyPdfiumSdkFiles" AfterTargets="Build">
     <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\icudt.dll" DestinationFiles="$(TargetDir)icudt.dll" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(PkgPdfium_Net_SDK)\content\x86\pdfium.dll" DestinationFiles="$(TargetDir)x86\pdfium.dll" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <None Include="$(TargetDir)icudt.dll" Pack="True" PackagePath="content" />
+      <None Include="$(TargetDir)x86\pdfium.dll" Pack="True" PackagePath="content/x86" />
+    </ItemGroup>
   </Target>
   <Target Name="CopyOutput" AfterTargets="CopyPdfiumSdkFiles">
     <Exec Command="xcopy /h /i /c /k /e /r /y &quot;$(TargetDir)*&quot; &quot;%25UserProfile%25\SuperMemoAssistant\Plugins\Development\$(ProjectName)&quot;" />
