@@ -94,13 +94,20 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
       if (destination == null)
         return false;
 
-      var nextBookmark = bookmark.GetNextBookmark(document);
-      int firstPage    = destination.PageIndex;
+      int firstPage = destination.PageIndex;
+      PdfDestination nextDestination = null;
 
-      if (nextBookmark == null)
-        return pageIdx >= firstPage;
+      while (nextDestination == null)
+      {
+        var nextBookmark = bookmark.GetNextBookmark(document);
 
-      PdfDestination nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
+        if (nextBookmark == null)
+          return pageIdx >= firstPage;
+
+        nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
+        bookmark = nextBookmark;
+      }
+
       int lastPage = nextDestination.PageIndex - 1 > firstPage
         ? nextDestination.PageIndex - 1
         : firstPage;

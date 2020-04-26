@@ -132,4 +132,7 @@
   <Target Name="CopyOutput" AfterTargets="CopyPdfiumSdkFiles">
     <Exec Command="xcopy /h /i /c /k /e /r /y &quot;$(TargetDir)*&quot; &quot;%25UserProfile%25\SuperMemoAssistant\Plugins\Development\$(ProjectName)&quot;" />
   </Target>
+  <Target Name="Test" BeforeTargets="PreCheckPackage">
+    <Error Text="'$(GitVersionHeight)'" />
+  </Target>
 </Project>
