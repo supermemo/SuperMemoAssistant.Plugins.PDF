@@ -98,16 +98,16 @@
       <Version>2.0.5-alpha.6</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Plugins.Dictionary.Interop">
-      <Version>2.0.5-alpha-0</Version>
+      <Version>2.0.5-alpha.3</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Plugins.PDF.WPF">
       <Version>4.7.5</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Services.Sentry">
-      <Version>2.0.5-alpha-0</Version>
+      <Version>2.0.5-alpha.2</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Services.UI">
-      <Version>2.0.5-alpha-0</Version>
+      <Version>2.0.5-alpha.2</Version>
     </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager">
       <Version>4.7.0</Version>
