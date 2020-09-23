@@ -354,7 +354,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                   .WithAuthor(author)
                   .WithDate(creationDate)
                   .WithSource("PDF")
-                  .WithLink(Svc.SM.Collection.MakeRelative(filePath))
+                  .WithLink("..\\" + Svc.SM.Collection.MakeRelative(filePath))
           );
 
       if (shouldDisplay == false)
@@ -560,7 +560,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
               .WithAuthor(author)
               .WithDate(creationDate)
               .WithSource("PDF")
-              .WithLink(Svc.SM.Collection.MakeRelative(filePath));
+              .WithLink("..\\" + Svc.SM.Collection.MakeRelative(filePath));
     }
     
     [SuppressPropertyChangedWarnings]
