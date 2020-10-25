@@ -85,7 +85,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="PluginManager.Interop">
-      <Version>0.2.1.46</Version>
+      <Version>0.2.1.51</Version>
     </PackageReference>
     <PackageReference Include="PropertyChanged.Fody">
       <Version>3.2.8</Version>
@@ -104,10 +104,10 @@
       <Version>4.7.5</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Services.Sentry">
-      <Version>2.0.5-alpha.2</Version>
+      <Version>2.0.5-alpha.3</Version>
     </PackageReference>
     <PackageReference Include="SuperMemoAssistant.Services.UI">
-      <Version>2.0.5-alpha.2</Version>
+      <Version>2.0.5-alpha.5</Version>
     </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager">
       <Version>4.7.0</Version>

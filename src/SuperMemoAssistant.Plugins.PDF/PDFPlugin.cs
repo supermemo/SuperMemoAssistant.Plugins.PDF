@@ -81,8 +81,9 @@ namespace SuperMemoAssistant.Plugins.PDF
 
 
     #region Methods Impl
-
-    protected override void PluginInit()
+    
+    /// <inheritdoc />
+    protected override void OnPluginInitialized()
     {
       PDFState.Instance.CaptureContext();
 
@@ -92,9 +93,17 @@ namespace SuperMemoAssistant.Plugins.PDF
         PdfCommon.Initialize(PDFLicense.LicenseKey);
       }
 
+      base.OnPluginInitialized();
+    }
+    
+    /// <inheritdoc />
+    protected override void OnSMStarted()
+    {
       Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(OnElementChanged);
 
       PDFHotKeys.RegisterHotKeys();
+
+      base.OnSMStarted();
     }
 
     /// <inheritdoc />
@@ -111,7 +120,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     #region Methods
     
     [LogToErrorOnException]
-    public void OnElementChanged(SMDisplayedElementChangedEventArgs e)
+    public static void OnElementChanged(SMDisplayedElementChangedEventArgs e)
     {
       try
       {
