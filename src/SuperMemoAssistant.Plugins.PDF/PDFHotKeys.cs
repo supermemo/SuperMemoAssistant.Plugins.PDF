@@ -42,27 +42,28 @@ namespace SuperMemoAssistant.Plugins.PDF
   {
     #region Constants & Statics
 
-    public const string ExtractPDF         = "ExtractPDF";
-    public const string ExtractSM          = "ExtractSM";
-    public const string MarkIgnore         = "MarkIgnore";
-    public const string ShowDictionary     = "ShowDictionary";
-    public const string GoToPage           = "GoToPage";
-    public const string SMLearn            = "SMLearn";
-    public const string LearnAndReschedule = "LearnAndReschedule";
-    public const string SMReschedule       = "SMReschedule";
-    public const string SMLaterToday       = "SMLaterToday";
-    public const string SMDone             = "SMDone";
-    public const string SMDelete           = "SMDelete";
-    public const string SMPrevious         = "SMPrevious";
-    public const string SMNext             = "SMNext";
-    public const string SMParent           = "SMParent";
-    public const string SMChild            = "SMChild";
-    public const string SMPrevSibling      = "SMPrevSibling";
-    public const string SMNextSibling      = "SMNextSibling";
-    public const string UIShowOptions      = "UIShowOptions";
-    public const string UIToggleBookmarks  = "UIToggleBookmarks";
-    public const string UIFocusViewer      = "UIFocusViewer";
-    public const string UIFocusBookmarks   = "UIFocusBookmarks";
+    public const string ExtractPDF            = "ExtractPDF";
+    public const string ExtractSM             = "ExtractSM";
+    public const string ExtractSMWithPriority = "ExtractSMWithPriority";
+    public const string MarkIgnore            = "MarkIgnore";
+    public const string ShowDictionary        = "ShowDictionary";
+    public const string GoToPage              = "GoToPage";
+    public const string SMLearn               = "SMLearn";
+    public const string LearnAndReschedule    = "LearnAndReschedule";
+    public const string SMReschedule          = "SMReschedule";
+    public const string SMLaterToday          = "SMLaterToday";
+    public const string SMDone                = "SMDone";
+    public const string SMDelete              = "SMDelete";
+    public const string SMPrevious            = "SMPrevious";
+    public const string SMNext                = "SMNext";
+    public const string SMParent              = "SMParent";
+    public const string SMChild               = "SMChild";
+    public const string SMPrevSibling         = "SMPrevSibling";
+    public const string SMNextSibling         = "SMNextSibling";
+    public const string UIShowOptions         = "UIShowOptions";
+    public const string UIToggleBookmarks     = "UIToggleBookmarks";
+    public const string UIFocusViewer         = "UIFocusViewer";
+    public const string UIFocusBookmarks      = "UIFocusBookmarks";
 
     #endregion
 
@@ -94,6 +95,10 @@ namespace SuperMemoAssistant.Plugins.PDF
          .RegisterLocal(ExtractSM,
                         "Create SM extract",
                         new HotKey(Key.X, KeyModifiers.Alt)
+         )
+         .RegisterLocal(ExtractSMWithPriority,
+                        "Create SM extract with priority prompt",
+                        new HotKey(Key.X, KeyModifiers.AltShift)
          )
          .RegisterLocal(MarkIgnore,
                         "Mark text as ignored",
