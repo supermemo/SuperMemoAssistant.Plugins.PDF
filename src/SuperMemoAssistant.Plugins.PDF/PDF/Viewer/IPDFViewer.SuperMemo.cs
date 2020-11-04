@@ -51,7 +51,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
   {
     #region Methods
 
-    protected bool CreateSMExtract()
+    protected bool CreateSMExtract(double priority = Config.SMExtractPriority)
     {
       bool ret = false;
 
@@ -159,7 +159,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithParent(parentEl)
             .WithConcept(parentEl.Concept)
             .WithLayout(Config.Layout)
-            .WithPriority(Config.SMExtractPriority)
+            .WithPriority(priority)
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
             .WithForcedGeneratedTitle()
             .DoNotDisplay()
@@ -200,6 +200,25 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
 
       return ret;
+    }
+    
+    protected async void CreateSMExtractWithPriority()
+    {
+
+      // TODO: Create a better generic Prompt with: a) a description parameter, b) constraints parameters
+      var result = await Show.Window()
+                             .For(new Prompt<double> { Title = "Extract Priority?", Value = Config.SMExtractPriority });
+                             
+      if (!result.Model.Confirmed)
+        return;
+
+      if (result.Model.Value < 0 || result.Model.Value > 100)
+      {
+        Show.Window().For(new Alert("Priority must be a value between 0 and 100.")).RunAsync();
+        return;
+      }
+
+      CreateSMExtract(result.Model.Value);
     }
 
     protected ContentBase CreateImageContent(Image  image, string title)

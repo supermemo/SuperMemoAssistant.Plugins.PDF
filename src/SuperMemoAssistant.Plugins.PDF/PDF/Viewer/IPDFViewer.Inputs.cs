@@ -95,6 +95,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           CreateSMExtract();
           e.Handled = true;
           break;
+          
+        case PDFHotKeys.ExtractSMWithPriority:
+          CreateSMExtractWithPriority();
+          e.Handled = true;
+          break;
 
         case PDFHotKeys.MarkIgnore:
           CreateIgnoreHighlight();
