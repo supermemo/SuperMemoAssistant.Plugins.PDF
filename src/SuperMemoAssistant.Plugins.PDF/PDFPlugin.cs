@@ -95,7 +95,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
       base.OnPluginInitialized();
     }
-    
+
     /// <inheritdoc />
     protected override void OnSMStarted()
     {
