@@ -47,11 +47,15 @@ using SuperMemoAssistant.Sys.Drawing;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  using System;
+  using Anotar.Serilog;
+  using Forge.Forms;
+
   public partial class IPDFViewer
   {
     #region Methods
 
-    protected bool CreateSMExtract(double priority = Config.SMExtractPriority)
+    protected bool CreateSMExtract(double priority)
     {
       bool ret = false;
 
@@ -63,6 +67,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       var selImageAreas = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Normal);
       var selTextAreas  = SelectedAreas.Where(a => a.Type == PDFAreaSelection.AreaType.Ocr).ToList();
       var pageIndices   = new HashSet<int>();
+
+      if (priority < 0 || priority > 100)
+        priority = PDFConst.DefaultSMExtractPriority;
 
       // Image extract
       foreach (var selImage in selImages)
@@ -201,24 +208,33 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       return ret;
     }
-    
-    protected async void CreateSMExtractWithPriority()
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("AsyncUsage", "AsyncFixer03:Avoid fire & forget async void methods", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<Pending>")]
+    protected async void CreateSMExtractWithPriorityPrompt()
     {
-
-      // TODO: Create a better generic Prompt with: a) a description parameter, b) constraints parameters
-      var result = await Show.Window()
-                             .For(new Prompt<double> { Title = "Extract Priority?", Value = Config.SMExtractPriority });
-                             
-      if (!result.Model.Confirmed)
-        return;
-
-      if (result.Model.Value < 0 || result.Model.Value > 100)
+      try
       {
-        Show.Window().For(new Alert("Priority must be a value between 0 and 100.")).RunAsync();
-        return;
-      }
+        // TODO: Create a better generic Prompt with: a) a description parameter, b) constraints parameters
+        var result = await Show.Window()
+                               .For(new Prompt<double> { Title = "Extract Priority?", Value = Config.SMExtractPriority })
+                               .ConfigureAwait(false);
 
-      CreateSMExtract(result.Model.Value);
+        if (!result.Model.Confirmed)
+          return;
+
+        if (result.Model.Value < 0 || result.Model.Value > 100)
+        {
+          Show.Window().For(new Alert("Priority must be a value between 0 and 100.")).RunAsync();
+          return;
+        }
+
+        CreateSMExtract(result.Model.Value);
+      }
+      catch (Exception ex)
+      {
+        LogTo.Error(ex, "Exception caught while extracting with priority prompt.");
+      }
     }
 
     protected ContentBase CreateImageContent(Image  image, string title)

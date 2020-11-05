@@ -75,7 +75,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       var kbMod = GetKeyboardModifiers();
       var hotKey = new HotKey(
-        kbMod == KeyModifiers.Alt ? e.SystemKey : e.Key,
+        kbMod.HasFlag(KeyModifiers.Alt) ? e.SystemKey : e.Key,
         kbMod
       );
 
@@ -92,12 +92,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           break;
 
         case PDFHotKeys.ExtractSM:
-          CreateSMExtract();
+          CreateSMExtract(Config.SMExtractPriority);
           e.Handled = true;
           break;
           
         case PDFHotKeys.ExtractSMWithPriority:
-          CreateSMExtractWithPriority();
+          CreateSMExtractWithPriorityPrompt();
           e.Handled = true;
           break;
 
