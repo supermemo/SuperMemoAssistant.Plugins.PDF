@@ -19,23 +19,19 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
-// 
-// Created On:   2020/01/18 13:03
-// Modified On:  2020/01/18 13:04
-// Modified By:  Alexis
 
 #endregion
 
 
 
 
-using System;
-using Patagames.Pdf.Net.Controls.Wpf;
-using SuperMemoAssistant.Plugins.PDF.Utils.Web;
-
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
+  using System;
+  using Patagames.Pdf.Net.Controls.Wpf;
+  using Utils.Web;
+
+  /// <summary>Represents a section of text from the PDF document.</summary>
   public class PDFTextSelection : ITextContent
   {
     #region Properties & Fields - Non-Public

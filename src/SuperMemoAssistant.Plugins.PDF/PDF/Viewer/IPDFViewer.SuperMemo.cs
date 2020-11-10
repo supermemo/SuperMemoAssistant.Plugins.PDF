@@ -141,7 +141,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (hasTextSelection || hasTextOcr)
       {
-        string text = GetSelectedTextHtml();
+        string text = GetSelectedTextAsHtml();
 
         contents.Add(new TextContent(true, text));
       }

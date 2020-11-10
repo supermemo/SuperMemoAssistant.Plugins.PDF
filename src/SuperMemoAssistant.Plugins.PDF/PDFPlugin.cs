@@ -52,7 +52,7 @@ namespace SuperMemoAssistant.Plugins.PDF
   {
     #region Constructors
 
-    public PDFPlugin() : base("https://a63c3dad9552434598dae869d2026696@sentry.io/1362046") { }
+    public PDFPlugin() : base("https://961b892cc361459996d70d0e6ec1cffe@o218793.ingest.sentry.io/5506800") { }
 
     #endregion
 
@@ -97,19 +97,19 @@ namespace SuperMemoAssistant.Plugins.PDF
     }
 
     /// <inheritdoc />
-    protected override void OnSMStarted()
+    protected override void OnSMStarted(bool wasSMAlreadyStarted)
     {
       Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(OnElementChanged);
 
       PDFHotKeys.RegisterHotKeys();
 
-      base.OnSMStarted();
+      base.OnSMStarted(wasSMAlreadyStarted);
     }
 
     /// <inheritdoc />
     public override void ShowSettings()
     {
-      ConfigurationWindow.ShowAndActivate(HotKeyManager.Instance, PDFState.Instance.Config);
+      ConfigurationWindow.ShowAndActivate(null, HotKeyManager.Instance, PDFState.Instance.Config);
     }
 
     #endregion

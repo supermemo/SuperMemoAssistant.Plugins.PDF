@@ -57,6 +57,9 @@ using SuperMemoAssistant.Services;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
+  using Forge.Forms;
+  using SuperMemoAssistant.Services.UI.Extensions;
+
   [Form(Mode = DefaultFields.None)]
   public class PDFElement : INotifyPropertyChanged
   {
@@ -389,8 +392,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
           // TODO: Remove element Id test when better element transition is implemented
           // Double check
-          if (Svc.SM.UI.ElementWdw.CurrentElementId != elementId || File.Exists(pdfEl.FilePath) == false)
+          if (Svc.SM.UI.ElementWdw.CurrentElementId != elementId)
             return null;
+
+          if (File.Exists(pdfEl.FilePath) == false)
+          {
+            // TODO: Replace with a notification
+            $"The PDF document cannot be found.\r\n\r\nPath: {pdfEl.FilePath}".WarningMsgBox().RunAsync();
+
+            return null;
+          }
         }
 
         return pdfEl;

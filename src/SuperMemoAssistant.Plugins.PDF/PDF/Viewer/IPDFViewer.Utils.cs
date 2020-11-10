@@ -55,6 +55,8 @@ using SuperMemoAssistant.Sys.Remoting;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  using Nito.AsyncEx;
+
   public partial class IPDFViewer
   {
     #region Properties & Fields - Public
@@ -206,7 +208,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                lt,
                                rb);
 
-          return MathPixAPI.Ocr(Config.MathPixAppId,
+          return MathPixAPI.OcrAsync(Config.MathPixAppId,
                                 Config.MathPixAppKey,
                                 Config.MathPixMetadata,
                                 img)
@@ -235,9 +237,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         }
       }
 
-      return null;
+      return TaskConstants<MathPixAPI>.Default;
     }
 
+    /// <summary>
+    /// Tries to find the first bookmark matching page number <paramref name="pageIdx"/>
+    /// </summary>
+    /// <param name="pageIdx">The page to find a bookmark for</param>
+    /// <returns>First matching bookmark or <see langword="null"/></returns>
     public PdfBookmark FindBookmark(int pageIdx)
     {
       var allBookmarks = Document.Bookmarks
@@ -247,7 +254,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return allBookmarks.LastOrDefault();
     }
 
-    public string GetSelectedTextHtml()
+    /// <summary>Converts the PDF rich text to HTML markup.</summary>
+    /// <returns></returns>
+    public string GetSelectedTextAsHtml()
     {
       var htmlBuilder = new HtmlBuilder(Document, PDFElement, Config);
 
@@ -261,6 +270,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return htmlBuilder.Build();
     }
 
+    /// <summary>
+    /// Retrieves the text corresponding to <paramref name="selInfo"/>.
+    /// </summary>
+    /// <param name="selInfo"></param>
+    /// <returns></returns>
     public string SelectionToText(SelectInfo selInfo)
     {
       string ret = string.Empty;

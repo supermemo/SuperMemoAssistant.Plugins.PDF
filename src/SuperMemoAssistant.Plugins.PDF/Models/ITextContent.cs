@@ -19,21 +19,17 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
-// 
-// Created On:   2020/01/18 00:13
-// Modified On:  2020/01/18 13:04
-// Modified By:  Alexis
 
 #endregion
 
 
 
 
-using SuperMemoAssistant.Plugins.PDF.Utils.Web;
-
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
+  using System;
+  using Utils.Web;
+
   public interface ITextContent
   {
     void Append(HtmlBuilder builder);

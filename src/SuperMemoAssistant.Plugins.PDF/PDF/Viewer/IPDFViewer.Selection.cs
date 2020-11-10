@@ -50,7 +50,10 @@ using SuperMemoAssistant.Sys.IO.Devices;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  using System.Diagnostics.CodeAnalysis;
+
   /// <inheritdoc/>
+  [SuppressMessage("Naming", "CA1725:Parameter names should match base declaration", Justification = "<Pending>")]
   public partial class IPDFViewer
   {
     #region Constants & Statics
@@ -109,8 +112,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         if (ctrl && IsTextSelectionValid(out var selInfo))
             SelectInfoList.Add(selInfo);
 
+        else if (SelectedTextList.Any() && SelectedTextList.Last() is PDFTextSelection)
+          SelectedTextList.RemoveAt(SelectedTextList.Count - 1);
+
         base.ProcessMouseDownForSelectTextTool(pagePoint, pageIndex);
-        
+
         var selInfoIndex = SelectInfoList.Count;
         SelectedTextList.Add(new PDFTextSelection(() => SelectInfos[selInfoIndex]));
       }
@@ -124,6 +130,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (ctrl && IsTextSelectionValid(out var selInfo))
           SelectInfoList.Add(selInfo);
+
+      else if (SelectedTextList.Any() && SelectedTextList.Last() is PDFTextSelection)
+        SelectedTextList.RemoveAt(SelectedTextList.Count - 1);
 
       base.ProcessMouseDoubleClickForSelectTextTool(pagePoint, pageIndex);
 
@@ -162,10 +171,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       /*rects = SmoothSelectionAlongY(rects.ToList());
 
-      return rects.Select(r => PageToDeviceRect(r,
-                                                pageIndex));*/
+      return rects.Select(r => PageToDeviceRect(r, pageIndex));*/
     }
 
+    /// <summary>
+    /// Called in <see cref="PdfViewer"/>.
+    /// </summary>
     protected override void GenerateSelectedTextProperty()
     {
       string ret = "";
@@ -204,13 +215,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       bool handled    = false;
       bool invalidate = false;
 
-      if (pageIndex >= 0 && GetCharIndexAtPos(pageIndex,
-                                              pagePoint) < 0)
+      // Page selection
+      if (pageIndex >= 0 && GetCharIndexAtPos(pageIndex, pagePoint) < 0)
       {
         DeselectAll();
 
-        SelectedPages = new PDFPageSelection(pageIndex,
-                                             pageIndex);
+        SelectedPages = new PDFPageSelection(pageIndex, pageIndex);
 
         CurrentSelectionTool = SelectionType.Page;
 

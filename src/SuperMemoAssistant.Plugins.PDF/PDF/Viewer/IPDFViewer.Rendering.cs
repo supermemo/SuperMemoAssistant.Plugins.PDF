@@ -160,7 +160,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       if (SelectedPages != null && SelectedPages.Contains(pageIndex))
       {
-        drawingContext.DrawRectangle(ExtractFillBrush,
+        drawingContext.DrawRectangle(ExtractTransparentFillBrush,
                                      AreaBorderPen,
                                      actualRect);
 

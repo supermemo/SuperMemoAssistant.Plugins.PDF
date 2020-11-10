@@ -288,7 +288,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     public void ShowOptionDialog()
     {
-      Config.ShowWindow()
+      Config.ShowWindowAsync()
             .ContinueWith(
               task =>
               {
