@@ -4,12 +4,24 @@
   <Anotar.Serilog />
   <PropertyChanged/>  
   <LoadAssembliesOnStartup>
-    <ExcludeAssemblies>
+    <!--<ExcludeAssemblies>
       Anotar.Serilog
       Microsoft.CodeAnalysis
       Microsoft.CodeAnalysis.CSharp
       Microsoft.CodeAnalysis.CSharp.Workspaces
       Microsoft.CodeAnalysis.Workspaces
-    </ExcludeAssemblies>
+      Microsoft.Toolkit.Uwp.Notifications
+      Microsoft.Windows.SDK.Contracts
+      Windows.Embedded*
+    </ExcludeAssemblies>-->
+    <IncludeAssemblies>
+      PresentationCore
+      PresentationFramework
+      System.Xaml
+      WindowsBase
+      Pdfium.Net.SDK
+      Patagames.Pdf
+      Patagames.Pdf.Wpf
+    </IncludeAssemblies>
   </LoadAssembliesOnStartup>
 </Weavers>

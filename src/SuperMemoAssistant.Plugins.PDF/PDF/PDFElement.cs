@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -19,46 +19,40 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
-// 
-// Created On:   2019/03/02 18:29
-// Modified On:  2019/04/14 23:03
-// Modified By:  Alexis
 
 #endregion
 
 
 
 
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.Remoting;
-using System.Text.RegularExpressions;
-using System.Windows;
-using Anotar.Serilog;
-using Forge.Forms.Annotations;
-using Newtonsoft.Json;
-using Patagames.Pdf.Net;
-using Patagames.Pdf.Net.Controls.Wpf;
-using PropertyChanged;
-using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
-using SuperMemoAssistant.Interop.SuperMemo.Core;
-using SuperMemoAssistant.Interop.SuperMemo.Elements.Builders;
-using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
-using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
-using SuperMemoAssistant.Interop.SuperMemo.Registry.Members;
-using SuperMemoAssistant.Plugins.PDF.Models;
-using SuperMemoAssistant.Services;
-
 namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
-  using Forge.Forms;
-  using SuperMemoAssistant.Services.UI.Extensions;
+  using System;
+  using System.Collections.ObjectModel;
+  using System.ComponentModel;
+  using System.Globalization;
+  using System.IO;
+  using System.Linq;
+  using System.Runtime.Remoting;
+  using System.Text.RegularExpressions;
+  using System.Windows;
+  using Anotar.Serilog;
+  using Forge.Forms.Annotations;
+  using Interop.SuperMemo.Content.Controls;
+  using Interop.SuperMemo.Core;
+  using Interop.SuperMemo.Elements.Builders;
+  using Interop.SuperMemo.Elements.Models;
+  using Interop.SuperMemo.Elements.Types;
+  using Interop.SuperMemo.Registry.Members;
+  using Microsoft.Toolkit.Uwp.Notifications;
+  using Models;
+  using Newtonsoft.Json;
+  using Patagames.Pdf.Net;
+  using Patagames.Pdf.Net.Controls.Wpf;
+  using PropertyChanged;
+  using Services;
+  using Services.ToastNotifications;
+  using SuperMemoAssistant.Extensions;
 
   [Form(Mode = DefaultFields.None)]
   public class PDFElement : INotifyPropertyChanged
@@ -120,25 +114,25 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
     [Field(Name = "Extract format")]
     [SelectFrom(typeof(ExtractFormat),
-      SelectionType = SelectionType.ComboBox)]
+                SelectionType = SelectionType.ComboBox)]
     [JsonProperty(PropertyName = "EF")]
     public ExtractFormat ExtractFormat { get; set; } = ExtractFormat.HtmlRichText;
 
     [Field(Name = "PDF Extract Priority (%)")]
     [Value(Must.BeGreaterThanOrEqualTo,
-      0,
-      StrictValidation = true)]
+           0,
+           StrictValidation = true)]
     [Value(Must.BeLessThanOrEqualTo,
-      100,
-      StrictValidation = true)]
+           100,
+           StrictValidation = true)]
     public double PDFExtractPriority { get; set; }
     [Field(Name = "SM Extract Priority (%)")]
     [Value(Must.BeGreaterThanOrEqualTo,
-      0,
-      StrictValidation = true)]
+           0,
+           StrictValidation = true)]
     [Value(Must.BeLessThanOrEqualTo,
-      100,
-      StrictValidation = true)]
+           100,
+           StrictValidation = true)]
     public double SMExtractPriority { get; set; }
 
     [JsonProperty(PropertyName = "VM")]
@@ -181,18 +175,18 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     #region Methods
 
     public static CreationResult Create(
-      string           filePath,
-      int              startPage       = -1,
-      int              endPage         = -1,
-      int              startIdx        = -1,
-      int              endIdx          = -1,
-      int              parentElementId = -1,
-      int              readPage        = 0,
-      Point            readPoint       = default,
-      ViewModes        viewMode        = PDFConst.DefaultViewMode,
-      int              pageMargin      = PDFConst.DefaultPageMargin,
-      float            zoom            = PDFConst.DefaultZoom,
-      bool             shouldDisplay   = true)
+      string    filePath,
+      int       startPage       = -1,
+      int       endPage         = -1,
+      int       startIdx        = -1,
+      int       endIdx          = -1,
+      int       parentElementId = -1,
+      int       readPage        = 0,
+      Point     readPoint       = default,
+      ViewModes viewMode        = PDFConst.DefaultViewMode,
+      int       pageMargin      = PDFConst.DefaultPageMargin,
+      float     zoom            = PDFConst.DefaultZoom,
+      bool      shouldDisplay   = true)
     {
       IBinary binMem = null;
 
@@ -397,8 +391,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
           if (File.Exists(pdfEl.FilePath) == false)
           {
-            // TODO: Replace with a notification
-            $"The PDF document cannot be found.\r\n\r\nPath: {pdfEl.FilePath}".WarningMsgBox().RunAsync();
+            var pdfDirPath = Svc.SM.Collection.CombinePath(Path.GetDirectoryName(pdfEl.FilePath));
+
+            $"The PDF document is missing.\r\nFilename: {Path.GetFileName(pdfEl.FilePath)}".ShowDesktopNotification(
+              new ToastButton("Open containing folder", pdfDirPath)
+              {
+                ActivationType = ToastActivationType.Protocol
+              }
+            );
 
             return null;
           }
@@ -522,10 +522,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           var match = Regex.Match(date, "D\\:([0-9]{14})\\+[0-9]{2}'[0-9]{2}'");
 
           if (match.Success)
-          {
-            if (DateTime.TryParseExact(match.Groups[1].Value, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dateTime))
+            if (DateTime.TryParseExact(match.Groups[1].Value, "yyyyMMddHHmmss", CultureInfo.InvariantCulture,
+                                       DateTimeStyles.AssumeUniversal, out var dateTime))
               date = dateTime.ToString(CultureInfo.InvariantCulture);
-          }
         }
       }
 
@@ -556,7 +555,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     }
 
     public References ConfigureSMReferences(References r,
-                                            string     subtitle = null,
+                                            string     subtitle  = null,
                                             string     bookmarks = null)
     {
       string filePath = BinaryMember.GetFilePath("pdf");
@@ -573,7 +572,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
               .WithSource("PDF")
               .WithLink("..\\" + Svc.SM.Collection.MakeRelative(filePath));
     }
-    
+
     [SuppressPropertyChangedWarnings]
     private void OnCollectionChanged(object                                                          sender,
                                      System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
