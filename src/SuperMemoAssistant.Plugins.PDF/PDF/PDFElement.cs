@@ -551,7 +551,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     {
       return string.IsNullOrWhiteSpace(subtitle)
         ? title
-        : $"{subtitle} - {subtitle}";
+        : $"{title} - {subtitle}";
     }
 
     public References ConfigureSMReferences(References r,
