@@ -49,14 +49,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     #region Constants & Statics
 
     public static readonly DependencyProperty LoadingIndicatorVisibilityProperty =
-      DependencyProperty.Register("LoadingIndicatorVisibility",
+      DependencyProperty.Register(nameof(LoadingIndicatorVisibility),
                                   typeof(Visibility),
                                   typeof(IPDFViewer),
                                   new PropertyMetadata(Visibility.Hidden));
 
     // Using a DependencyProperty as the backing store for DictionaryPopup.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty DictionaryPopupProperty =
-      DependencyProperty.Register("DictionaryPopup",
+      DependencyProperty.Register(nameof(DictionaryPopup),
                                   typeof(Popup),
                                   typeof(IPDFViewer),
                                   new PropertyMetadata(null));
