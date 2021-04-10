@@ -29,6 +29,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
   using System;
   using System.Collections.ObjectModel;
+  using System.Collections.Specialized;
   using System.ComponentModel;
   using System.Globalization;
   using System.IO;
@@ -574,8 +575,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     }
 
     [SuppressPropertyChangedWarnings]
-    private void OnCollectionChanged(object                                                          sender,
-                                     System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    private void OnCollectionChanged(object                           sender,
+                                     NotifyCollectionChangedEventArgs e)
     {
       IsChanged = true;
     }
