@@ -239,7 +239,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     /// </summary>
     /// <param name="e">The mouse event</param>
     /// <param name="pageIndex">The page index on which the mouse event was captured, or -1 if outside a page</param>
-    /// <param name="pagePoint">The point in the page where the mouse event occured, or default value</param>
+    /// <param name="pagePoint">The point in the page where the mouse event occurred, or default value</param>
     /// <returns>Whether the event was processed</returns>
     protected bool OnMouseDownProcessSelection(MouseButtonEventArgs e,
                                                int                  pageIndex,

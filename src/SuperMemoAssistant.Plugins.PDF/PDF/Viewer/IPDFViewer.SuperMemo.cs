@@ -19,37 +19,32 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
-// 
-// Modified On:  2020/01/29 12:37
-// Modified By:  Alexis
 
 #endregion
 
 
 
 
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Windows;
-using Patagames.Pdf;
-using Patagames.Pdf.Net;
-using Patagames.Pdf.Net.Controls.Wpf;
-using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Interop.SuperMemo.Content.Contents;
-using SuperMemoAssistant.Interop.SuperMemo.Elements.Builders;
-using SuperMemoAssistant.Interop.SuperMemo.Elements.Models;
-using SuperMemoAssistant.Plugins.PDF.Extensions;
-using SuperMemoAssistant.Plugins.PDF.Models;
-using SuperMemoAssistant.Services;
-using SuperMemoAssistant.Sys.Drawing;
-
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
   using System;
+  using System.Collections.Generic;
+  using System.Drawing;
+  using System.Linq;
+  using System.Windows;
   using Anotar.Serilog;
+  using Extensions;
   using Forge.Forms;
+  using Interop.SuperMemo.Content.Contents;
+  using Interop.SuperMemo.Elements.Builders;
+  using Interop.SuperMemo.Elements.Models;
+  using Models;
+  using Patagames.Pdf;
+  using Patagames.Pdf.Net;
+  using Patagames.Pdf.Net.Controls.Wpf;
+  using Services;
+  using SuperMemoAssistant.Extensions;
+  using Sys.Drawing;
 
   public partial class IPDFViewer
   {
@@ -70,6 +65,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       if (priority < 0 || priority > 100)
         priority = PDFConst.DefaultSMExtractPriority;
+
+      string extractTitle = null;
 
       // Image extract
       foreach (var selImage in selImages)
@@ -134,16 +131,28 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
 
       if (hasTextOcr)
-      {
         foreach (var selArea in selTextAreas)
           pageIndices.Add(selArea.PageIndex);
-      }
 
       if (hasTextSelection || hasTextOcr)
       {
         string text = GetSelectedTextAsHtml();
 
         contents.Add(new TextContent(true, text));
+      }
+
+      else if (imgExtracts.Count > 0)
+      {
+        var parentEl = Svc.SM.Registry.Element[PDFElement.ElementId];
+
+        var titleString = $"{parentEl.Title} -- Image extract:";
+        var imageString = $"{imgExtracts.Count} image{(imgExtracts.Count == 1 ? "" : "s")}";
+        var pageString  = "p" + string.Join(", p", pageIndices.Select(p => p + 1));
+
+        extractTitle = $"{titleString} {imageString} from {pageString}";
+
+        if (Config.ImageExtractAddHtml)
+          contents.Add(new TextContent(true, string.Empty));
       }
 
       // Generate extract
@@ -168,7 +177,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithLayout(Config.Layout)
             .WithPriority(priority)
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
-            .WithForcedGeneratedTitle()
+            .WithTitle(extractTitle)
             .DoNotDisplay()
         );
 
@@ -209,7 +218,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return ret;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("AsyncUsage", "AsyncFixer03:Avoid fire & forget async void methods", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("AsyncUsage", "AsyncFixer03:Avoid fire & forget async void methods",
+                                                     Justification = "<Pending>")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<Pending>")]
     protected async void CreateSMExtractWithPriorityPrompt()
     {
@@ -237,7 +247,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       }
     }
 
-    protected ContentBase CreateImageContent(Image  image, string title)
+    protected ContentBase CreateImageContent(Image image, string title)
     {
       if (image == null)
         return null;

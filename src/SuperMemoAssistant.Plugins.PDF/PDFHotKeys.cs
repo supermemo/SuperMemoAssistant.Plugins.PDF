@@ -90,7 +90,7 @@ namespace SuperMemoAssistant.Plugins.PDF
          // Extracts
          .RegisterLocal(ExtractPDF,
                         "Create PDF extract",
-                        new HotKey(Key.X, KeyModifiers.CtrlShift)
+                        new HotKey(Key.X, KeyModifiers.CtrlAlt)
          )
          .RegisterLocal(ExtractSM,
                         "Create SM extract",

@@ -542,7 +542,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                out authors,
                out date);
 
-      title = title ?? BinaryMember.Name;
+      title ??= BinaryMember.Name;
 
       if (StartPage >= 0 && EndPage >= 0)
         title += $" ({StartPage + 1}:{StartIndex} -> {EndPage + 1}:{EndIndex})";
