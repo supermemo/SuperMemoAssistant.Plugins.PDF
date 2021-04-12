@@ -19,38 +19,36 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
-// 
-// Modified On:  2020/03/13 14:32
-// Modified By:  Alexis
 
 #endregion
 
 
 
 
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Windows;
-using Forge.Forms.Annotations;
-using Newtonsoft.Json;
-using Patagames.Pdf.Net.Controls.Wpf;
-using PropertyChanged;
-using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Interop.SuperMemo.Content.Models;
-using SuperMemoAssistant.Plugins.Dictionary.Interop;
-using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
-using SuperMemoAssistant.Plugins.PDF.MathPix;
-using SuperMemoAssistant.Plugins.PDF.PDF;
-using SuperMemoAssistant.Services;
-using SuperMemoAssistant.Services.UI.Configuration;
-using SuperMemoAssistant.Sys.ComponentModel;
-
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
+  using System.Collections.Generic;
+  using System.ComponentModel;
+  using System.Linq;
+  using System.Windows;
+  using Dictionary.Interop;
+  using Dictionary.Interop.OxfordDictionaries.Models;
+  using Forge.Forms.Annotations;
+  using Interop.SuperMemo.Content.Models;
+  using Interop.SuperMemo.Registry.Members;
+  using MathPix;
+  using Newtonsoft.Json;
+  using Patagames.Pdf.Net.Controls.Wpf;
+  using PDF;
+  using PropertyChanged;
+  using Services;
+  using Services.UI.Configuration;
+  using SuperMemoAssistant.Extensions;
+  using Sys.ComponentModel;
+
   /// <summary>
-  ///   The main configuration file for the PDF plugin. Shared across all PDF. Some values
-  ///   can be overriden by <see cref="PDFElement" />
+  ///   The main configuration file for the PDF plugin. Shared across all PDF. Some values can be overriden by
+  ///   <see cref="PDFElement" />
   /// </summary>
   [Form(Mode = DefaultFields.None)]
   [Title("PDF Settings",
@@ -70,6 +68,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [Field(Name = "Copy PDF files to collection")]
     public bool CopyDocumentToFS { get; set; } = true;
 #endif
+
+    [Field(Name                                    = "Text-only template")]
+    [SelectFrom("{Binding Templates}", DisplayPath = "Name", ValuePath = "Id", SelectionType = SelectionType.ComboBox)]
+    public int TextTemplate { get; set; } = -1;
+
+    [Field(Name                                    = "Image template")]
+    [SelectFrom("{Binding Templates}", DisplayPath = "Name", ValuePath = "Id", SelectionType = SelectionType.ComboBox)]
+    public int ImageTemplate { get; set; } = -1;
 
     [Field(Name                                    = "Layout")]
     [SelectFrom("{Binding Layouts}", SelectionType = SelectionType.ComboBox)]
@@ -108,7 +114,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [SelectFrom(typeof(ImageStretchMode),
                 SelectionType = SelectionType.RadioButtonsInline)]
     public ImageStretchMode ImageStretchType { get; set; } = ImageStretchMode.Proportional;
-    
+
     [Field(Name = "Add HTML component to extracts containing only images?")]
     public bool ImageExtractAddHtml { get; set; } = false;
 
@@ -169,6 +175,12 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     public IEnumerable<string> Layouts => Svc.SMA.Layouts;
 
     [JsonIgnore]
+    public IEnumerable<TemplateShim> Templates =>
+      new List<TemplateShim> { new TemplateShim("(none)", -1) }
+        .Concat(Svc.SM.Registry.Template.Select(t => new TemplateShim(t)))
+        .ToList();
+
+    [JsonIgnore]
     public IReadOnlyDictionary<string, OxfordDictionary> MonolingualDictionaries => DictionaryConst.MonolingualDictionaries;
 
     #endregion
@@ -204,5 +216,37 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     public event PropertyChangedEventHandler PropertyChanged;
 
     #endregion
+
+
+
+
+    public class TemplateShim
+    {
+      #region Constructors
+
+      public TemplateShim(ITemplate template)
+      {
+        Name = template.Name;
+        Id   = template.Id;
+      }
+
+      public TemplateShim(string name, int id)
+      {
+        Name = name;
+        Id   = id;
+      }
+
+      #endregion
+
+
+
+
+      #region Properties & Fields - Public
+
+      public string Name { get; }
+      public int    Id   { get; }
+
+      #endregion
+    }
   }
 }

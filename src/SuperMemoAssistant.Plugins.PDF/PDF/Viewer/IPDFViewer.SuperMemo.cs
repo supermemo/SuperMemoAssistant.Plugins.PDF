@@ -167,6 +167,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         var bookmarksStr = StringEx.Join(" ; ", bookmarks);
         var parentEl     = Svc.SM.Registry.Element[PDFElement.ElementId];
 
+        var templateId = imgExtracts.Count > 0 ? Config.ImageTemplate : Config.TextTemplate;
+        var template   = Svc.SM.Registry.Template[templateId];
+
         ret = Svc.SM.Registry.Element.Add(
           out _,
           ElemCreationFlags.CreateSubfolders,
@@ -175,6 +178,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             .WithParent(parentEl)
             .WithConcept(parentEl.Concept)
             .WithLayout(Config.Layout)
+            .WithTemplate(template)
             .WithPriority(priority)
             .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
             .WithTitle(extractTitle)
