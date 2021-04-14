@@ -75,7 +75,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       var kbMod = GetKeyboardModifiers();
       var hotKey = new HotKey(
-        kbMod.HasFlag(KeyModifiers.Alt) ? e.SystemKey : e.Key,
+        e.Key == Key.System ? e.SystemKey : e.Key,
         kbMod
       );
 
