@@ -330,3 +330,4 @@ ASALocalRun/
 .mfractor/
 *.rsls
 /PDFLicense.cs
+/src/SuperMemoAssistant.Plugins.PDF/PDFLicense.cs

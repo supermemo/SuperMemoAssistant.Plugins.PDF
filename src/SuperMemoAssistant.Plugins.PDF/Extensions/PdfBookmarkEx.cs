@@ -38,6 +38,9 @@ using SuperMemoAssistant.Extensions;
 
 namespace SuperMemoAssistant.Plugins.PDF.Extensions
 {
+  using Patagames.Pdf.Enums;
+  using Patagames.Pdf.Net.Actions;
+
   public static class PdfBookmarkEx
   {
     #region Methods
@@ -59,7 +62,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
     public static SelectInfo? GetSelection(this PdfBookmark bookmark,
                                            PdfDocument      document)
     {
-      PdfDestination destination = bookmark.Action?.Destination ?? bookmark.Destination;
+      PdfDestination destination = bookmark.Action?.GetDestination() ?? bookmark.Destination;
 
       if (destination == null)
         return null;
@@ -71,7 +74,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
 
       if (nextBookmark != null)
       {
-        PdfDestination nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
+        PdfDestination nextDestination = nextBookmark.Action?.GetDestination() ?? nextBookmark.Destination;
 
         lastPage = nextDestination.PageIndex - 1 > firstPage
           ? nextDestination.PageIndex - 1
@@ -87,9 +90,27 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
       };
     }
 
+    public static PdfDestination GetDestination(this PdfAction pdfAction)
+    {
+      if (pdfAction == null)
+        return null;
+
+      switch (pdfAction.ActionType)
+      {
+        case ActionTypes.CurrentDoc:
+          return (pdfAction as PdfGoToAction)?.Destination;
+        case ActionTypes.EmbeddedDoc:
+          return (pdfAction as PdfGoToEAction)?.Destination;
+        case ActionTypes.ExternalDoc:
+          return (pdfAction as PdfGoToRAction)?.Destination;
+        default:
+          return null;
+      }
+    }
+
     public static bool Contains(this PdfBookmark bookmark, PdfDocument document, int pageIdx)
     {
-      PdfDestination destination = bookmark.Action?.Destination ?? bookmark.Destination;
+      PdfDestination destination = bookmark.Action?.GetDestination() ?? bookmark.Destination;
 
       if (destination == null)
         return false;
@@ -104,8 +125,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Extensions
         if (nextBookmark == null)
           return pageIdx >= firstPage;
 
-        nextDestination = nextBookmark.Action?.Destination ?? nextBookmark.Destination;
-        bookmark = nextBookmark;
+        nextDestination = nextBookmark.Action?.GetDestination() ?? nextBookmark.Destination;
+        bookmark        = nextBookmark;
       }
 
       int lastPage = nextDestination.PageIndex - 1 > firstPage

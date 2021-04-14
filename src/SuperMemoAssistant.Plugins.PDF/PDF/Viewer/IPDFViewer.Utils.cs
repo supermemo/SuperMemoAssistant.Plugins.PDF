@@ -282,7 +282,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       if (selInfo.IsTextSelectionValid())
         for (int i = selInfo.StartPage; i <= selInfo.EndPage; i++)
         {
-          if (ret != "")
+          if (string.IsNullOrEmpty(ret) == false)
             ret += "\r\n";
 
           int s = 0;

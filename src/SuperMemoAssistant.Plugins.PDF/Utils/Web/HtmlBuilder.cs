@@ -330,11 +330,40 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
         return new TextObject(textObj, absIdx);
       }
 
-      var textObjects = page.PageObjects
-                            .Where(o => o.ObjectType == PageObjectTypes.PDFPAGE_TEXT)
-                            .Select(o => GetTextObject((PdfTextObject)o))
-                            .OrderBy(t => t.StartIndex)
-                            .ToList();
+      void ProcessPageObject(PdfPageObject pageObject, List<TextObject> ret)
+      {
+        switch (pageObject.ObjectType)
+        {
+          case PageObjectTypes.PDFPAGE_FORM:
+            var pdfFormObj = (PdfFormObject)pageObject;
+
+            pdfFormObj.PageObjects.ForEach(po => ProcessPageObject(po, ret));
+            break;
+
+          case PageObjectTypes.PDFPAGE_TEXT:
+            var pdfTextObj = (PdfTextObject)pageObject;
+
+            ret.Add(GetTextObject(pdfTextObj));
+            break;
+        }
+      }
+
+      List<TextObject> GetAllTextObjects(PdfPage pdfPage)
+      {
+        var ret = new List<TextObject>();
+
+        foreach (var pageObject in pdfPage.PageObjects)
+          ProcessPageObject(pageObject, ret);
+
+        return ret.OrderBy(t => t.StartIndex).ToList();
+      }
+
+      var textObjects = GetAllTextObjects(page);
+        //page.PageObjects
+        //                    .Where(o => o.ObjectType == PageObjectTypes.PDFPAGE_TEXT)
+        //                    .Select(o => GetTextObject((PdfTextObject)o))
+        //                    .OrderBy(t => t.StartIndex)
+        //                    .ToList();
 
       // Some PDF documents are improperly formatted and miss PdfTextObjects -- Fill the gaps
 
