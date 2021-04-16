@@ -37,6 +37,8 @@ using Patagames.Pdf.Net.Controls.Wpf;
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
+  using System.Windows.Media;
+
   internal static class PDFConst
   {
     #region Constants & Statics
@@ -61,6 +63,9 @@ namespace SuperMemoAssistant.Plugins.PDF
 
     public const double DefaultSMExtractPriority  = 15.0;
     public const double DefaultPDFExtractPriority = 0.0;
+    
+    public static Color PDFExtractColor { get; } = Color.FromArgb(90, 255, 106, 0);
+    public static Color PDFOutOfExtractColor { get; } = Color.FromArgb(127, 180, 30, 30);
 
     #endregion
   }

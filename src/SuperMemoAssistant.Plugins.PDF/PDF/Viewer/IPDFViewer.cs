@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -19,30 +19,25 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
-// 
-// Created On:   2018/12/10 14:46
-// Modified On:  2019/02/28 23:35
-// Modified By:  Alexis
 
 #endregion
 
 
 
 
-using System;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls.Primitives;
-using Patagames.Pdf.Net;
-using Patagames.Pdf.Net.Controls.Wpf;
-using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Plugins.PDF.Extensions;
-using SuperMemoAssistant.Plugins.PDF.Models;
-using SuperMemoAssistant.Sys.Threading;
-
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  using System;
+  using System.Collections.Generic;
+  using System.Windows;
+  using System.Windows.Controls.Primitives;
+  using Extensions;
+  using Models;
+  using Patagames.Pdf.Net;
+  using Patagames.Pdf.Net.Controls.Wpf;
+  using SuperMemoAssistant.Extensions;
+  using Sys.Threading;
+
   /// <inheritdoc />
   public partial class IPDFViewer : PdfViewer
   {
@@ -61,6 +56,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                   typeof(IPDFViewer),
                                   new PropertyMetadata(null));
 
+
+    protected static PDFCfg Config => PDFState.Instance.Config;
+
     #endregion
 
 
@@ -68,14 +66,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #region Properties & Fields - Non-Public
 
-    private int _ignoreChanges = 0;
-
     protected readonly DelayedTask _saveTask;
 
-
-    protected PDFCfg                                 Config                 => PDFState.Instance.Config;
-    protected Dictionary<int, List<HighlightInfo>>   ExtractHighlights      { get; } = new Dictionary<int, List<HighlightInfo>>();
-    protected Dictionary<int, List<PDFImageExtract>> ImageExtractHighlights { get; } = new Dictionary<int, List<PDFImageExtract>>();
+    private   int                                    _ignoreChanges = 0;
+    protected Dictionary<int, List<HighlightInfo>>   ExtractHighlights      { get; } = new();
+    protected Dictionary<int, List<PDFImageExtract>> ImageExtractHighlights { get; } = new();
 
     #endregion
 

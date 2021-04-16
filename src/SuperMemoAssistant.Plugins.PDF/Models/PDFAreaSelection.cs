@@ -104,27 +104,18 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
       double y1 = Math.Min(Y1, Y2);
       double y2 = Math.Max(Y1, Y2);
 
-      return new FS_RECTF(x1,
-                          y1,
-                          x2,
-                          y2);
+      return new FS_RECTF(x1, y1, x2, y2);
     }
 
     public (System.Windows.Point, System.Windows.Point) NormalizedPoints()
     {
-      double x1 = Math.Min(X1,
-                           X2);
-      double x2 = Math.Max(X1,
-                           X2);
-      double y1 = Math.Min(Y1,
-                           Y2);
-      double y2 = Math.Max(Y1,
-                           Y2);
+      double x1 = Math.Min(X1, X2);
+      double x2 = Math.Max(X1, X2);
+      double y1 = Math.Min(Y1, Y2);
+      double y2 = Math.Max(Y1, Y2);
 
-      return (new System.Windows.Point(x1,
-                                       y1),
-              new System.Windows.Point(x2,
-                                       y2));
+      return (new System.Windows.Point(x1, y1),
+              new System.Windows.Point(x2, y2));
     }
 
     public bool IsValid()

@@ -362,16 +362,14 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected void AddSMExtractHighlight(PDFTextExtract extract)
     {
-      AddHighlight(extract,
-                   SMExtractColor);
+      AddHighlight(extract, Config.SMExtractColor);
     }
 
     private void AddImgExtractHighlight(int      pageIndex,
                                         FS_RECTF boundingBox)
     {
       var pageHighlights = ImageExtractHighlights
-        .SafeGet(pageIndex,
-                 new List<PDFImageExtract>());
+        .SafeGet(pageIndex, new List<PDFImageExtract>());
 
       pageHighlights.Add(new PDFImageExtract
       {
@@ -384,8 +382,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected void AddPDFExtractHighlight(PDFTextExtract extract)
     {
-      AddHighlight(extract,
-                   PDFExtractColor);
+      AddHighlight(extract, Config.PDFExtractColor);
     }
 
     protected void GenerateOutOfExtractHighlights()
@@ -399,7 +396,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                       {
                         CharIndex  = 0,
                         CharsCount = PDFElement.StartIndex,
-                        Color      = OutOfExtractExtractColor
+                        Color      = Config.PDFOutOfExtractColor
                       });
 
       int lastPageCharCount = Document.Pages[PDFElement.EndPage].Text.CountChars;
@@ -410,7 +407,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                       {
                         CharIndex  = PDFElement.EndIndex,
                         CharsCount = lastPageCharCount - PDFElement.EndIndex,
-                        Color      = OutOfExtractExtractColor
+                        Color      = Config.PDFOutOfExtractColor
                       });
 
       if (IsPageInClientRect(PDFElement.EndPage) == false)
@@ -419,8 +416,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     protected void AddIgnoreHighlight(PDFTextExtract extract)
     {
-      AddHighlight(extract,
-                   IgnoreHighlightColor);
+      AddHighlight(extract, Config.IgnoreHighlightColor);
     }
 
     protected void AddHighlight(PDFTextExtract             extract,

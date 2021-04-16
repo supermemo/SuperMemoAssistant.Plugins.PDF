@@ -19,72 +19,48 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
-// 
-// Created On:   2019/09/03 18:15
-// Modified On:  2020/01/17 10:28
-// Modified By:  Alexis
 
 #endregion
 
 
 
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Windows;
-using System.Windows.Media;
-using Anotar.Serilog;
-using Patagames.Pdf;
-using Patagames.Pdf.Enums;
-using Patagames.Pdf.Net;
-using Patagames.Pdf.Net.Controls.Wpf;
-using SuperMemoAssistant.Extensions;
-using SuperMemoAssistant.Interop;
-using SuperMemoAssistant.Plugins.PDF.Extensions;
-using SuperMemoAssistant.Plugins.PDF.Models;
-using Brush = System.Windows.Media.Brush;
-using Brushes = System.Windows.Media.Brushes;
-using Color = System.Windows.Media.Color;
-using Pen = System.Windows.Media.Pen;
-
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  using System;
+  using System.Collections.Generic;
+  using System.Drawing;
+  using System.Windows;
+  using System.Windows.Media;
+  using Anotar.Serilog;
+  using Extensions;
+  using Models;
+  using Patagames.Pdf;
+  using Patagames.Pdf.Enums;
+  using Patagames.Pdf.Net;
+  using Patagames.Pdf.Net.Controls.Wpf;
+  using SuperMemoAssistant.Extensions;
+  using Brush = System.Windows.Media.Brush;
+  using Brushes = System.Windows.Media.Brushes;
+  using Color = System.Windows.Media.Color;
+  using Pen = System.Windows.Media.Pen;
+
   public partial class IPDFViewer
   {
     #region Constants & Statics
 
-    protected static readonly Color OutOfExtractExtractColor = Color.FromArgb(127,
-                                                                              180,
-                                                                              30,
-                                                                              30);
-    protected static readonly Color SMExtractColor            = SMConst.Stylesheet.ExtractBackgroundColor;
-    protected static readonly Color SMExtractTransparentColor = SMConst.Stylesheet.ExtractTransparentColor;
-    protected static readonly Color PDFExtractColor = Color.FromArgb(90,
-                                                                     255,
-                                                                     106,
-                                                                     0);
-    protected static readonly Color IgnoreHighlightColor = SMConst.Stylesheet.IgnoreColor;
+    protected static Pen AreaBorderPen { get; } = new(
+      new SolidColorBrush(Color.FromArgb(255,
+                                         Config.SMExtractColor.R,
+                                         Config.SMExtractColor.G,
+                                         Config.SMExtractColor.B)),
+      1.0f);
 
-    protected static Pen AreaBorderPen { get; } = new Pen(new SolidColorBrush(Color.FromArgb(255,
-                                                                                             SMExtractColor.R,
-                                                                                             SMExtractColor.G,
-                                                                                             SMExtractColor.B)),
-                                                          1.0f);
+    protected static Brush ExtractFillBrush      { get; } = new SolidColorBrush(Config.SMExtractColor);
+    protected static Brush OutOfExtractFillBrush { get; } = new SolidColorBrush(Config.PDFOutOfExtractColor);
 
-    protected static Brush ExtractFillBrush            { get; } = new SolidColorBrush(SMExtractColor);
-    protected static Brush ExtractTransparentFillBrush { get; } = new SolidColorBrush(SMExtractTransparentColor);
-    protected static Brush OutOfExtractFillBrush       { get; } = new SolidColorBrush(OutOfExtractExtractColor);
-
-    protected static Pen ImageHighlightPen { get; } = new Pen(new SolidColorBrush(Color.FromRgb(77,
-                                                                                                97,
-                                                                                                117)),
-                                                              3.0f);
-    protected static Brush ImageHighlightFillBrush { get; } = new SolidColorBrush(Color.FromArgb(77,
-                                                                                                 63,
-                                                                                                 100,
-                                                                                                 40));
+    protected static Pen   ImageHighlightPen       { get; } = new(new SolidColorBrush(Color.FromRgb(77, 97, 117)), 3.0f);
+    protected static Brush ImageHighlightFillBrush { get; } = new SolidColorBrush(Config.ImageHighlightColor);
 
     #endregion
 
@@ -160,7 +136,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       if (SelectedPages != null && SelectedPages.Contains(pageIndex))
       {
-        drawingContext.DrawRectangle(ExtractTransparentFillBrush,
+        drawingContext.DrawRectangle(ExtractFillBrush,
                                      AreaBorderPen,
                                      actualRect);
 
@@ -213,7 +189,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         DrawImageHighlight(drawingContext,
                            imageExtract,
                            ImageHighlightPen,
-                           ExtractTransparentFillBrush
+                           ImageHighlightFillBrush
         );
     }
 
@@ -353,10 +329,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     {
       var pt1 = PageToDevice(rc.left, rc.top, pageIndex);
       var pt2 = PageToDevice(rc.right, rc.bottom, pageIndex);
-      int x   = Helpers.UnitsToPixels(pt1.X < pt2.X ? pt1.X : pt2.X);
-      int y   = Helpers.UnitsToPixels(pt1.Y < pt2.Y ? pt1.Y : pt2.Y);
-      int w   = Helpers.UnitsToPixels(pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X);
-      int h   = Helpers.UnitsToPixels(pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y);
+
+      int x = pt1.X < pt2.X ? pt1.X : pt2.X;
+      int y = pt1.Y < pt2.Y ? pt1.Y : pt2.Y;
+      int w = pt1.X > pt2.X ? pt1.X - pt2.X : pt2.X - pt1.X;
+      int h = pt1.Y > pt2.Y ? pt1.Y - pt2.Y : pt2.Y - pt1.Y;
+
       return new Rect(x, y, w, h);
     }
 
@@ -385,8 +363,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
       brush.Drawing       = drawingGroup;
       brush.ViewportUnits = BrushMappingMode.Absolute;
-      brush.Viewport = new Rect(0, 0, 8, 4);
-      brush.TileMode = TileMode.Tile;
+      brush.Viewport      = new Rect(0, 0, 8, 4);
+      brush.TileMode      = TileMode.Tile;
 
       return brush;
     }

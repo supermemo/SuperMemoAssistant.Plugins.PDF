@@ -31,9 +31,11 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
   using System.ComponentModel;
   using System.Linq;
   using System.Windows;
+  using System.Windows.Media;
   using Dictionary.Interop;
   using Dictionary.Interop.OxfordDictionaries.Models;
   using Forge.Forms.Annotations;
+  using Interop;
   using Interop.SuperMemo.Content.Models;
   using Interop.SuperMemo.Registry.Members;
   using MathPix;
@@ -45,6 +47,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
   using Services.UI.Configuration;
   using SuperMemoAssistant.Extensions;
   using Sys.ComponentModel;
+  using Sys.Converters.Json;
 
   /// <summary>
   ///   The main configuration file for the PDF plugin. Shared across all PDF. Some values can be overriden by
@@ -62,6 +65,7 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
                 Validates = true)]
   public class PDFCfg : CfgBase<PDFCfg>, INotifyPropertyChangedEx
   {
+    private const string HexREPattern = "^\\#[\\d]{6,8}$";
     #region Properties & Fields - Public
 
 #if false
@@ -131,6 +135,32 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
            20,
            StrictValidation = true)]
     public int DefaultPageMargin { get; set; } = PDFConst.DefaultPageMargin;
+
+    // TODO: Add converter to display in Forge.Forms
+    [Field(Name = "Extract highlight colour")]
+    [Value(Must.MatchPattern, HexREPattern)]
+    [JsonConverter(typeof(ColorToStringJsonConverter))]
+    public Color SMExtractColor { get; set; } = SMConst.Stylesheet.ExtractTransparentColor;
+
+    [Field(Name = "Image highlight colour")]
+    [Value(Must.MatchPattern, HexREPattern)]
+    [JsonConverter(typeof(ColorToStringJsonConverter))]
+    public Color ImageHighlightColor { get; set; } = SMConst.Stylesheet.ExtractTransparentColor;
+
+    [Field(Name = "PDF Extract highlight colour")]
+    [Value(Must.MatchPattern, HexREPattern)]
+    [JsonConverter(typeof(ColorToStringJsonConverter))]
+    public Color PDFExtractColor { get; set; } = PDFConst.PDFExtractColor;
+
+    [Field(Name = "PDF Out-of-extract overlay colour")]
+    [Value(Must.MatchPattern, HexREPattern)]
+    [JsonConverter(typeof(ColorToStringJsonConverter))]
+    public Color PDFOutOfExtractColor { get; set; } = PDFConst.PDFOutOfExtractColor;
+
+    [Field(Name = "Ignore highlight colour")]
+    [Value(Must.MatchPattern, HexREPattern)]
+    [JsonConverter(typeof(ColorToStringJsonConverter))]
+    public Color IgnoreHighlightColor { get; set; } = SMConst.Stylesheet.IgnoreColor;
 
     public double      WindowTop    { get; set; } = 100;
     public double      WindowHeight { get; set; } = 600;
