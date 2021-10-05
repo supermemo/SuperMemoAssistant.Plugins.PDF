@@ -62,13 +62,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #endregion
 
-
+    public PDFAnnotationHighlight? CurrentAnnotationHighlight { get; set; } = null;
 
 
     #region Properties & Fields - Non-Public
 
     protected SelectionType CurrentSelectionTool { get; set; } = SelectionType.None;
-
     protected PDFPageSelection SelectedPages { get; set; }
 
     protected List<PDFImageExtract> SelectedImageList { get; } = new List<PDFImageExtract>();
@@ -389,6 +388,33 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
         handled    = true;
         invalidate = true;
+      }
+
+      if (e.LeftButton == MouseButtonState.Released && e.RightButton == MouseButtonState.Released)
+      {
+        var charIndex = GetCharIndexAtPos(pageIndex, pagePoint);
+        if (CurrentAnnotationHighlight == null)
+        {
+          // TODO Check if hovering over any annotationHighlights and then change the color
+          foreach (PDFAnnotationHighlight annotationHighlight in PDFElement.AnnotationHighlights)
+          {
+            if (charIndex > annotationHighlight.StartIndex
+              && charIndex < annotationHighlight.EndIndex)
+            {
+              // TODO add the new highlight
+              CurrentAnnotationHighlight = annotationHighlight;
+            }
+          }
+        }
+        else
+        {
+          if (charIndex < CurrentAnnotationHighlight.StartIndex
+            || charIndex > CurrentAnnotationHighlight.EndIndex)
+          {
+            CurrentAnnotationHighlight = null;
+            // TODO change the color
+          }
+        }
       }
 
       if (invalidate)

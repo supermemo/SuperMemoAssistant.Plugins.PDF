@@ -82,7 +82,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
       if (!PdfCommon.IsInitialize)
         // TODO: Specify dll path depending on IsDevelopmentPlugin ?
-        PdfCommon.Initialize(PDFLicense.LicenseKey);
+        PdfCommon.Initialize();
 
       base.OnPluginInitialized();
     }

@@ -132,6 +132,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
       PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
       PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
+      PDFElement.AnnotationHighlights.ForEach(AddAnnotationHighlight);
 
       GenerateOutOfExtractHighlights();
 

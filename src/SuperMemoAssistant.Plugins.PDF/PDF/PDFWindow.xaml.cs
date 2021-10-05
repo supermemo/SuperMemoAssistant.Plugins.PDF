@@ -31,7 +31,9 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -43,6 +45,7 @@ using Microsoft.Win32;
 using Patagames.Pdf.Net;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
+using SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Services.IO.HotKeys;
 using SuperMemoAssistant.Sys.IO.Devices;
@@ -68,9 +71,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     #region Properties & Fields - Non-Public
 
     protected readonly DelayedTask _saveConfigDelayed;
-    protected          double      _lastSidePanelWidth;
+    protected          double      _lastSidePanelBookmarksWidth;
+    protected          double      _lastSidePanelAnnotationsWidth;
 
     protected PDFCfg Config => PDFState.Instance.Config;
+    protected PDFAnnotationWebBrowserWrapper AnnotationWebBrowserWrapper { get; set; }
 
     #endregion
 
@@ -93,8 +98,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
         ? WindowState.Maximized
         : WindowState.Normal;
 
-      if (double.IsNaN(Config.SidePanelWidth) == false)
-        sidePanelColumn.Width = new GridLength(Config.SidePanelWidth);
+      if (double.IsNaN(Config.SidePanelBookmarksWidth) == false)
+        sidePanelBookmarksColumn.Width = new GridLength(Config.SidePanelBookmarksWidth);
+      if (double.IsNaN(Config.SidePanelAnnotationsWidth) == false)
+        sidePanelAnnotationsColumn.Width = new GridLength(Config.SidePanelAnnotationsWidth);
 
       _saveConfigDelayed = new DelayedTask(SaveConfig);
     }
@@ -171,7 +178,22 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       Bookmarks.Clear();
 
+      // TODO order the annotationHighlights by text selection position, add the sorting to the javascript, and pass in the text position through argument
+      // TODO Find out the best location where you can put the document, placeholder will be ~/Documents
+      // TODO Create the html file here, which will contain all the scripts you need
+      // TODO Extract that functionality out into a seaprate object which you can use here
+      // TODO In thsi separate class you can encapsulate the creation of a class that can properly be used for hooking into the onclick/ (will change to just changes likee input)
+      AnnotationWebBrowserWrapper = new PDFAnnotationWebBrowserWrapper(annotationWebBrowser, IPDFViewer);
+
       IPDFViewer.Document?.Bookmarks.ForEach(b => Bookmarks.Add(b));
+    }
+
+    private void WebBrowserLoadCompletedEventHandler(object    sender,
+                                                     EventArgs e)
+    {
+      AnnotationWebBrowserWrapper.RefreshAnnotations();
+      IPDFViewer.PDFElement.AnnotationHighlights.CollectionChanged +=
+        AnnotationWebBrowserWrapper.AnnotationHighlights_CollectionChanged;
     }
 
     private void IPDFViewer_OnDocumentClosing(object    sender,
@@ -232,7 +254,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                                                    Width,
                                                    WindowState);
 
-          Config.SidePanelWidth = _lastSidePanelWidth;
+          Config.SidePanelBookmarksWidth = _lastSidePanelBookmarksWidth;
+          Config.SidePanelAnnotationsWidth = _lastSidePanelAnnotationsWidth;
           PDFState.Instance.SaveConfigAsync().RunAsync();
         }
       );
@@ -241,6 +264,20 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     public void CancelSave()
     {
       IPDFViewer?.CancelSave();
+    }
+
+    private void Window_PreviewMouseLeftButtonDown(object       sender,
+                                                   EventArgs    e)
+    {
+      if (IPDFViewer == null)
+        return;
+
+      var currentHighlightAnnotation = IPDFViewer?.CurrentAnnotationHighlight;
+
+      if (currentHighlightAnnotation == null)
+        return;
+
+      AnnotationWebBrowserWrapper.ScrollToAnnotation(currentHighlightAnnotation);
     }
 
     private void Window_KeyDown(object       sender,
@@ -378,16 +415,28 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
       }
     }
 
-    private void BtnExpandAll_Click(object          sender,
+    private void BtnBookmarksExpandAll_Click(object          sender,
                                     RoutedEventArgs e)
     {
       tvBookmarks.ExpandAll();
     }
 
-    private void BtnCollapseAll_Click(object          sender,
+    private void BtnBookmarksCollapseAll_Click(object          sender,
                                       RoutedEventArgs e)
     {
       tvBookmarks.CollapseAll();
+    }
+
+    private void BtnAnnotationsExpandAll_Click(object          sender,
+                                    RoutedEventArgs e)
+    {
+      // TODO 
+    }
+
+    private void BtnAnnotationsCollapseAll_Click(object          sender,
+                                      RoutedEventArgs e)
+    {
+      // TODO 
     }
 
     protected KeyModifiers GetKeyboardModifiers()
@@ -409,60 +458,121 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     private void BtnBookmarks_CheckedChanged(object          sender,
                                              RoutedEventArgs e)
     {
-      if (sidePanel == null)
+      if (sidePanelBookmarks == null)
         return;
 
       bool isVisible = btnBookmarks.IsChecked ?? false;
 
       if (isVisible)
       {
-        if (sidePanel.Visibility == Visibility.Hidden)
-          sidePanelColumn.Width = new GridLength(Math.Max(_lastSidePanelWidth, 250));
+        if (sidePanelBookmarks.Visibility == Visibility.Hidden)
+          sidePanelBookmarksColumn.Width = new GridLength(Math.Max(_lastSidePanelBookmarksWidth, 250));
       }
 
       else
       {
-        if (sidePanel.Visibility == Visibility.Visible)
+        if (sidePanelBookmarks.Visibility == Visibility.Visible)
         {
-          _lastSidePanelWidth = sidePanelColumn.ActualWidth;
+          _lastSidePanelBookmarksWidth = sidePanelBookmarksColumn.ActualWidth;
 
-          sidePanelColumn.Width = new GridLength(0);
+          sidePanelBookmarksColumn.Width = new GridLength(0);
         }
       }
     }
 
-    private void SidePanel_SizeChanged(object               sender,
+    private void BtnAnnotations_CheckedChanged(object          sender,
+                                             RoutedEventArgs e)
+    {
+      if (sidePanelAnnotations == null)
+        return;
+
+      bool isVisible = btnAnnotations.IsChecked ?? false;
+
+      if (isVisible)
+      {
+        if (sidePanelAnnotations.Visibility == Visibility.Hidden)
+          sidePanelAnnotationsColumn.Width = new GridLength(Math.Max(_lastSidePanelAnnotationsWidth, 250));
+      }
+
+      else
+      {
+        if (sidePanelAnnotations.Visibility == Visibility.Visible)
+        {
+          _lastSidePanelAnnotationsWidth = sidePanelAnnotationsColumn.ActualWidth;
+
+          sidePanelAnnotationsColumn.Width = new GridLength(0);
+        }
+      }
+    }
+
+    private void SidePanelBookmarks_SizeChanged(object               sender,
                                        SizeChangedEventArgs e)
     {
-      if (sidePanel.Visibility == Visibility.Visible)
+      if (sidePanelBookmarks.Visibility == Visibility.Visible)
       {
-        if (sidePanel.ActualWidth < 50)
+        if (sidePanelBookmarks.ActualWidth < 50)
         {
-          sidePanel.Visibility   = Visibility.Hidden;
-          sidePanelColumn.Width  = new GridLength(0);
+          sidePanelBookmarks.Visibility   = Visibility.Hidden;
+          sidePanelBookmarksColumn.Width  = new GridLength(0);
           btnBookmarks.IsChecked = false;
-          _lastSidePanelWidth    = 0;
+          _lastSidePanelBookmarksWidth    = 0;
         }
 
         else
         {
-          _lastSidePanelWidth = sidePanelColumn.ActualWidth;
+          _lastSidePanelBookmarksWidth = sidePanelBookmarksColumn.ActualWidth;
         }
       }
 
-      else if (sidePanel.Visibility == Visibility.Hidden)
+      else if (sidePanelBookmarks.Visibility == Visibility.Hidden)
       {
-        if (sidePanel.ActualWidth >= 50)
+        if (sidePanelBookmarks.ActualWidth >= 50)
         {
-          sidePanel.Visibility   = Visibility.Visible;
+          sidePanelBookmarks.Visibility   = Visibility.Visible;
           btnBookmarks.IsChecked = true;
 
-          _lastSidePanelWidth = sidePanelColumn.ActualWidth;
+          _lastSidePanelBookmarksWidth = sidePanelBookmarksColumn.ActualWidth;
         }
 
         else
         {
-          sidePanelColumn.Width = new GridLength(0);
+          sidePanelBookmarksColumn.Width = new GridLength(0);
+        }
+      }
+    }
+
+    private void SidePanelAnnotations_SizeChanged(object               sender,
+                                       SizeChangedEventArgs e)
+    {
+      if (sidePanelAnnotations.Visibility == Visibility.Visible)
+      {
+        if (sidePanelAnnotations.ActualWidth < 50)
+        {
+          sidePanelAnnotations.Visibility   = Visibility.Hidden;
+          sidePanelAnnotationsColumn.Width  = new GridLength(0);
+          btnAnnotations.IsChecked = false;
+          _lastSidePanelAnnotationsWidth    = 0;
+        }
+
+        else
+        {
+          _lastSidePanelAnnotationsWidth = sidePanelAnnotationsColumn.ActualWidth;
+        }
+      }
+
+      else if (sidePanelAnnotations.Visibility == Visibility.Hidden)
+      {
+        if (sidePanelAnnotations.ActualWidth >= 50)
+        {
+          sidePanelAnnotations.Visibility   = Visibility.Visible;
+          btnAnnotations.IsChecked = true;
+
+          _lastSidePanelAnnotationsWidth = sidePanelAnnotationsColumn.ActualWidth;
+        }
+
+        else
+        {
+          sidePanelAnnotationsColumn.Width = new GridLength(0);
         }
       }
     }

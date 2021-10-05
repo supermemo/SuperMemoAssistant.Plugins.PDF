@@ -106,6 +106,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           e.Handled = true;
           break;
 
+        case PDFHotKeys.Annotate:
+          CreateAnnotationHighlight();
+          e.Handled = true;
+          break;
+
         //
         // PDF features
 

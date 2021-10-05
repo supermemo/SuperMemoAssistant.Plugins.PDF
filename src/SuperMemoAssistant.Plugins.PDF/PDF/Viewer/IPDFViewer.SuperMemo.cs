@@ -356,6 +356,28 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return true;
     }
 
+    protected bool CreateAnnotationHighlight()
+    {
+      if (IsTextSelectionValid(out _) == false)
+        return false;
+
+      foreach (var selInfo in SelectInfos)
+      {
+        var count = 0;
+        foreach (PDFAnnotationHighlight a in PDFElement.AnnotationHighlights)
+        {
+          count = (a.AnnotationId >= count) ? a.AnnotationId + 1 : count;
+        }
+        var annotationHighlight = PDFAnnotationHighlight.Create(selInfo, count);
+        PDFElement.AnnotationHighlights.Add(annotationHighlight);
+        AddAnnotationHighlight(annotationHighlight);
+      }
+
+      DeselectText();
+
+      return true;
+    }
+
 
     //
     // Highlights
@@ -417,6 +439,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected void AddIgnoreHighlight(PDFTextExtract extract)
     {
       AddHighlight(extract, Config.IgnoreHighlightColor);
+    }
+
+    protected void AddAnnotationHighlight(PDFTextExtract extract)
+    {
+      AddHighlight(extract, Config.AnnotationHighlightColor);
     }
 
     protected void AddHighlight(PDFTextExtract             extract,

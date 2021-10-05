@@ -11,124 +11,137 @@
         xmlns:dictUi="clr-namespace:SuperMemoAssistant.Plugins.Dictionary.Interop.UI;assembly=SuperMemoAssistant.Plugins.Dictionary.Interop"
         mc:Ignorable="d"
         Title="SuperMemo Incremental PDF" Height="450" Width="800"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown">
 
+  <Grid>
     <Grid>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition />
-                <RowDefinition Height="auto" />
-            </Grid.RowDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="auto" />
+        <RowDefinition />
+        <RowDefinition Height="auto" />
+      </Grid.RowDefinitions>
 
-            <Border Grid.Row="0"
+      <Border Grid.Row="0"
                     BorderThickness="0 0 0 1"
                     BorderBrush="#AAAAAA">
-                <Grid Background="#EEF5FD">
+        <Grid Background="#EEF5FD">
 
-                    <ToolBarTray HorizontalAlignment="Left"
+          <ToolBarTray HorizontalAlignment="Left"
                                  IsLocked="True">
-                        <ptgToolBars:PdfToolBarSizes PdfViewer="{Binding ElementName=IPDFViewer}"
+            <ptgToolBars:PdfToolBarSizes PdfViewer="{Binding ElementName=IPDFViewer}"
                                                      OverflowMode="Never" />
-                        <ptgToolBars:PdfToolBarRotate PdfViewer="{Binding ElementName=IPDFViewer}"
+            <ptgToolBars:PdfToolBarRotate PdfViewer="{Binding ElementName=IPDFViewer}"
                                                       Name="ToolbarRotate"
                                                       OverflowMode="Never" />
-                    </ToolBarTray>
+          </ToolBarTray>
 
-                    <ToolBarTray HorizontalAlignment="Right"
+          <ToolBarTray HorizontalAlignment="Right"
                                  VerticalAlignment="Center"
                                  IsLocked="True">
-                        <ptgToolBars:PdfToolBarSearch PdfViewer="{Binding ElementName=IPDFViewer}"
+            <ptgToolBars:PdfToolBarSearch PdfViewer="{Binding ElementName=IPDFViewer}"
                                                       Name="ToolbarSearch"
                                                       OverflowMode="Never" />
-                    </ToolBarTray>
+          </ToolBarTray>
 
-                </Grid>
-            </Border>
+        </Grid>
+      </Border>
 
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="32" />
-                    <ColumnDefinition Width="250" Name="sidePanelColumn" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+      <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="32" />
+          <ColumnDefinition Width="250" Name="sidePanelBookmarksColumn" />
+          <ColumnDefinition Width="250" Name="sidePanelAnnotationsColumn" />
+          <ColumnDefinition Width="auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0"
+        <StackPanel Grid.Column="0"
                             Orientation="Vertical"
                             Background="#EEF5FD">
 
-                    <!--TODO: Show side panel btn-->
-                    <Separator Height="25"
+          <!--TODO: Show side panel btn-->
+          <Separator Height="25"
                                Background="Transparent" />
 
-                    <ToggleButton Name="btnBookmarks"
+          <ToggleButton Name="btnBookmarks"
                                   IsChecked="True"
                                   Checked="BtnBookmarks_CheckedChanged"
                                   Unchecked="BtnBookmarks_CheckedChanged"
                                   Margin="0 16 0 0"
                                   Background="Transparent">
-                        <Image Source="../Resources/sideBarBookmark.png"
+            <Image Source="../Resources/sideBarBookmark.png"
                                Width="30"
                                Height="36" />
-                    </ToggleButton>
+          </ToggleButton>
 
-                </StackPanel>
+          <ToggleButton Name="btnAnnotations"
+                                  IsChecked="True"
+                                  Checked="BtnAnnotations_CheckedChanged"
+                                  Unchecked="BtnAnnotations_CheckedChanged"
+                                  Margin="0 16 0 0"
+                                  Background="Transparent">
+            <Image Source="../Resources/sideBarBookmark.png"
+                               Width="30"
+                               Height="36" />
+          </ToggleButton>
 
-                <Grid Name="sidePanel"
+        </StackPanel>
+
+        <Grid Name="sidePanelBookmarks"
                       Grid.Column="1"
-                      SizeChanged="SidePanel_SizeChanged"
+                      SizeChanged="SidePanelBookmarks_SizeChanged"
                       Background="#EEF5FD">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="25" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="3" />
-                    </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="3" />
+          </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Row="0"
+          <Grid Grid.Row="0"
                           Grid.ColumnSpan="2">
 
-                        <TextBlock HorizontalAlignment="Left"
+            <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    Padding="8 0 0 0"
                                    FontSize="13"
                                    Text="Bookmarks" />
 
-                        <StackPanel HorizontalAlignment="Right"
+            <StackPanel HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
                                     Orientation="Horizontal">
-                            <Button Name="btnCollapseAll"
-                                    Click="BtnCollapseAll_Click"
+              <Button Name="btnBookmarksCollapseAll"
+                                    Click="BtnBookmarksCollapseAll_Click"
                                     Width="20"
                                     Height="20"
                                     BorderBrush="Transparent"
                                     Background="Transparent">
-                                <Image Source="../Resources/collapseAll.png"
+                <Image Source="../Resources/collapseAll.png"
                                        Width="9"
                                        Height="9"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center" />
-                            </Button>
-                            <Button Name="btnExpandAll"
-                                    Click="BtnExpandAll_Click"
+              </Button>
+              <Button Name="btnBookmarksExpandAll"
+                                    Click="BtnBookmarksExpandAll_Click"
                                     Width="20"
                                     Height="20"
                                     BorderBrush="Transparent"
                                     Background="Transparent">
-                                <Image Source="../Resources/expandAll.png"
+                <Image Source="../Resources/expandAll.png"
                                        Width="9"
                                        Height="9"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center" />
-                            </Button>
-                        </StackPanel>
+              </Button>
+            </StackPanel>
 
-                    </Grid>
+          </Grid>
 
-                    <TreeView Name="tvBookmarks"
+          <TreeView Name="tvBookmarks"
                               Grid.Row="1"
                               Grid.Column="0"
                               ItemsSource="{Binding Bookmarks}"
@@ -139,35 +152,101 @@
                               ScrollViewer.PanningMode="Both"
                               BorderBrush="#AAAAAA"
                               BorderThickness="1 1 0 1">
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding Childs}" DataType="ptg:PdfBookmark">
-                                <StackPanel Orientation="Horizontal"
+            <TreeView.ItemTemplate>
+              <HierarchicalDataTemplate ItemsSource="{Binding Childs}" DataType="ptg:PdfBookmark">
+                <StackPanel Orientation="Horizontal"
                                             KeyDown="TvBookmarks_PreviewKeyDown">
-                                    <TextBlock Text="{Binding Path=Title}"
+                  <TextBlock Text="{Binding Path=Title}"
                                                FontSize="13"
                                                Margin="1 2 0 2" />
 
-                                    <StackPanel.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="Go to (Enter)" Click="TvBookmarks_MenuItem_GoTo" />
-                                            <Separator />
-                                            <MenuItem Header="PDF Extract (Ctrl+Alt+X)"
+                  <StackPanel.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Go to (Enter)" Click="TvBookmarks_MenuItem_GoTo" />
+                      <Separator />
+                      <MenuItem Header="PDF Extract (Ctrl+Alt+X)"
                                                       Click="TvBookmark_MenuItem_PDFExtract" />
-                                        </ContextMenu>
-                                    </StackPanel.ContextMenu>
-                                </StackPanel>
-                            </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
-                    </TreeView>
+                    </ContextMenu>
+                  </StackPanel.ContextMenu>
+                </StackPanel>
+              </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
 
-                    <Separator Grid.Row="0"
+          <Separator Grid.Row="0"
                                Grid.RowSpan="2"
                                Grid.Column="1"
                                Background="Transparent" />
 
-                </Grid>
+        </Grid>
+        <Grid Name="sidePanelAnnotations"
+                      Grid.Column="2"
+                      SizeChanged="SidePanelAnnotations_SizeChanged"
+                      Background="#EEF5FD">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="3" />
+          </Grid.ColumnDefinitions>
 
-                <GridSplitter Grid.Column="2"
+          <Grid Grid.Row="0"
+                          Grid.ColumnSpan="2">
+
+            <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   Padding="8 0 0 0"
+                                   FontSize="13"
+                                   Text="Annotations" />
+
+            <StackPanel HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+              <Button Name="btnAnnotationsCollapseAll"
+                                    Click="BtnAnnotationsCollapseAll_Click"
+                                    Width="20"
+                                    Height="20"
+                                    BorderBrush="Transparent"
+                                    Background="Transparent">
+                <Image Source="../Resources/collapseAll.png"
+                                       Width="9"
+                                       Height="9"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+              </Button>
+              <Button Name="btnAnnotationsExpandAll"
+                                    Click="BtnAnnotationsExpandAll_Click"
+                                    Width="20"
+                                    Height="20"
+                                    BorderBrush="Transparent"
+                                    Background="Transparent">
+                <Image Source="../Resources/expandAll.png"
+                                       Width="9"
+                                       Height="9"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+              </Button>
+            </StackPanel>
+
+          </Grid>
+
+          <!-- TODO put in the annotations -->
+          <WebBrowser x:Name="annotationWebBrowser"
+                      LoadCompleted="WebBrowserLoadCompletedEventHandler"
+                      Grid.Row="1"
+                      Grid.Column="0" />
+
+
+          <Separator Grid.Row="0"
+                                         Grid.RowSpan="2"
+                                         Grid.Column="1"
+                                         Background="Transparent" />
+
+        </Grid>
+
+        <GridSplitter Grid.Column="3"
                               Width="7"
                               ResizeDirection="Columns"
                               ResizeBehavior="PreviousAndCurrent"
@@ -175,73 +254,73 @@
                               ShowsPreview="True"
                               Background="#ABABAB" />
 
-                <Grid Grid.Column="3">
+        <Grid Grid.Column="4">
 
-                    <mah:ProgressRing VerticalAlignment="Center"
+          <mah:ProgressRing VerticalAlignment="Center"
                                       HorizontalAlignment="Center"
                                       Visibility="{Binding ElementName=IPDFViewer, Path=LoadingIndicatorVisibility}" />
 
-                    <ScrollViewer CanContentScroll="True"
+          <ScrollViewer CanContentScroll="True"
                                   PanningMode="Both"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Auto"
                                   Background="#ABABAB"
                                   FocusVisualStyle="{x:Null}">
-                        <smaViewer:IPDFViewer x:Name="IPDFViewer"
+            <smaViewer:IPDFViewer x:Name="IPDFViewer"
                                               ShowCurrentPageHighlight="False"
                                               ShowPageSeparator="False"
                                               PageMargin="4"
                                               SizeMode="Zoom"
                                               DictionaryPopup="{Binding ElementName=DictionaryPopup}"
                                               FocusVisualStyle="{x:Null}" />
-                    </ScrollViewer>
+          </ScrollViewer>
 
-                </Grid>
-            </Grid>
+        </Grid>
+      </Grid>
 
-            <Grid Grid.Row="2"
+      <Grid Grid.Row="2"
                   Background="#EEF5FD">
 
-                <ToolBarTray HorizontalAlignment="Center"
+        <ToolBarTray HorizontalAlignment="Center"
                              IsLocked="True">
-                    <ptgToolBars:PdfToolBarPages PdfViewer="{Binding ElementName=IPDFViewer}"
+          <ptgToolBars:PdfToolBarPages PdfViewer="{Binding ElementName=IPDFViewer}"
                                                  Name="ToolbarPages"
                                                  OverflowMode="Never" />
-                </ToolBarTray>
+        </ToolBarTray>
 
-                <ToolBarTray HorizontalAlignment="Right"
+        <ToolBarTray HorizontalAlignment="Right"
                              IsLocked="True">
 
-                    <smaToolBars:PdfToolBarPageMargin PdfViewer="{Binding ElementName=IPDFViewer}"
+          <smaToolBars:PdfToolBarPageMargin PdfViewer="{Binding ElementName=IPDFViewer}"
                                                       OverflowMode="Never" />
-                    <ptgToolBars:PdfToolBarViewModes PdfViewer="{Binding ElementName=IPDFViewer}"
+          <ptgToolBars:PdfToolBarViewModes PdfViewer="{Binding ElementName=IPDFViewer}"
                                                      OverflowMode="Never" />
-                    <ptgToolBars:PdfToolBarZoomEx PdfViewer="{Binding ElementName=IPDFViewer}"
+          <ptgToolBars:PdfToolBarZoomEx PdfViewer="{Binding ElementName=IPDFViewer}"
                                                   Name="ToolbarZoom"
                                                   OverflowMode="Never"
                                                   VerticalContentAlignment="Center"
                                                   Height="32" />
-                </ToolBarTray>
+        </ToolBarTray>
 
-            </Grid>
-        </Grid>
+      </Grid>
+    </Grid>
 
-        <Popup x:Name="DictionaryPopup"
+    <Popup x:Name="DictionaryPopup"
                DataContext="{x:Null}"
                Placement="Relative"
                PlacementTarget="{Binding ElementName=IPDFViewer}"
                IsOpen="False"
                StaysOpen="False"
                Closed="DictionaryPopup_Closed">
-            <Border Background="WhiteSmoke"
+      <Border Background="WhiteSmoke"
                     BorderThickness="1"
                     BorderBrush="Black" >
-                <dictUi:DictionaryControl Width="420"
+        <dictUi:DictionaryControl Width="420"
                                           Height="370"
                                           OnAfterExtract="DictionaryControl_OnAfterExtract"
                                           Entries="{Binding ElementName=DictionaryPopup, Path=DataContext, Mode=OneWay}" />
-            </Border>
-        </Popup>
-    </Grid>
+      </Border>
+    </Popup>
+  </Grid>
 
 </Window>
