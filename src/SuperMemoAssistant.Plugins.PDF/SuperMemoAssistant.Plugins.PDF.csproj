@@ -126,7 +126,10 @@
       <HintPath>$(PkgPdfium_Net_SDK)\lib\net472\Patagames.Pdf.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <Target Name="CopyPdfiumSdkFiles" AfterTargets="Build">
+  <Target Name="CopyJavascriptFiles" AfterTargets="Build">
+    <Copy SourceFiles="$(ProjectDir)..\..\assets\annotationSidePanel.html" DestinationFiles="$(UserProfile)\SuperMemoAssistant\Configs\$(ProjectName)annotationSidePanel.html" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyPdfiumSdkFiles" AfterTargets="CopyJavascriptFiles">
     <Copy SourceFiles="$(PkgPdfium_Net_SDK)\build\icudt.dll" DestinationFiles="$(TargetDir)icudt.dll" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(PkgPdfium_Net_SDK)\build\x86\pdfium.dll" DestinationFiles="$(TargetDir)x86\pdfium.dll" SkipUnchangedFiles="true" />
     <ItemGroup>
