@@ -50,6 +50,7 @@ using SuperMemoAssistant.Sys.IO.Devices;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  using SuperMemoAssistant.Extensions;
   using System.Diagnostics.CodeAnalysis;
 
   /// <inheritdoc/>
@@ -401,7 +402,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             if (charIndex > annotationHighlight.StartIndex
               && charIndex < annotationHighlight.EndIndex)
             {
-              // TODO add the new highlight
+              ExtractHighlights.Clear();
+              ImageExtractHighlights.Clear();
+              RemoveHighlightFromText();
+
+              PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);
+              PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
+              PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
+              PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
+              PDFElement.AnnotationHighlights.ForEach(a => AddAnnotationHighlight(a, a == annotationHighlight));
+
               CurrentAnnotationHighlight = annotationHighlight;
             }
           }
@@ -411,8 +421,17 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           if (charIndex < CurrentAnnotationHighlight.StartIndex
             || charIndex > CurrentAnnotationHighlight.EndIndex)
           {
+            ExtractHighlights.Clear();
+            ImageExtractHighlights.Clear();
+            RemoveHighlightFromText();
+
+            PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);
+            PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
+            PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
+            PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
+            PDFElement.AnnotationHighlights.ForEach(AddAnnotationHighlight);
+
             CurrentAnnotationHighlight = null;
-            // TODO change the color
           }
         }
       }

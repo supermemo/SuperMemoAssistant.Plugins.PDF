@@ -442,8 +442,16 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     }
 
     protected void AddAnnotationHighlight(PDFTextExtract extract)
+      => AddAnnotationHighlight(extract, false);
+
+    protected void AddAnnotationHighlight(PDFTextExtract extract, bool isFocused)
     {
-      AddHighlight(extract, Config.AnnotationHighlightColor);
+      AddHighlight(
+        extract,
+        isFocused
+          ? Config.FocusedAnnotationHighlightColor
+          : Config.AnnotationHighlightColor
+      );
     }
 
     protected void AddHighlight(PDFTextExtract             extract,

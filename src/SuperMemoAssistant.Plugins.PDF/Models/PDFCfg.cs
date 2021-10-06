@@ -161,6 +161,10 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [Value(Must.MatchPattern, HexREPattern)]
     [JsonConverter(typeof(ColorToStringJsonConverter))]
     public Color IgnoreHighlightColor { get; set; } = SMConst.Stylesheet.IgnoreColor;
+    public Color FocusedAnnotationHighlightColor { get; set; } = Color.FromArgb(150,
+                                                                                0,
+                                                                                255,
+                                                                                0);
     public Color AnnotationHighlightColor { get; set; } = Color.FromArgb(90,
                                                                          100,
                                                                          255,
