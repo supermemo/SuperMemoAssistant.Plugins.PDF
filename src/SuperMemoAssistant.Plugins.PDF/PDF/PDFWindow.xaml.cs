@@ -272,10 +272,10 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       var currentHighlightAnnotation = IPDFViewer?.CurrentAnnotationHighlight;
 
-      if (currentHighlightAnnotation == null)
-        return;
-
-      AnnotationWebBrowserWrapper.ScrollToAnnotation(currentHighlightAnnotation);
+      if (currentHighlightAnnotation != null)
+      {
+        AnnotationWebBrowserWrapper.ScrollToAnnotation(currentHighlightAnnotation);
+      }
     }
 
     private void Window_KeyDown(object       sender,

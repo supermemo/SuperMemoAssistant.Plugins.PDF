@@ -82,8 +82,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
       {
         if (annotation.AnnotationId == annotationId)
         {
-          PDFViewer.ScrollToChar(annotation.StartPage,
-                                 annotation.StartIndex);
+          PDFViewer.ScrollToAnnotationHighlight(annotation);
+          PDFViewer.ChangeColorOfAnnotationHighlight(annotation);
         }
       }
     }

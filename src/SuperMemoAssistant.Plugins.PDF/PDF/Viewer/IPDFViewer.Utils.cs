@@ -98,7 +98,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         return;
       */
 
-      var pageIdx  = SelectInfo.StartPage;
+      var pageIdx = SelectInfo.StartPage;
       var startIdx = SelectInfo.StartIndex;
       var textInfos = Document.Pages[pageIdx].Text.GetTextInfo(startIdx,
                                                                text.Length);
@@ -133,7 +133,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
                                           textInfos.Rects.Last().top));
 
       DictionaryPopup.HorizontalOffset = pagePt.X;
-      DictionaryPopup.VerticalOffset   = pagePt.Y;
+      DictionaryPopup.VerticalOffset = pagePt.Y;
       DictionaryPopup.DataContext = new PendingEntryResult(cts,
                                                            entryResultTask,
                                                            dict);
@@ -141,8 +141,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     }
 
     public async Task<EntryResult> LookupWordEntryAsync(RemoteCancellationToken ct,
-                                                        string                  word,
-                                                        IDictionaryService      dict)
+                                                        string word,
+                                                        IDictionaryService dict)
     {
       var lemmas = await dict.LookupLemma(ct, word, (Config.PDFDictionary ?? dict.DefaultDictionary).GetLanguageId());
 
@@ -335,7 +335,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return ClientRect.Contains(topLeftPt);
     }
 
-    public override void ScrollToPoint(int   pageIndex,
+    public override void ScrollToPoint(int pageIndex,
                                        Point pagePoint)
     {
       int count = Document?.Pages.Count ?? 0;
@@ -350,6 +350,21 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       else
         base.ScrollToPoint(pageIndex,
                            pagePoint);
+    }
+
+    public void ScrollToAnnotationHighlight(PDFAnnotationHighlight annotation)
+    {
+      var point = GetCharPoint(annotation.StartPage,
+                               annotation.StartIndex);
+      if (PointInPage(point) == -1)
+      {
+        ScrollToChar(annotation.EndPage,
+                     annotation.EndIndex);
+
+        var scrollY = -_viewport.Height / 2 - _autoScrollPosition.Y;
+
+        SetVerticalOffset(scrollY);
+      }
     }
 
     protected void ScrollToEndOfSelection()

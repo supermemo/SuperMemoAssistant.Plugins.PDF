@@ -402,16 +402,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             if (charIndex > annotationHighlight.StartIndex
               && charIndex < annotationHighlight.EndIndex)
             {
-              ExtractHighlights.Clear();
-              ImageExtractHighlights.Clear();
-              RemoveHighlightFromText();
-
-              PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);
-              PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
-              PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
-              PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
-              PDFElement.AnnotationHighlights.ForEach(a => AddAnnotationHighlight(a, a == annotationHighlight));
-
+              ChangeColorOfAnnotationHighlight(annotationHighlight);
               CurrentAnnotationHighlight = annotationHighlight;
             }
           }
@@ -421,16 +412,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           if (charIndex < CurrentAnnotationHighlight.StartIndex
             || charIndex > CurrentAnnotationHighlight.EndIndex)
           {
-            ExtractHighlights.Clear();
-            ImageExtractHighlights.Clear();
-            RemoveHighlightFromText();
-
-            PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);
-            PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
-            PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
-            PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
-            PDFElement.AnnotationHighlights.ForEach(AddAnnotationHighlight);
-
+            ChangeColorOfAnnotationHighlight(null);
             CurrentAnnotationHighlight = null;
           }
         }
@@ -440,6 +422,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         InvalidateVisual();
 
       return handled;
+    }
+
+    public void ChangeColorOfAnnotationHighlight(PDFAnnotationHighlight? annotation)
+    {
+      ExtractHighlights.Clear();
+      ImageExtractHighlights.Clear();
+      RemoveHighlightFromText();
+
+      PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);
+      PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
+      PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
+      PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
+      PDFElement.AnnotationHighlights.ForEach(a => AddAnnotationHighlight(a, annotation != null && a == annotation));
     }
 
     protected bool OnMouseUpProcessSelection(MouseButtonEventArgs e,

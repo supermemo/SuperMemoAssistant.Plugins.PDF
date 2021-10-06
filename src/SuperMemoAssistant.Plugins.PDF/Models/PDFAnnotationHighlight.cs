@@ -74,6 +74,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
         AnnotationId = annotationId
       };
 
+    public int GetSortingKey() => StartPage * 10000 + StartIndex;
+
     #endregion
   }
 }
