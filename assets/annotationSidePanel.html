@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <body>
+	<div id="root"/>
+	<script>
+		var timeoutHandle;
+		function handleKeyPress(event) {
+			switch (event.keyCode) {
+				case 1:
+					document.execCommand('selectAll');
+					break;
+				case 2:
+					document.execCommand('bold');
+					break;
+				case 3:
+					document.execCommand('copy');
+					break;
+				case 9:
+					document.execCommand('italic');
+					break;
+				case 21:
+					document.execCommand('underline');
+					break;
+				case 22:
+					document.execCommand('paste');
+					break;
+				case 24:
+					document.execCommand('cut');
+					break;
+				case 26:
+					document.execCommand('undo');
+					break;
+				case 27:
+					document.execCommand('decreaseFontSize');
+					break;
+				case 29:
+					document.execCommand('increaseFontSize');
+					break;
+			}
+			if (timeoutHandle != null) {
+				window.clearTimeout(timeoutHandle);
+			}
+			timeoutHandle = null;
+			timeoutHandle = window.setTimeout(update, 250);
+		}
+		function handleClick(event) {
+			var firstRootSibling = event.srcElement;
+			while (firstRootSibling.parentElement.id != "root") {
+				firstRootSibling = firstRootSibling.parentElement;
+			}
+			var id = parseInt(firstRootSibling.id.replace("annotation",""));
+			window.external.Annotation_OnClick(id);
+		}
+		function update() {
+			timeoutHandle = null;
+			window.external.Annotation_OnAfterUpdate();
+		}
+		function clearAnnotations() {
+			var e = document.getElementById("root");
+			while (e.firstChild) {
+				e.removeChild(e.firstChild);
+			}
+		}
+		function insertAnnotation(annotationId, text) {
+			var e = document.getElementById("root");
+			var onUpdate = "handleKeyPress(event)";
+			var onClick = "handleClick(event)";
+			annotationId = "annotation"+annotationId;
+			e.insertAdjacentHTML(
+				"beforeend",
+				"<div onkeypress=\""+onUpdate+"\" onclick=\""+onClick+"\" id=\""+annotationId+"\" border=\"1px solid black\" contenteditable>"+text+"</div><hr/>"
+			);
+		}
+		function scrollToAnnotation(annotationId) {
+			var e = document.getElementById("annotation"+annotationId);
+			e.scrollIntoView();
+			e.focus();
+		}
+	</script>
+    </body>
+</html>
+

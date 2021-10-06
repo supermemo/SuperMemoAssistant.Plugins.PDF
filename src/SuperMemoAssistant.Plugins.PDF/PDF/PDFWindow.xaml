@@ -81,7 +81,7 @@
                                   Unchecked="BtnAnnotations_CheckedChanged"
                                   Margin="0 16 0 0"
                                   Background="Transparent">
-            <Image Source="../Resources/sideBarBookmark.png"
+            <Image Source="../Resources/sideBarAnnotation.png"
                                Width="30"
                                Height="36" />
           </ToggleButton>

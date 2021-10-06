@@ -27,6 +27,7 @@
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
+  using System.IO;
   using System.Runtime.Remoting;
   using Anotar.Serilog;
   using Dictionary.Interop;
