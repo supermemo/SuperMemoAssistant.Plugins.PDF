@@ -126,7 +126,7 @@
     </Reference>
   </ItemGroup>
   <Target Name="CopyJavascriptFiles" AfterTargets="Build">
-    <Copy SourceFiles="$(ProjectDir)..\..\assets\annotationSidePanel.html" DestinationFiles="$(UserProfile)\SuperMemoAssistant\Configs\$(ProjectName)annotationSidePanel.html" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(ProjectDir)..\..\assets\annotationSidePanel.html" DestinationFiles="$(UserProfile)\SuperMemoAssistant\Configs\$(ProjectName)\annotationSidePanel.html" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="CopyPdfiumSdkFiles" AfterTargets="CopyJavascriptFiles">
     <Copy SourceFiles="$(PkgPdfium_Net_SDK)\build\icudt.dll" DestinationFiles="$(TargetDir)icudt.dll" SkipUnchangedFiles="true" />

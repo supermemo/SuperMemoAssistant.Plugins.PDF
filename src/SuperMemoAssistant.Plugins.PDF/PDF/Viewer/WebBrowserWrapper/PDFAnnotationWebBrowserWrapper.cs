@@ -16,7 +16,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
       PDFViewer = pdfViewer;
       AnnotationWebBrowser = webBrowser;
       var configDir = SMAFileSystem.ConfigDir.Combine("SuperMemoAssistant.Plugins.PDF");
-      AnnotationWebBrowser.Source = new Uri($@"file://{configDir}\annotationSidePanel.html");
+      AnnotationWebBrowser.Source = new Uri($@"{configDir}/annotationSidePanel.html");
       AnnotationWebBrowser.ObjectForScripting = this;
     }
 
