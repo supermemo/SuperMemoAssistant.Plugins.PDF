@@ -1,18 +1,13 @@
 ﻿using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using System;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
 {
   public class PDFAnnotationWebBrowserWrapper
   {
-    public string testString => "hello world";
     private IPDFViewer PDFViewer { get; set; }
     private WebBrowser AnnotationWebBrowser { get; set; }
     public PDFAnnotationWebBrowserWrapper(WebBrowser webBrowser, IPDFViewer pdfViewer)
