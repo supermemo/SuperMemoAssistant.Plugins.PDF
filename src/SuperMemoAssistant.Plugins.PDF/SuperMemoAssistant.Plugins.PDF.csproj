@@ -46,6 +46,7 @@
     <Resource Include="..\..\assets\images\icons\sideBarAnnotation.png" Link="Resources\sideBarAnnotation.png" />
     <Resource Include="..\..\assets\images\icons\collapseAll.png" Link="Resources\collapseAll.png" />
     <Resource Include="..\..\assets\images\icons\expandAll.png" Link="Resources\expandAll.png" />
+    <Resource Include="..\..\assets\annotationSidePanel.html" Link="Resources\annotationSidePanel.html" />
     <EmbeddedResource Include="MathPix\MathPix.html" />
   </ItemGroup>
   <ItemGroup>

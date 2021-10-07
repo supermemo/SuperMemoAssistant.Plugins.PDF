@@ -61,15 +61,34 @@
 				e.removeChild(e.firstChild);
 			}
 		}
-		function insertAnnotation(annotationId, text) {
+		function insertAnnotation(annotationId, sortingKey, text) {
 			var e = document.getElementById("root");
 			var onUpdate = "handleKeyPress(event)";
 			var onClick = "handleClick(event)";
 			annotationId = "annotation"+annotationId;
-			e.insertAdjacentHTML(
-				"beforeend",
-				"<div onkeypress=\""+onUpdate+"\" onclick=\""+onClick+"\" id=\""+annotationId+"\" border=\"1px solid black\" contenteditable>"+text+"</div><hr/>"
-			);
+			var childHtml = "<div class=\"key"+sortingKey+"\" onkeypress=\""+onUpdate+"\" onclick=\""+onClick+"\" id=\""+annotationId+"\" border=\"1px solid black\" contenteditable>"+text+"</div><hr/>";
+			if (!e.firstChild) {
+				e.insertAdjacentHTML(
+					"beforeend",
+					childHtml
+				);
+			} else {
+				for (e = e.firstChild; e != null; e = e.nextSibling) {
+					var key = parseInt(e.className.replace("key",""));
+					if (parseInt(sortingKey) < key) {
+						e.insertAdjacentHTML(
+							"beforebegin",
+							childHtml
+						);
+						return;
+					}
+				}
+				e = document.getElementById("root");
+				e.insertAdjacentHTML(
+					"beforeend",
+					childHtml
+				);
+			}
 		}
 		function scrollToAnnotation(annotationId) {
 			var e = document.getElementById("annotation"+annotationId);

@@ -35,7 +35,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
     {
       var innerHtml = annotationHighlight.HtmlContent;
       var annotationId = annotationHighlight.AnnotationId;
-      AnnotationWebBrowser.InvokeScript("insertAnnotation", annotationId, innerHtml);
+      var annotationSortingKey = annotationHighlight.GetSortingKey();
+      AnnotationWebBrowser.InvokeScript("insertAnnotation", annotationId, annotationSortingKey, innerHtml);
       ScrollToAnnotation(annotationHighlight);
     }
 
