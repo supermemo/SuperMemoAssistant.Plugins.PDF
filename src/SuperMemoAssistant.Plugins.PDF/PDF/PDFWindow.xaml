@@ -51,6 +51,7 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="32" />
           <ColumnDefinition Width="250" Name="sidePanelBookmarksColumn" />
+          <ColumnDefinition Width="auto" />
           <ColumnDefinition Width="250" Name="sidePanelAnnotationsColumn" />
           <ColumnDefinition Width="auto" />
           <ColumnDefinition Width="*" />
@@ -179,8 +180,17 @@
                                Background="Transparent" />
 
         </Grid>
+
+        <GridSplitter Grid.Column="2"
+                              Width="7"
+                              ResizeDirection="Columns"
+                              ResizeBehavior="PreviousAndCurrent"
+                              HorizontalAlignment="Stretch"
+                              ShowsPreview="True"
+                              Background="#ABABAB" />
+
         <Grid Name="sidePanelAnnotations"
-                      Grid.Column="2"
+                      Grid.Column="3"
                       SizeChanged="SidePanelAnnotations_SizeChanged"
                       Background="#EEF5FD">
           <Grid.RowDefinitions>
@@ -246,7 +256,7 @@
 
         </Grid>
 
-        <GridSplitter Grid.Column="3"
+        <GridSplitter Grid.Column="4"
                               Width="7"
                               ResizeDirection="Columns"
                               ResizeBehavior="PreviousAndCurrent"
@@ -254,7 +264,7 @@
                               ShowsPreview="True"
                               Background="#ABABAB" />
 
-        <Grid Grid.Column="4">
+        <Grid Grid.Column="5">
 
           <mah:ProgressRing VerticalAlignment="Center"
                                       HorizontalAlignment="Center"
