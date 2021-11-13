@@ -27,7 +27,6 @@
 
 namespace SuperMemoAssistant.Plugins.PDF
 {
-  using System.IO;
   using System.Runtime.Remoting;
   using Anotar.Serilog;
   using Dictionary.Interop;
@@ -83,7 +82,7 @@ namespace SuperMemoAssistant.Plugins.PDF
 
       if (!PdfCommon.IsInitialize)
         // TODO: Specify dll path depending on IsDevelopmentPlugin ?
-        PdfCommon.Initialize();
+        PdfCommon.Initialize(PDFLicense.LicenseKey);
 
       base.OnPluginInitialized();
     }
