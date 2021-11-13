@@ -242,11 +242,12 @@
 
           </Grid>
 
-          <!-- TODO put in the annotations -->
-          <WebBrowser x:Name="annotationWebBrowser"
-                      LoadCompleted="WebBrowserLoadCompletedEventHandler"
-                      Grid.Row="1"
-                      Grid.Column="0" />
+          <WindowsFormsHost Name="wfHost"
+                            Focusable="True"
+                            Grid.Row="1"
+                            Grid.Column="0">
+          </WindowsFormsHost>
+
 
 
           <Separator Grid.Row="0"

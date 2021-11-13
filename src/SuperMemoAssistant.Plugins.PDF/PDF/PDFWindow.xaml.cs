@@ -151,7 +151,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       if (Equals(e.NewFocus,
                  tvBookmarks)
-        || e.NewFocus is TreeViewItem)
+        || e.NewFocus is TreeViewItem
+        || e.NewFocus is WebBrowser)
         return;
 
       IPDFViewer.Focus();
@@ -176,22 +177,9 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
 
       Bookmarks.Clear();
 
-      // TODO order the annotationHighlights by text selection position, add the sorting to the javascript, and pass in the text position through argument
-      // TODO Find out the best location where you can put the document, placeholder will be ~/Documents
-      // TODO Create the html file here, which will contain all the scripts you need
-      // TODO Extract that functionality out into a seaprate object which you can use here
-      // TODO In thsi separate class you can encapsulate the creation of a class that can properly be used for hooking into the onclick/ (will change to just changes likee input)
-      AnnotationWebBrowserWrapper = new PDFAnnotationWebBrowserWrapper(annotationWebBrowser, IPDFViewer);
+      AnnotationWebBrowserWrapper = new PDFAnnotationWebBrowserWrapper(wfHost, IPDFViewer);
 
       IPDFViewer.Document?.Bookmarks.ForEach(b => Bookmarks.Add(b));
-    }
-
-    private void WebBrowserLoadCompletedEventHandler(object    sender,
-                                                     EventArgs e)
-    {
-      AnnotationWebBrowserWrapper.RefreshAnnotations();
-      IPDFViewer.PDFElement.AnnotationHighlights.CollectionChanged +=
-        AnnotationWebBrowserWrapper.AnnotationHighlights_CollectionChanged;
     }
 
     private void IPDFViewer_OnDocumentClosing(object    sender,

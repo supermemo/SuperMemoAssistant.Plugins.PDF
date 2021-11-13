@@ -3,22 +3,33 @@ using SuperMemoAssistant.Interop;
 using SuperMemoAssistant.Plugins.PDF.Models;
 using System;
 using System.Collections.Specialized;
-using System.Windows.Controls;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
 {
   public class PDFAnnotationWebBrowserWrapper
   {
     private IPDFViewer PDFViewer { get; set; }
-    private WebBrowser AnnotationWebBrowser { get; set; }
-    public PDFAnnotationWebBrowserWrapper(WebBrowser webBrowser, IPDFViewer pdfViewer)
+    private System.Windows.Forms.WebBrowser AnnotationWebBrowser { get; set; }
+    public PDFAnnotationWebBrowserWrapper(System.Windows.Forms.Integration.WindowsFormsHost wfHost, IPDFViewer pdfViewer)
     {
       PDFViewer = pdfViewer;
-      AnnotationWebBrowser = webBrowser;
+      AnnotationWebBrowser = new System.Windows.Forms.WebBrowser();
+      wfHost.Child = AnnotationWebBrowser;
+      AnnotationWebBrowser.DocumentCompleted += WebBrowserLoadCompletedEventHandler;
       var configDir = SMAFileSystem.ConfigDir.Combine("SuperMemoAssistant.Plugins.PDF");
-      AnnotationWebBrowser.Source = new Uri($@"{configDir}/annotationSidePanel.html");
+      AnnotationWebBrowser.Url = new Uri($@"{configDir}/annotationSidePanel.html");
+      AnnotationWebBrowser.WebBrowserShortcutsEnabled = false;
       AnnotationWebBrowser.ObjectForScripting = this;
     }
+ 
+    private void WebBrowserLoadCompletedEventHandler(object    sender,
+                                                     EventArgs e)
+    {
+      RefreshAnnotations();
+      PDFViewer.PDFElement.AnnotationHighlights.CollectionChanged +=
+        AnnotationHighlights_CollectionChanged;
+    }
+
 
     public void RefreshAnnotations()
     {
@@ -28,7 +39,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
 
     public void ClearAnnotations()
     {
-      AnnotationWebBrowser.InvokeScript("clearAnnotations");
+      AnnotationWebBrowser.Document.InvokeScript("clearAnnotations");
     }
 
     public void InsertAnnotation(PDFAnnotationHighlight annotationHighlight)
@@ -36,13 +47,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
       var innerHtml = annotationHighlight.HtmlContent;
       var annotationId = annotationHighlight.AnnotationId;
       var annotationSortingKey = annotationHighlight.GetSortingKey();
-      AnnotationWebBrowser.InvokeScript("insertAnnotation", annotationId, annotationSortingKey, innerHtml);
+      AnnotationWebBrowser.Document.InvokeScript("insertAnnotation", new object[] {annotationId, annotationSortingKey, innerHtml});
       ScrollToAnnotation(annotationHighlight);
     }
 
     public void ScrollToAnnotation(PDFAnnotationHighlight annotationHighlight)
     {
-      AnnotationWebBrowser.InvokeScript("scrollToAnnotation", annotationHighlight.AnnotationId);
+      AnnotationWebBrowser.Document.InvokeScript("scrollToAnnotation", new object[] {annotationHighlight.AnnotationId});
     }
 
     public void AnnotationHighlights_CollectionChanged(object sender,
@@ -91,7 +102,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
 
     public string GetHTMLContentForAnnotationId(int annotationId)
     {
-      var document = (mshtml.HTMLDocument)AnnotationWebBrowser.Document;
+      var document = (mshtml.HTMLDocument)AnnotationWebBrowser.Document.DomDocument;
       var element = document.getElementById("annotation" + annotationId.ToString());
       return element?.innerHTML;
     }
