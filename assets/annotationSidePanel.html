@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <body>
+  <body>
 	<div id="root"/>
 	<script>
 		var timeoutHandle;
@@ -45,7 +45,7 @@
 		}
 		function handleClick(event) {
 			var firstRootSibling = event.srcElement;
-			while (firstRootSibling.parentElement.id != "root") {
+			while (!firstRootSibling.id || firstRootSibling.id.substring(0,10)!= "annotation") {
 				firstRootSibling = firstRootSibling.parentElement;
 			}
 			var id = parseInt(firstRootSibling.id.replace("annotation",""));
@@ -66,7 +66,17 @@
 			var onUpdate = "handleKeyPress(event)";
 			var onClick = "handleClick(event)";
 			annotationId = "annotation"+annotationId;
-			var childHtml = "<div class=\"key"+sortingKey+"\" onkeypress=\""+onUpdate+"\" onclick=\""+onClick+"\" id=\""+annotationId+"\" border=\"1px solid black\" contenteditable>"+text+"</div><hr/>";
+      var childHtml = "<div class=\"key"
+        + sortingKey
+        + "\" onkeypress=\""
+        + onUpdate
+        + "\" onclick=\""
+        + onClick
+        + "\" id=\""
+        + annotationId
+        + "\" border=\"1px solid black\" contenteditable>"
+        + text
+        + "</div><hr/>";
 			if (!e.firstChild) {
 				e.insertAdjacentHTML(
 					"beforeend",
@@ -96,6 +106,6 @@
 			e.focus();
 		}
 	</script>
-    </body>
+  </body>
 </html>
 
