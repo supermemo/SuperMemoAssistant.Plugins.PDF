@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <style>
+    .pdf-annotation-extraction {
+      background-color: blue;
+    }
+  </style>
+</head>
   <body>
 	<div id="root"/>
 	<script>
 		var timeoutHandle;
+    var selectedAnnotationId = 0;
 		function handleKeyPress(event) {
 			switch (event.keyCode) {
 				case 1:
@@ -36,24 +44,47 @@
 				case 29:
 					document.execCommand('increaseFontSize');
 					break;
+      }
+      request_update();
+		}
+    function getAnnotationIdFromElement(element) {
+			var firstRootSibling = element;
+			while (!firstRootSibling.id || firstRootSibling.id.substring(0,10)!= "annotation") {
+				firstRootSibling = firstRootSibling.parentElement;
 			}
+			var id = parseInt(firstRootSibling.id.replace("annotation",""));
+      return id;
+    }
+    function handleFocus(event) {
+      var id = getAnnotationIdFromElement(event.srcElement);
+			window.external.Annotation_OnFocus(id);
+    }
+		function handleClick(event) {
+      var id = getAnnotationIdFromElement(event.srcElement);
+			window.external.Annotation_OnClick(id);
+		}
+		function request_update() {
 			if (timeoutHandle != null) {
 				window.clearTimeout(timeoutHandle);
 			}
 			timeoutHandle = null;
 			timeoutHandle = window.setTimeout(update, 250);
 		}
-		function handleClick(event) {
-			var firstRootSibling = event.srcElement;
-			while (!firstRootSibling.id || firstRootSibling.id.substring(0,10)!= "annotation") {
-				firstRootSibling = firstRootSibling.parentElement;
-			}
-			var id = parseInt(firstRootSibling.id.replace("annotation",""));
-			window.external.Annotation_OnClick(id);
-		}
 		function update() {
 			timeoutHandle = null;
 			window.external.Annotation_OnAfterUpdate();
+		}
+    function handleExtract() {
+      // TODO Consider making this compatible with any IE version
+			if (document.selection && document.selection.createRange) {
+				var range = document.selection.createRange();
+        if (range.htmlText && range.htmlText.length > 0) {
+          htmlText = range.htmlText;
+          range.pasteHTML("<SPAN class=\"pdf-annotation-extraction\">"+htmlText+"</SPAN>");
+          request_update();
+          window.external.Annotation_HandleExtract(htmlText);
+        }
+			}
 		}
 		function clearAnnotations() {
 			var e = document.getElementById("root");
@@ -65,6 +96,7 @@
 			var e = document.getElementById("root");
 			var onUpdate = "handleKeyPress(event)";
 			var onClick = "handleClick(event)";
+			var onFocus = "handleFocus(event)";
 			annotationId = "annotation"+annotationId;
       var childHtml = "<div class=\"key"
         + sortingKey
@@ -72,6 +104,8 @@
         + onUpdate
         + "\" onclick=\""
         + onClick
+        + "\" onfocus=\""
+        + onFocus
         + "\" id=\""
         + annotationId
         + "\" border=\"1px solid black\" contenteditable>"
@@ -108,4 +142,3 @@
 	</script>
   </body>
 </html>
-

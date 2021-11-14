@@ -1,8 +1,13 @@
 ﻿using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop;
+using SuperMemoAssistant.Interop.SuperMemo.Content.Contents;
 using SuperMemoAssistant.Plugins.PDF.Models;
+using SuperMemoAssistant.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Windows;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
 {
@@ -96,11 +101,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
   public class PDFAnnotationWebBrowserWrapper
   {
     private IPDFViewer PDFViewer { get; set; }
-    private System.Windows.Forms.WebBrowser AnnotationWebBrowser { get; set; }
+    private int? SelectedAnnotationId { get; set; } = null;
+    public System.Windows.Forms.WebBrowser AnnotationWebBrowser { get; set; }
     public PDFAnnotationWebBrowserWrapper(System.Windows.Forms.Integration.WindowsFormsHost wfHost, IPDFViewer pdfViewer)
     {
       PDFViewer = pdfViewer;
-      WebBrowserHelper.FixBrowserVersion();
+      //WebBrowserHelper.FixBrowserVersion();
       AnnotationWebBrowser = new System.Windows.Forms.WebBrowser();
       wfHost.Child = AnnotationWebBrowser;
       AnnotationWebBrowser.DocumentCompleted += WebBrowserLoadCompletedEventHandler;
@@ -118,6 +124,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
         AnnotationHighlights_CollectionChanged;
     }
 
+
+    public void Extract()
+    {
+      AnnotationWebBrowser.Document.InvokeScript("handleExtract");
+    }
 
     public void RefreshAnnotations()
     {
@@ -160,9 +171,51 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
       }
     }
 
+    public void Annotation_HandleExtract(string extractHtml)
+    {
+      var hasTextSelection = string.IsNullOrWhiteSpace(extractHtml) == false;
+
+      if (!hasTextSelection || SelectedAnnotationId == null)
+        return;
+
+      var annotationHighlight = GetAnnotationHighlightFromId((int)SelectedAnnotationId);
+      if (annotationHighlight == null)
+        return;
+
+      var parentEl = Svc.SM.Registry.Element[PDFViewer.PDFElement.ElementId];
+
+      var pageIndices   = new HashSet<int>();
+      for (int p = annotationHighlight.StartPage; p <= annotationHighlight.EndPage; p++)
+        pageIndices.Add(p);
+
+      var titleString = $"{parentEl.Title} -- Annotation extract:";
+      var pageString  = "p" + string.Join(", p", pageIndices.Select(p => p + 1));
+      var extractTitle = $"{titleString} {extractHtml} from Annotation #{SelectedAnnotationId} from {pageString}";
+      var contents = new List<ContentBase>();
+      contents.Add(new TextContent(true, extractHtml));
+
+      PDFViewer.CreateAndAddSMExtract(contents, extractTitle, pageIndices);
+
+      Window.GetWindow(PDFViewer)?.Activate();
+    }
+
+    public void Annotation_OnFocus(int annotationId) {
+      SelectedAnnotationId = annotationId;
+    }
+
     public void Annotation_OnClick(int annotationId) => ScrollToAnnotationWithId(annotationId);
 
     public void Annotation_OnAfterUpdate() => UpdateAnnotationHighlights();
+
+    public PDFAnnotationHighlight? GetAnnotationHighlightFromId(int annotationId)
+    {
+      foreach (PDFAnnotationHighlight annotation in PDFViewer.PDFElement.AnnotationHighlights)
+      {
+        if (annotation.AnnotationId == annotationId)
+          return annotation;
+      }
+      return null;
+    }
 
     public void UpdateAnnotationHighlights()
     {
