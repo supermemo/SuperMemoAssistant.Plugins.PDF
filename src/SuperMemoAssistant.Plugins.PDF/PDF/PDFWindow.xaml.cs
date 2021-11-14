@@ -354,6 +354,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
           e.Handled = true;
           break;
 
+        case PDFHotKeys.UIToggleAnnotations:
+          btnAnnotations.IsChecked = !btnAnnotations.IsChecked;
+          AnnotationWebBrowserWrapper.AnnotationWebBrowser.Focus();
+          e.Handled = true;
+          break;
+
         case PDFHotKeys.UIFocusViewer:
           IPDFViewer.Focus();
           e.Handled = true;
