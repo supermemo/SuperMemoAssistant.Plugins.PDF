@@ -70,14 +70,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
       };
     }
 
-    public static PDFAnnotationHighlight Create(SelectInfo selInfo, int annotationId)
+    public static PDFAnnotationHighlight Create(SelectInfo selInfo, int annotationId, string initialContent)
       => new PDFAnnotationHighlight
       {
         StartPage   = selInfo.StartPage,
         StartIndex  = selInfo.StartIndex,
         EndPage     = selInfo.EndPage,
         EndIndex    = selInfo.EndIndex,
-        HtmlContent = "<div></div>",
+        HtmlContent = "<div>"+initialContent+"</div>",
         AnnotationId = annotationId
       };
 

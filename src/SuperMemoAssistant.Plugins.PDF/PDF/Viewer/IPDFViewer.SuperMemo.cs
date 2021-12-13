@@ -387,7 +387,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
             count = (a.AnnotationId >= count) ? a.AnnotationId + 1 : count;
           }
         }
-        var annotationHighlight = PDFAnnotationHighlight.Create(selInfo, count);
+        var annotationHighlight = PDFAnnotationHighlight.Create(selInfo, count, GetSelectedTextAsHtml());
         PDFElement.AddAnnotationHighlight(annotationHighlight);
         AddAnnotationHighlight(annotationHighlight);
       }
