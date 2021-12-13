@@ -397,13 +397,18 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         if (CurrentAnnotationHighlight == null)
         {
           // TODO Check if hovering over any annotationHighlights and then change the color
-          foreach (PDFAnnotationHighlight annotationHighlight in PDFElement.AnnotationHighlights)
+          if (PDFElement.AnnotationHighlights.ContainsKey(pageIndex))
           {
-            if (charIndex > annotationHighlight.StartIndex
-              && charIndex < annotationHighlight.EndIndex)
+            var annotationHighlightsAtPageIndex = PDFElement.AnnotationHighlights[pageIndex];
+
+            foreach (PDFAnnotationHighlight annotationHighlight in annotationHighlightsAtPageIndex)
             {
-              ChangeColorOfAnnotationHighlight(annotationHighlight);
-              CurrentAnnotationHighlight = annotationHighlight;
+              if (charIndex > annotationHighlight.StartIndex
+                && charIndex < annotationHighlight.EndIndex)
+              {
+                ChangeColorOfAnnotationHighlight(annotationHighlight);
+                CurrentAnnotationHighlight = annotationHighlight;
+              }
             }
           }
         }
@@ -434,7 +439,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
       PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
       PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
-      PDFElement.AnnotationHighlights.ForEach(a => AddAnnotationHighlight(a, annotation != null && a == annotation));
+      PDFElement.AnnotationHighlights.ForEach(
+        alist => alist.Value.ForEach(
+          a => AddAnnotationHighlight(a, annotation != null && a == annotation)
+        )
+      );
     }
 
     protected bool OnMouseUpProcessSelection(MouseButtonEventArgs e,

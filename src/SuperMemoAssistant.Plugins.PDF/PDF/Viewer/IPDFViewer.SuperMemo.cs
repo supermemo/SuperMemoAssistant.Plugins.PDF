@@ -380,12 +380,15 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       foreach (var selInfo in SelectInfos)
       {
         var count = 0;
-        foreach (PDFAnnotationHighlight a in PDFElement.AnnotationHighlights)
+        foreach (var annotationHighlightsAtPageIndex in PDFElement.AnnotationHighlights)
         {
-          count = (a.AnnotationId >= count) ? a.AnnotationId + 1 : count;
+          foreach (PDFAnnotationHighlight a in annotationHighlightsAtPageIndex.Value)
+          {
+            count = (a.AnnotationId >= count) ? a.AnnotationId + 1 : count;
+          }
         }
         var annotationHighlight = PDFAnnotationHighlight.Create(selInfo, count);
-        PDFElement.AnnotationHighlights.Add(annotationHighlight);
+        PDFElement.AddAnnotationHighlight(annotationHighlight);
         AddAnnotationHighlight(annotationHighlight);
       }
 

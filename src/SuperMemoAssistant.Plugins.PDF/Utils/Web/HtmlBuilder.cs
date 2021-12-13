@@ -521,13 +521,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Utils.Web
                            SMConst.Stylesheet.IgnoreColor,
                            pageSpanDict);
 
-      foreach (var annotationHighlight in PdfElement.AnnotationHighlights)
-        SplitExtractByPage(annotationHighlight,
-                           Color.FromArgb(90,
-                                          100,
-                                          255,
-                                          100),
-                           pageSpanDict);
+      foreach (var annotationsOnPage in PdfElement.AnnotationHighlights)
+        foreach (var annotationHighlight in annotationsOnPage.Value)
+          SplitExtractByPage(annotationHighlight,
+                             Color.FromArgb(90,
+                                            100,
+                                            255,
+                                            100),
+                             pageSpanDict);
 
       foreach (var pageSpan in pageSpanDict)
         GenerateExtractSpans(pageSpan.Key,

@@ -28,6 +28,7 @@
 namespace SuperMemoAssistant.Plugins.PDF.PDF
 {
   using System;
+  using System.Collections.Generic;
   using System.Collections.ObjectModel;
   using System.Collections.Specialized;
   using System.ComponentModel;
@@ -60,26 +61,29 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
   {
     #region Constructors
 
+    public delegate void AnnotationAdded(object sender, AnnotationAddedEventArgs e);
+    public event AnnotationAdded OnAnnotationAdded;
+
     public PDFElement()
     {
-      BinaryMemberId   = -1;
-      StartPage        = -1;
-      EndPage          = -1;
-      StartIndex       = -1;
-      EndIndex         = -1;
-      ReadPage         = 0;
-      ReadPoint        = default;
-      PDFExtracts      = new ObservableCollection<PDFTextExtract>();
-      SMExtracts       = new ObservableCollection<PDFTextExtract>();
-      SMImgExtracts    = new ObservableCollection<PDFImageExtract>();
+      BinaryMemberId = -1;
+      StartPage = -1;
+      EndPage = -1;
+      StartIndex = -1;
+      EndIndex = -1;
+      ReadPage = 0;
+      ReadPoint = default;
+      PDFExtracts = new ObservableCollection<PDFTextExtract>();
+      SMExtracts = new ObservableCollection<PDFTextExtract>();
+      SMImgExtracts = new ObservableCollection<PDFImageExtract>();
       IgnoreHighlights = new ObservableCollection<PDFTextExtract>();
-      AnnotationHighlights = new ObservableCollection<PDFAnnotationHighlight>();
+      AnnotationHighlights = new Dictionary<int, List<PDFAnnotationHighlight>>();
 
-      PDFExtracts.CollectionChanged      += OnCollectionChanged;
-      SMExtracts.CollectionChanged       += OnCollectionChanged;
-      SMImgExtracts.CollectionChanged    += OnCollectionChanged;
+      PDFExtracts.CollectionChanged += OnCollectionChanged;
+      SMExtracts.CollectionChanged += OnCollectionChanged;
+      SMImgExtracts.CollectionChanged += OnCollectionChanged;
       IgnoreHighlights.CollectionChanged += OnCollectionChanged;
-      AnnotationHighlights.CollectionChanged += OnCollectionChanged;
+      OnAnnotationAdded += OnAnnotationAddedEffect;
     }
 
     #endregion
@@ -110,7 +114,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
     [JsonProperty(PropertyName = "IH")]
     public ObservableCollection<PDFTextExtract> IgnoreHighlights { get; }
     [JsonProperty(PropertyName = "AH")]
-    public ObservableCollection<PDFAnnotationHighlight> AnnotationHighlights { get; }
+    public Dictionary<int, List<PDFAnnotationHighlight>> AnnotationHighlights { get; }
 
     [JsonProperty(PropertyName = "RPg")]
     public int ReadPage { get; set; }
@@ -584,6 +588,27 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF
                                      NotifyCollectionChangedEventArgs e)
     {
       IsChanged = true;
+    }
+
+    [SuppressPropertyChangedWarnings]
+    private void OnAnnotationAddedEffect(object                   sender,
+                                         AnnotationAddedEventArgs e)
+    {
+      IsChanged = true;
+    }
+
+    public void AddAnnotationHighlight(PDFAnnotationHighlight annotationHighlight)
+    {
+      OnAnnotationAdded(this, new AnnotationAddedEventArgs() {
+        NewItem = annotationHighlight
+      });
+
+      int page = annotationHighlight.StartPage;
+      if (!AnnotationHighlights.ContainsKey(page))
+      {
+        AnnotationHighlights[page] = new List<PDFAnnotationHighlight>();
+      }
+      AnnotationHighlights[page].Add(annotationHighlight);
     }
 
     #endregion

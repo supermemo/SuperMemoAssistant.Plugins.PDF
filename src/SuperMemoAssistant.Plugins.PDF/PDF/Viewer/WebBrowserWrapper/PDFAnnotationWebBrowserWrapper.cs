@@ -32,8 +32,8 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
                                                      EventArgs e)
     {
       RefreshAnnotations();
-      PDFViewer.PDFElement.AnnotationHighlights.CollectionChanged +=
-        AnnotationHighlights_CollectionChanged;
+      PDFViewer.PDFElement.OnAnnotationAdded +=
+        AnnotationHighlights_AnnotationAdded;
     }
 
 
@@ -45,7 +45,11 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
     public void RefreshAnnotations()
     {
       ClearAnnotations();
-      PDFViewer.PDFElement.AnnotationHighlights.ForEach(a => InsertAnnotation(a));
+      PDFViewer.PDFElement.AnnotationHighlights.ForEach(
+        alist => alist.Value.ForEach(
+          a => InsertAnnotation(a)
+        )
+      );
     }
 
     public void ClearAnnotations()
@@ -67,20 +71,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
       AnnotationWebBrowser.Document.InvokeScript("scrollToAnnotation", new object[] {annotationHighlight.AnnotationId});
     }
 
-    public void AnnotationHighlights_CollectionChanged(object sender,
-                                                       NotifyCollectionChangedEventArgs e)
+    public void AnnotationHighlights_AnnotationAdded(object                   sender,
+                                                     AnnotationAddedEventArgs e)
     {
-      switch (e.Action)
-      {
-        case NotifyCollectionChangedAction.Add:
-          foreach (PDFAnnotationHighlight annotation in e.NewItems)
-          {
-            InsertAnnotation(annotation);
-            PDFViewer.PDFElement.IsChanged = true;
-            PDFViewer.PDFElement.Save();
-          }
-          break;
-      }
+      InsertAnnotation(e.NewItem);
+      PDFViewer.PDFElement.IsChanged = true;
+      PDFViewer.PDFElement.Save();
     }
 
     public void Annotation_HandleExtract(string extractHtml)
@@ -121,10 +117,13 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
 
     public PDFAnnotationHighlight? GetAnnotationHighlightFromId(int annotationId)
     {
-      foreach (PDFAnnotationHighlight annotation in PDFViewer.PDFElement.AnnotationHighlights)
+      foreach (var annotationsOnPage in PDFViewer.PDFElement.AnnotationHighlights)
       {
-        if (annotation.AnnotationId == annotationId)
-          return annotation;
+        foreach (PDFAnnotationHighlight annotation in annotationsOnPage.Value)
+        {
+          if (annotation.AnnotationId == annotationId)
+            return annotation;
+        }
       }
       return null;
     }
@@ -132,23 +131,29 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer.WebBrowserWrapper
     public void UpdateAnnotationHighlights()
     {
       PDFViewer.PDFElement.IsChanged = true;
-      foreach (PDFAnnotationHighlight annotation in PDFViewer.PDFElement.AnnotationHighlights)
+      foreach (var annotationsOnPage in PDFViewer.PDFElement.AnnotationHighlights)
       {
-        annotation.HtmlContent =
-          GetHTMLContentForAnnotationId(annotation.AnnotationId)
-          ?? annotation.HtmlContent;
+        foreach (PDFAnnotationHighlight annotation in annotationsOnPage.Value)
+        {
+          annotation.HtmlContent =
+            GetHTMLContentForAnnotationId(annotation.AnnotationId)
+            ?? annotation.HtmlContent;
+        }
       }
       PDFViewer.PDFElement.Save();
     }
 
     public void ScrollToAnnotationWithId(int annotationId)
     {
-      foreach (PDFAnnotationHighlight annotation in PDFViewer.PDFElement.AnnotationHighlights)
+      foreach (var annotationsOnPage in PDFViewer.PDFElement.AnnotationHighlights)
       {
-        if (annotation.AnnotationId == annotationId)
+        foreach (PDFAnnotationHighlight annotation in annotationsOnPage.Value)
         {
-          PDFViewer.ScrollToAnnotationHighlight(annotation);
-          PDFViewer.ChangeColorOfAnnotationHighlight(annotation);
+          if (annotation.AnnotationId == annotationId)
+          {
+            PDFViewer.ScrollToAnnotationHighlight(annotation);
+            PDFViewer.ChangeColorOfAnnotationHighlight(annotation);
+          }
         }
       }
     }

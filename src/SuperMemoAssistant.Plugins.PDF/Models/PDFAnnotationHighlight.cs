@@ -32,9 +32,16 @@
 
 using Newtonsoft.Json;
 using Patagames.Pdf.Net.Controls.Wpf;
+using System;
+using System.Collections.Generic;
 
 namespace SuperMemoAssistant.Plugins.PDF.Models
 {
+  public class AnnotationAddedEventArgs : EventArgs
+  {
+    public PDFAnnotationHighlight NewItem { get; set; }
+  }
+
   public class PDFAnnotationHighlight : PDFTextExtract
   {
     #region Properties & Fields - Public
