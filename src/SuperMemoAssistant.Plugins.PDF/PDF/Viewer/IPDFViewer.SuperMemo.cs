@@ -158,32 +158,7 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       // Generate extract
       if (contents.Count > 0)
       {
-        Save(false);
-
-        var bookmarks = pageIndices.Select(FindBookmark)
-                                   .Where(b => b != null)
-                                   .Distinct()
-                                   .Select(b => $"({b.ToHierarchyString()})");
-        var bookmarksStr = StringEx.Join(" ; ", bookmarks);
-        var parentEl     = Svc.SM.Registry.Element[PDFElement.ElementId];
-
-        var templateId = imgExtracts.Count > 0 ? Config.ImageTemplate : Config.TextTemplate;
-        var template   = Svc.SM.Registry.Template[templateId];
-
-        ret = Svc.SM.Registry.Element.Add(
-          out _,
-          ElemCreationFlags.CreateSubfolders,
-          new ElementBuilder(ElementType.Topic,
-                             contents.ToArray())
-            .WithParent(parentEl)
-            .WithConcept(parentEl.Concept)
-            .WithLayout(Config.Layout)
-            .WithTemplate(template)
-            .WithPriority(priority)
-            .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
-            .WithTitle(extractTitle)
-            .DoNotDisplay()
-        );
+        ret = CreateAndAddSMExtract(contents, extractTitle, pageIndices, imgExtracts.Count > 0, priority);
 
         Window.GetWindow(this)?.Activate();
 
@@ -218,6 +193,47 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
           }
         }
       }
+
+      return ret;
+    }
+
+    public bool CreateAndAddSMExtract(
+      List<ContentBase> contents,
+      string extractTitle,
+      HashSet<int> pageIndices,
+      bool useImageTemplate = false,
+      double? priority = null)
+    {
+      if (priority == null)
+      {
+        priority = Config.PDFExtractPriority;
+      }
+      Save(false);
+
+      var bookmarks = pageIndices.Select(FindBookmark)
+                                 .Where(b => b != null)
+                                 .Distinct()
+                                 .Select(b => $"({b.ToHierarchyString()})");
+      var bookmarksStr = StringEx.Join(" ; ", bookmarks);
+      var parentEl     = Svc.SM.Registry.Element[PDFElement.ElementId];
+
+      var templateId = useImageTemplate ? Config.ImageTemplate : Config.TextTemplate;
+      var template   = Svc.SM.Registry.Template[templateId];
+
+      var ret = Svc.SM.Registry.Element.Add(
+        out _,
+        ElemCreationFlags.CreateSubfolders,
+        new ElementBuilder(ElementType.Topic,
+                           contents.ToArray())
+          .WithParent(parentEl)
+          .WithConcept(parentEl.Concept)
+          .WithLayout(Config.Layout)
+          .WithTemplate(template)
+          .WithPriority((double)priority)
+          .WithReference(r => PDFElement.ConfigureSMReferences(r, bookmarks: bookmarksStr))
+          .WithTitle(extractTitle)
+          .DoNotDisplay()
+      );
 
       return ret;
     }
@@ -356,6 +372,31 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
       return true;
     }
 
+    protected bool CreateAnnotationHighlight()
+    {
+      if (IsTextSelectionValid(out _) == false)
+        return false;
+
+      foreach (var selInfo in SelectInfos)
+      {
+        var count = 0;
+        foreach (var annotationHighlightsAtPageIndex in PDFElement.AnnotationHighlights)
+        {
+          foreach (PDFAnnotationHighlight a in annotationHighlightsAtPageIndex.Value)
+          {
+            count = (a.AnnotationId >= count) ? a.AnnotationId + 1 : count;
+          }
+        }
+        var annotationHighlight = PDFAnnotationHighlight.Create(selInfo, count, GetSelectedTextAsHtml());
+        PDFElement.AddAnnotationHighlight(annotationHighlight);
+        AddAnnotationHighlight(annotationHighlight);
+      }
+
+      DeselectText();
+
+      return true;
+    }
+
 
     //
     // Highlights
@@ -417,6 +458,19 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
     protected void AddIgnoreHighlight(PDFTextExtract extract)
     {
       AddHighlight(extract, Config.IgnoreHighlightColor);
+    }
+
+    protected void AddAnnotationHighlight(PDFTextExtract extract)
+      => AddAnnotationHighlight(extract, false);
+
+    protected void AddAnnotationHighlight(PDFTextExtract extract, bool isFocused)
+    {
+      AddHighlight(
+        extract,
+        isFocused
+          ? Config.FocusedAnnotationHighlightColor
+          : Config.AnnotationHighlightColor
+      );
     }
 
     protected void AddHighlight(PDFTextExtract             extract,

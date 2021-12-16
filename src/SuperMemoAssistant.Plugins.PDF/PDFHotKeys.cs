@@ -46,6 +46,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     public const string ExtractSM             = "ExtractSM";
     public const string ExtractSMWithPriority = "ExtractSMWithPriority";
     public const string MarkIgnore            = "MarkIgnore";
+    public const string Annotate              = "Annotate";
     public const string ShowDictionary        = "ShowDictionary";
     public const string GoToPage              = "GoToPage";
     public const string SMLearn               = "SMLearn";
@@ -61,6 +62,7 @@ namespace SuperMemoAssistant.Plugins.PDF
     public const string SMPrevSibling         = "SMPrevSibling";
     public const string SMNextSibling         = "SMNextSibling";
     public const string UIShowOptions         = "UIShowOptions";
+    public const string UIToggleAnnotations   = "UIToggleAnnotations";
     public const string UIToggleBookmarks     = "UIToggleBookmarks";
     public const string UIFocusViewer         = "UIFocusViewer";
     public const string UIFocusBookmarks      = "UIFocusBookmarks";
@@ -103,6 +105,10 @@ namespace SuperMemoAssistant.Plugins.PDF
          .RegisterLocal(MarkIgnore,
                         "Mark text as ignored",
                         new HotKey(Key.I, KeyModifiers.CtrlShift)
+         )
+         .RegisterLocal(Annotate,
+                        "Create annotation for selected text",
+                        new HotKey(Key.A, KeyModifiers.CtrlShift)
          )
 
          //
@@ -175,6 +181,10 @@ namespace SuperMemoAssistant.Plugins.PDF
          .RegisterLocal(UIShowOptions,
                         "Show options",
                         new HotKey(Key.O, KeyModifiers.Ctrl)
+         )
+         .RegisterLocal(UIToggleAnnotations,
+                        "Toggle annotations",
+                        new HotKey(Key.A, KeyModifiers.Ctrl)
          )
          .RegisterLocal(UIToggleBookmarks,
                         "Toggle bookmarks",

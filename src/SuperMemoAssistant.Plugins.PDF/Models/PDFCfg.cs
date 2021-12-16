@@ -161,6 +161,14 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     [Value(Must.MatchPattern, HexREPattern)]
     [JsonConverter(typeof(ColorToStringJsonConverter))]
     public Color IgnoreHighlightColor { get; set; } = SMConst.Stylesheet.IgnoreColor;
+    public Color FocusedAnnotationHighlightColor { get; set; } = Color.FromArgb(150,
+                                                                                0,
+                                                                                255,
+                                                                                0);
+    public Color AnnotationHighlightColor { get; set; } = Color.FromArgb(90,
+                                                                         100,
+                                                                         255,
+                                                                         100);
 
     public double      WindowTop    { get; set; } = 100;
     public double      WindowHeight { get; set; } = 600;
@@ -168,7 +176,8 @@ namespace SuperMemoAssistant.Plugins.PDF.Models
     public double      WindowWidth  { get; set; } = 800;
     public WindowState WindowState  { get; set; } = WindowState.Normal;
 
-    public double SidePanelWidth { get; set; } = 256;
+    public double SidePanelBookmarksWidth { get; set; } = 256;
+    public double SidePanelAnnotationsWidth { get; set; } = 256;
 
     // Dictionary
 

@@ -50,6 +50,7 @@ using SuperMemoAssistant.Sys.IO.Devices;
 
 namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 {
+  using SuperMemoAssistant.Extensions;
   using System.Diagnostics.CodeAnalysis;
 
   /// <inheritdoc/>
@@ -62,13 +63,12 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
 
     #endregion
 
-
+    public PDFAnnotationHighlight? CurrentAnnotationHighlight { get; set; } = null;
 
 
     #region Properties & Fields - Non-Public
 
     protected SelectionType CurrentSelectionTool { get; set; } = SelectionType.None;
-
     protected PDFPageSelection SelectedPages { get; set; }
 
     protected List<PDFImageExtract> SelectedImageList { get; } = new List<PDFImageExtract>();
@@ -391,10 +391,59 @@ namespace SuperMemoAssistant.Plugins.PDF.PDF.Viewer
         invalidate = true;
       }
 
+      if (e.LeftButton == MouseButtonState.Released && e.RightButton == MouseButtonState.Released)
+      {
+        var charIndex = GetCharIndexAtPos(pageIndex, pagePoint);
+        if (CurrentAnnotationHighlight == null)
+        {
+          // TODO Check if hovering over any annotationHighlights and then change the color
+          if (PDFElement.AnnotationHighlights.ContainsKey(pageIndex))
+          {
+            var annotationHighlightsAtPageIndex = PDFElement.AnnotationHighlights[pageIndex];
+
+            foreach (PDFAnnotationHighlight annotationHighlight in annotationHighlightsAtPageIndex)
+            {
+              if (charIndex > annotationHighlight.StartIndex
+                && charIndex < annotationHighlight.EndIndex)
+              {
+                ChangeColorOfAnnotationHighlight(annotationHighlight);
+                CurrentAnnotationHighlight = annotationHighlight;
+              }
+            }
+          }
+        }
+        else
+        {
+          if (charIndex < CurrentAnnotationHighlight.StartIndex
+            || charIndex > CurrentAnnotationHighlight.EndIndex)
+          {
+            ChangeColorOfAnnotationHighlight(null);
+            CurrentAnnotationHighlight = null;
+          }
+        }
+      }
+
       if (invalidate)
         InvalidateVisual();
 
       return handled;
+    }
+
+    public void ChangeColorOfAnnotationHighlight(PDFAnnotationHighlight? annotation)
+    {
+      ExtractHighlights.Clear();
+      ImageExtractHighlights.Clear();
+      RemoveHighlightFromText();
+
+      PDFElement.PDFExtracts.ForEach(AddPDFExtractHighlight);
+      PDFElement.SMExtracts.ForEach(AddSMExtractHighlight);
+      PDFElement.SMImgExtracts.ForEach(e => AddImgExtractHighlight(e.PageIndex, e.BoundingBox));
+      PDFElement.IgnoreHighlights.ForEach(AddIgnoreHighlight);
+      PDFElement.AnnotationHighlights.ForEach(
+        alist => alist.Value.ForEach(
+          a => AddAnnotationHighlight(a, annotation != null && a == annotation)
+        )
+      );
     }
 
     protected bool OnMouseUpProcessSelection(MouseButtonEventArgs e,
